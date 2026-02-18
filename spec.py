@@ -2,6 +2,8 @@ import subprocess
 import os
 import logging
 
+import constants
+
 from workload import Workload
 
 logger = logging.getLogger(__name__)
@@ -34,7 +36,7 @@ def run_background_benchmark(name: str, cores: str, size: str) -> subprocess.Pop
             "taskset",
             "-c",
             f"{cores}",
-            "/home/bruno/cpu2017/bin/runcpu",
+            constants.SPEC_PATH + "/bin/runcpu",
             "--iterations=10000",
             "--config=try1",
             "--tuning=base",
@@ -48,6 +50,8 @@ def run_background_benchmark(name: str, cores: str, size: str) -> subprocess.Pop
 
 def run_benchmark(name: str, cores: str, size: str) -> float:
     logger.info(f"Running benchmark {name}, size = {size}")
+    threads = 2
+    
     proc = subprocess.run(
         [
             "sudo",
@@ -57,7 +61,8 @@ def run_benchmark(name: str, cores: str, size: str) -> float:
             "taskset",
             "-c",
             f"{cores}",
-            "/home/bruno/cpu2017/bin/runcpu",
+            constants.SPEC_PATH + "/bin/runcpu",
+            f"--threads={threads}",
             "--config=try1",
             "--tuning=base",
             f"--size={size}",

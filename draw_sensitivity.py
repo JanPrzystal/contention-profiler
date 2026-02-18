@@ -7,9 +7,11 @@ import pathlib
 
 import constants
 
+xpad = 8
 
 def main():
     labels, dfs = get_data()
+    xlim = max(labels) + xpad
 
     n = len(dfs)
     cols = math.ceil(math.sqrt(n))
@@ -37,7 +39,7 @@ def main():
         ax.set_ylabel("Performance (norm.)")
         xticks = np.arange(0, 128, 16)
         ax.set_xticks(xticks)
-        ax.set_xlim([0, 112])
+        ax.set_xlim([0, xlim])
         ax.grid(True)
 
     for ax in axes[n:]:

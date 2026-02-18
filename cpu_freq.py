@@ -16,7 +16,7 @@ class Governor(Enum):
         return self.value
 
 class CpuFreqPolicy:
-    DEFAULT_GOVERNOR = "performance"
+    DEFAULT_GOVERNOR = "ondemand"
     SET_COMMAND = "sudo cpupower frequency-set --governor {governor}"
     GET_COMMAND ="cpupower frequency-info -o proc".split(" ")
 

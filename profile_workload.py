@@ -38,7 +38,13 @@ def _save_sensitivity_data(workload_name: str, sensitivity: dict[int, float]):
 
 def _profile_sensitivity(workload: Workload) -> str:
     sensitivity = _get_sensitivity_data(workload.name)
-    for size_mb in range(constants.DIAL_START_MB, constants.DIAL_END_MB + constants.DIAL_STEP_MB, constants.DIAL_STEP_MB):
+
+    sizes = range(constants.DIAL_START_MB, constants.DIAL_END_MB + constants.DIAL_STEP_MB, constants.DIAL_STEP_MB)
+    logger.info(f"profiling sizes {sizes}")
+
+    for size_mb in sizes:
+        logger.info(f"profiling size {size_mb}MB")
+        
         if size_mb in sensitivity:
             continue
         sensitivity[size_mb] = _profile_sensitivity_dial(workload, size_mb)
