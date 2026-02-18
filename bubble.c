@@ -1,4 +1,5 @@
-#include <omp.h>
+// #include <omp.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -15,7 +16,7 @@
 #endif
 
 #ifndef NUM_THREADS
-    #define NUM_THREADS 3
+    #define NUM_THREADS 1
 #endif
 
 static size_t stream_size = (FOOTPRINT_SIZE / 2) + (2 * PADDING_SIZE);
@@ -29,7 +30,7 @@ static volatile int64_t dump[200];
 void streaming_access() {
     while(1) {
         double *mid = bw_data + PADDING_SIZE;
-        #pragma omp parallel for
+        // #pragma omp parallel for
         for (int i = 0; i < stream_size / 2; i += 10) {
             bw_data[i]= scalar*mid[i];
             bw_data[i+1]= scalar*mid[i+1];
@@ -42,7 +43,7 @@ void streaming_access() {
             bw_data[i+8]= scalar*mid[i+8];
             bw_data[i+9]= scalar*mid[i+9];
         }
-        #pragma omp parallel for
+        // #pragma omp parallel for
         for (int i = 0; i < stream_size / 2; i += 10) {
             mid[i]= scalar*bw_data[i];
             mid[i+1]= scalar*bw_data[i+1];
@@ -64,7 +65,7 @@ void random_access() {
     #define rand (lfsr = (lfsr >> 1) ^ (-(int)(lfsr & 1u) & MASK))
     #define r (rand % rand_size)
     while(1) {
-        #pragma omp parallel for
+        // #pragma omp parallel for
         for (int i = 0; i < 20; i++) {
             dump[0]  += data_chunk[r]++;
             dump[1]  += data_chunk[r]++;
@@ -276,7 +277,7 @@ int main() {
     size_t rand_data_size = rand_size * sizeof(int64_t);
     data_chunk = malloc(rand_data_size);
     data_chunk += PADDING_SIZE;
-    omp_set_num_threads(NUM_THREADS);
+    // omp_set_num_threads(NUM_THREADS);
     char *bub_type = BUBBLE_TYPE == 0 ? "stream" : "rand";
     printf("Bubble type = %s, threads = %d\n", bub_type, NUM_THREADS);
     if (BUBBLE_TYPE == 0) {
