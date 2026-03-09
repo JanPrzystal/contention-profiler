@@ -7,4 +7,4 @@ __pycache__/
 *.py[cod]
 *$py.class
 target/
-experiment-results/
+experiment_results/

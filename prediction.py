@@ -20,7 +20,7 @@ def _get_sensitivity(name: str) -> dict[int, float]:
     with open(f"{constants.RESULTS_DIR}/sensitivity/{sensitivity_file}_data.csv", "r") as f:
         next(f)
         for line in f:
-            dial, perf = line.split(" ")
+            dial, perf = line.split(", ")
             res[int(dial)] = float(perf)
     return res
 

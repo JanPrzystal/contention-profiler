@@ -11,9 +11,11 @@ xpad = 8
 
 def main():
     labels, dfs = get_data()
-    xlim = max(labels) + xpad
+    # print(f"{dfs}")
 
     n = len(dfs)
+    xlim = 64 + xpad
+
     cols = math.ceil(math.sqrt(n))
     rows = math.ceil(n / cols)
 
@@ -55,7 +57,7 @@ def get_data() -> tuple[list[str], list[pd.DataFrame]]:
     parent_dir = pathlib.Path(constants.RESULTS_DIR) / "sensitivity"
     csv_paths = [parent_dir / f for f in os.listdir(parent_dir) if f.endswith(".csv")]
     labels = [p.parts[3].split('_')[1] for p in csv_paths]
-    dfs = [pd.read_csv(p, delimiter=" ") for p in csv_paths]
+    dfs = [pd.read_csv(p, delimiter=", ") for p in csv_paths]
     return labels, dfs
 
 

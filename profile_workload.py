@@ -22,7 +22,7 @@ def _get_sensitivity_data(workload_name: str) -> dict[int, float]:
     with open(path, "r+") as f:
         next(f)
         for line in f:
-            dial, perf = line.split(" ")
+            dial, perf = line.split(", ")
             res[int(dial)] = float(perf)
     return res
 
@@ -31,9 +31,9 @@ def _save_sensitivity_data(workload_name: str, sensitivity: dict[int, float]):
     benchmark_file = workload_name.replace(".", "_")
     path = SENSITIVITY_DIR / f"{benchmark_file}_data.csv"
     with open(path, "w+") as f:
-        f.write("footprint_mb perf\n")
+        f.write("footprint_mb, perf\n")
         for k, v in sensitivity.items():
-            f.write(f"{k} {v}\n")
+            f.write(f"{k}, {v}\n")
 
 
 def _profile_sensitivity(workload: Workload) -> str:

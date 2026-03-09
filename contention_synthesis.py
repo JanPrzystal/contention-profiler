@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 BUILD_DIR = "build"
 
-NUM_PROC = 6
+NUM_PROC = 4
 
 class Sledge():    
     ELEM_SIZE = 8
@@ -55,7 +55,7 @@ class Bubble():
 
     def __init__(self, size_mb: int):
         self.size = size_mb * 1_000_000 
-        end_size = round(self.size / NUM_PROC)
+        end_size = round(self.size / NUM_PROC / Bubble.ELEM_SIZE)
         logger.info(f"Building bubble with total footprint size {self.size} and per-process footprint size {end_size}")
 
         os.makedirs(BUILD_DIR, exist_ok=True)
@@ -92,86 +92,24 @@ class Bubble():
         self.procs = []
 
     def run(self) -> None:
-        logger.info(f"Running bubble with footprint size {self.size}")
-        self.procs.append(subprocess.Popen(
-            [
-                "sudo",
-                "nice",
-                "-n",
-                "-20",
-                "taskset",
-                "-c",
-                "2",
-                f"./{BUILD_DIR}/bubble_stream.out",
-            ],
-            stdin=subprocess.DEVNULL,
-        ))
-        self.procs.append(subprocess.Popen(
-            [
-                "sudo",
-                "nice",
-                "-n",
-                "-20",
-                "taskset",
-                "-c",
-                "3",
-                f"./{BUILD_DIR}/bubble_stream.out",
-            ],
-            stdin=subprocess.DEVNULL,
-        ))
-        self.procs.append(subprocess.Popen(
-            [
-                "sudo",
-                "nice",
-                "-n",
-                "-20",
-                "taskset",
-                "-c",
-                "4",
-                f"./{BUILD_DIR}/bubble_stream.out",
-            ],
-            stdin=subprocess.DEVNULL,
-        ))
-        
-        self.procs.append(subprocess.Popen(
-            [
-                "sudo",
-                "nice",
-                "-n",
-                "-20",
-                "taskset",
-                "-c",
-                "5",
-                f"./{BUILD_DIR}/bubble_rand.out",
-            ],
-            stdin=subprocess.DEVNULL,
-        ))
-        self.procs.append(subprocess.Popen(
-            [
-                "sudo",
-                "nice",
-                "-n",
-                "-20",
-                "taskset",
-                "-c",
-                "6",
-                f"./{BUILD_DIR}/bubble_rand.out",
-            ],
-            stdin=subprocess.DEVNULL,
-        ))
-        self.procs.append(subprocess.Popen(
-            [
-                "sudo",
-                "nice",
-                "-n",
-                "-20",
-                "taskset",
-                "-c",
-                "7",
-                f"./{BUILD_DIR}/bubble_rand.out",
-            ],
-            stdin=subprocess.DEVNULL,
-        ))
+        for i in range(NUM_PROC):
+            bubble_type = "bubble_stream.out" # if i < NUM_PROC // 2 else "bubble_rand.out"
+            logger.info(f"Running {bubble_type}")
+
+            self.procs.append(subprocess.Popen(
+                [
+                    "sudo",
+                    "nice",
+                    "-n",
+                    "-20",
+                    "taskset",
+                    "-c",
+                    f"{i+2}",
+                    f"./{BUILD_DIR}/{bubble_type}",
+                ],
+                stdin=subprocess.DEVNULL,
+            ))
+    
 
     
     def stop(self) -> None:

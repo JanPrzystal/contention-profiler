@@ -50,7 +50,7 @@ def run_background_benchmark(name: str, cores: str, size: str) -> subprocess.Pop
 
 def run_benchmark(name: str, cores: str, size: str) -> float:
     logger.info(f"Running benchmark {name}, size = {size}")
-    threads = 2
+    threads = 1
     
     proc = subprocess.run(
         [

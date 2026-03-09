@@ -21,7 +21,7 @@ SPEC_NAMES = [
     "600.perlbench_s",
     "602.gcc_s",
     "605.mcf_s",
-    "620.omnetpp_s",
+    # "620.omnetpp_s",
     # "623.xalancbmk_s",
     # "625.x264_s",
     # "631.deepsjeng_s",
@@ -36,14 +36,14 @@ SPEC_NAMES = [
     # "638.imagick_s",
     # "644.nab_s",
     "649.fotonik3d_s",
-    "654.roms_s",
+    # "654.roms_s",
 ]
 
 SPEC_COMPETITORS = [
-    "607.cactuBSSN_s",
-    "628.pop2_s",
-    "603.bwaves_s",
-    "654.roms_s",
+    # "607.cactuBSSN_s",
+    # "628.pop2_s",
+    # "603.bwaves_s",
+    # "654.roms_s",
     "649.fotonik3d_s",
     "619.lbm_s"
 ]
