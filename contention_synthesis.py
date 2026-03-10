@@ -2,11 +2,13 @@ import subprocess
 import os
 import logging
 
+import constants
+
 logger = logging.getLogger(__name__)
 
 BUILD_DIR = "build"
 
-NUM_PROC = 4
+NUM_PROC = 1
 
 class Sledge():    
     ELEM_SIZE = 8
@@ -30,17 +32,19 @@ class Sledge():
 
     def run(self, cores: str) -> None:
         logger.info(f"Running sledge with footprint size {self.size}")
+
+        cmd = [
+            "taskset",
+            "-c",
+            f"{cores}",
+            f"./{BUILD_DIR}/sledge.out",
+        ]
+        
+        if constants.use_root_priority:
+            cmd = constants.ROOT_TASK_CMD + cmd
+
         self.proc = subprocess.Popen(
-            [
-                "sudo",
-                "nice",
-                "-n",
-                "-20",
-                "taskset",
-                "-c",
-                f"{cores}",
-                f"./{BUILD_DIR}/sledge.out",
-            ],
+            cmd,
             stdin=subprocess.DEVNULL,
         )
     
@@ -96,17 +100,18 @@ class Bubble():
             bubble_type = "bubble_stream.out" # if i < NUM_PROC // 2 else "bubble_rand.out"
             logger.info(f"Running {bubble_type}")
 
+            cmd = [
+                "taskset",
+                "-c",
+                f"{i+2}",
+                f"./{BUILD_DIR}/{bubble_type}",
+            ]
+            
+            if constants.use_root_priority:
+                cmd = constants.ROOT_TASK_CMD + cmd
+
             self.procs.append(subprocess.Popen(
-                [
-                    "sudo",
-                    "nice",
-                    "-n",
-                    "-20",
-                    "taskset",
-                    "-c",
-                    f"{i+2}",
-                    f"./{BUILD_DIR}/{bubble_type}",
-                ],
+                cmd,
                 stdin=subprocess.DEVNULL,
             ))
     

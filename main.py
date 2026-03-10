@@ -1,11 +1,15 @@
 import os
 import logging
+import shutil
 import constants
+import draw_sensitivity
+import draw_validation
 import profile_workload
 import profile_reporter
 import contentiousness
 import prediction
 import validation
+import subprocess
 from spec import SpecWorkload
 from mds import MdsFactory
 from kube_workload import KubeWorkload
@@ -20,22 +24,22 @@ logger = logging.getLogger(__name__)
 SPEC_NAMES = [
     "600.perlbench_s",
     "602.gcc_s",
-    "605.mcf_s",
+    # "605.mcf_s",
     # "620.omnetpp_s",
     # "623.xalancbmk_s",
     # "625.x264_s",
     # "631.deepsjeng_s",
     # "641.leela_s",
     # "648.exchange2_s",
-    "657.xz_s",
+    # "657.xz_s",
     # "603.bwaves_s",
     # "607.cactuBSSN_s",
-    "619.lbm_s",
-    "627.cam4_s",
-    "628.pop2_s",
+    # "619.lbm_s",
+    # "627.cam4_s",
+    # "628.pop2_s",
     # "638.imagick_s",
     # "644.nab_s",
-    "649.fotonik3d_s",
+    # "649.fotonik3d_s",
     # "654.roms_s",
 ]
 
@@ -69,7 +73,7 @@ def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], comp
 
 def spec_experiment():
     workloads = [SpecWorkload(name) for name in SPEC_NAMES]
-    reporter = rp.AveragingReporter(REPORTER_SCRIPT_FILES["alternating"])
+    reporter = rp.AveragingReporter(REPORTER_SCRIPT_FILES["hybrid"])
 
     # We use the same workloads for applications and competitors
     conduct_experiment(reporter, workloads, workloads)
@@ -94,6 +98,10 @@ def mds_experiment():
     conduct_experiment(reporter, applications, competitors)
 
 if __name__ == "__main__":
+    try:
+        shutil.rmtree(constants.RESULTS_DIR)
+    except FileNotFoundError:
+        pass
     os.makedirs(constants.RESULTS_DIR, exist_ok=True)
     logging.basicConfig()
     logging.getLogger().setLevel(logging.INFO)
@@ -101,3 +109,8 @@ if __name__ == "__main__":
     # mds_experiment()
     spec_experiment()
     CpuFreqPolicy.reset_governor()
+
+    draw_sensitivity.draw_sensitivity()
+    draw_validation.draw_validation()
+
+    subprocess.run(["zip", "-r", "results.zip", constants.RESULTS_DIR], check=True)

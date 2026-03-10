@@ -1,6 +1,6 @@
 from typing import Final
 
-RESULTS_DIR: Final[str] = "experiment_results/testing"
+RESULTS_DIR: Final[str] = "experiment_results"
 WORKLOAD_UNDER_PROFILING_CORES: Final[str] = "0"
 WORKLOAD_IN_BACKGROUND_CORES: Final[str] = "3"
 
@@ -8,7 +8,7 @@ WORKLOAD_IN_BACKGROUND_CORES: Final[str] = "3"
 REPORTER_CORES: Final[str] = "0"
 DIAL_START_MB: Final[int] = 0
 DIAL_STEP_MB: Final[int] = 4
-DIAL_END_MB: Final[int] = 64
+DIAL_END_MB: Final[int] = 32
 
 # MDS constants
 MDS_PROFILING_TIME_S: Final[int] = 120
@@ -18,4 +18,8 @@ MDS_STARTUP_WAIT_TIME_S: Final[int] = 30
 PROFILING_NODE_NAME: Final[str] = "mc-c6"
 REMOTE_NODE_NAME: Final[str] = "mc-b8"
 
-SPEC_PATH: Final[str] = "/home/jan/cpu2017"
+SPEC_PATH: Final[str] = "../cpu2017"
+
+ROOT_TASK_CMD = ["sudo", "nice", "-n", "-20"]
+
+use_root_priority = True

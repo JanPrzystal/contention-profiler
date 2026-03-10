@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 import logging
 import subprocess
+import constants
+
 
 logger = logging.getLogger(__name__)
 
@@ -11,22 +13,25 @@ class Reporter(ABC):
 
     def run(self, cores: str, repetitions: int = 100):
         logger.info("Profiling with the reporter")
+
+        cmd = [
+            "taskset",
+            "-c",
+            f"{cores}",
+            f"{self.script_file}",
+            "--benchmark_min_warmup_time=1",
+            f"--benchmark_repetitions={repetitions}",
+            "--benchmark_enable_random_interleaving=true",
+        ]
+        
+        if constants.use_root_priority:
+            cmd = constants.ROOT_TASK_CMD + cmd
+
         reporter = subprocess.run(
-            [
-                "sudo",
-                "nice",
-                "-n",
-                "-20",
-                "taskset",
-                "-c",
-                f"{cores}",
-                f"{self.script_file}",
-                "--benchmark_min_warmup_time=1",
-                f"--benchmark_repetitions={repetitions}",
-                "--benchmark_enable_random_interleaving=true",
-            ],
+            cmd,
             capture_output=True,
         )
+
         raw_output = reporter.stdout.decode("utf-8")
         output = {}
         for line in raw_output.splitlines():

@@ -59,7 +59,7 @@ def draw_single_validation_chart(df):
     
     logger.info(f"Generated combined chart with {n} entries at {output_path}")
 
-def main():
+def draw_validation():
     try:
         df = get_validated_df()
         
@@ -75,4 +75,4 @@ def main():
         logger.error(f"Failed to generate chart: {e}")
 
 if __name__ == '__main__':
-    main()
+    draw_validation()
