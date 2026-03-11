@@ -1,20 +1,22 @@
 import os
+import sys
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import math
 import pathlib
+from scipy.interpolate import CubicSpline
 
 import constants
 
 xpad = 8
 
-def draw_sensitivity():
+def draw_sensitivity(x_max = 32):
     labels, dfs = get_data()
     # print(f"{dfs}")
 
     n = len(dfs)
-    xlim = 64 + xpad
+    xlim = x_max + xpad
 
     cols = math.ceil(math.sqrt(n))
     rows = math.ceil(n / cols)
@@ -35,7 +37,19 @@ def draw_sensitivity():
     for ax, df, label in zip(axes, dfs, labels):
         # Normalize the series
         df["perf"] = df["perf"][0] / df["perf"]
-        ax.plot(df["footprint_mb"], df["perf"], marker="o", markersize=4)
+
+        x = df["footprint_mb"].to_numpy()
+        y = df["perf"].to_numpy()
+
+        # Interpolate
+        spline = CubicSpline(x, y)
+
+        x_smooth = np.linspace(x.min(), x.max(), 200)
+        y_smooth = spline(x_smooth)
+
+        ax.plot(x, y, "o", markersize=4, label="measured")
+        ax.plot(x_smooth, y_smooth, "-", linewidth=1.5, label="spline")
+        
         ax.set_title(label)
         ax.set_xlabel("MemBW footprint (MB)")
         ax.set_ylabel("Performance (norm.)")
@@ -62,4 +76,4 @@ def get_data() -> tuple[list[str], list[pd.DataFrame]]:
 
 
 if __name__ == "__main__":
-    draw_sensitivity()
+    draw_sensitivity(int(sys.argv[1]) if len(sys.argv) > 1 else 32)

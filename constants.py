@@ -22,4 +22,6 @@ SPEC_PATH: Final[str] = "../cpu2017"
 
 ROOT_TASK_CMD = ["sudo", "nice", "-n", "-20"]
 
-use_root_priority = True
+N_BUBBLES = 2
+
+use_root_priority = False

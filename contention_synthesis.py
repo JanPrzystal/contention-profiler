@@ -8,8 +8,6 @@ logger = logging.getLogger(__name__)
 
 BUILD_DIR = "build"
 
-NUM_PROC = 1
-
 class Sledge():    
     ELEM_SIZE = 8
 
@@ -57,9 +55,10 @@ class Sledge():
 class Bubble():
     ELEM_SIZE = 8
 
-    def __init__(self, size_mb: int):
+    def __init__(self, size_mb: int, n_proc = 1):
+        self.n_proc = n_proc
         self.size = size_mb * 1_000_000 
-        end_size = round(self.size / NUM_PROC / Bubble.ELEM_SIZE)
+        end_size = round(self.size / n_proc / Bubble.ELEM_SIZE)
         logger.info(f"Building bubble with total footprint size {self.size} and per-process footprint size {end_size}")
 
         os.makedirs(BUILD_DIR, exist_ok=True)
@@ -96,8 +95,8 @@ class Bubble():
         self.procs = []
 
     def run(self) -> None:
-        for i in range(NUM_PROC):
-            bubble_type = "bubble_stream.out" # if i < NUM_PROC // 2 else "bubble_rand.out"
+        for i in range(self.n_proc):
+            bubble_type = "bubble_stream.out" if i < self.n_proc // 2 else "bubble_rand.out"
             logger.info(f"Running {bubble_type}")
 
             cmd = [

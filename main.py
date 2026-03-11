@@ -22,8 +22,8 @@ from workload import Workload
 logger = logging.getLogger(__name__)
 
 SPEC_NAMES = [
-    "600.perlbench_s",
-    "602.gcc_s",
+    # "600.perlbench_s",
+    # "602.gcc_s",
     # "605.mcf_s",
     # "620.omnetpp_s",
     # "623.xalancbmk_s",
@@ -39,7 +39,7 @@ SPEC_NAMES = [
     # "628.pop2_s",
     # "638.imagick_s",
     # "644.nab_s",
-    # "649.fotonik3d_s",
+    "649.fotonik3d_s",
     # "654.roms_s",
 ]
 
@@ -64,7 +64,7 @@ REPORTER_SCRIPT_FILES = {
 GOVERNOR = Governor.PERFORMANCE
 
 def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], competitors: List[Workload]):
-    profile_reporter.profile_reporter(reporter)
+    # profile_reporter.profile_reporter(reporter)
     profile_workload.profile_sensitivity(applications)
     profile_workload.profile_contentiousness(competitors, reporter)
     contentiousness.generate_scores()
@@ -98,17 +98,17 @@ def mds_experiment():
     conduct_experiment(reporter, applications, competitors)
 
 if __name__ == "__main__":
-    try:
-        shutil.rmtree(constants.RESULTS_DIR)
-    except FileNotFoundError:
-        pass
+    # try:
+    #     shutil.rmtree(constants.RESULTS_DIR)
+    # except FileNotFoundError:
+    #     pass
     os.makedirs(constants.RESULTS_DIR, exist_ok=True)
     logging.basicConfig()
     logging.getLogger().setLevel(logging.INFO)
-    CpuFreqPolicy.set_governor(GOVERNOR)
+    # CpuFreqPolicy.set_governor(GOVERNOR)
     # mds_experiment()
     spec_experiment()
-    CpuFreqPolicy.reset_governor()
+    # CpuFreqPolicy.reset_governor()
 
     draw_sensitivity.draw_sensitivity()
     draw_validation.draw_validation()

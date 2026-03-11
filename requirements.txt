@@ -7,3 +7,4 @@ kubernetes
 websockets
 avro
 fastavro
+scipy
