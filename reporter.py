@@ -11,7 +11,7 @@ class Reporter(ABC):
     def __init__(self, script_file: str):
         self.script_file = script_file
 
-    def run(self, cores: str, repetitions: int = 100):
+    def run(self, cores: str, repetitions: int = 25):
         logger.info("Profiling with the reporter")
 
         cmd = [
@@ -49,7 +49,7 @@ class SingleValueReporter(Reporter):
     def process_output(self, output: dict[str, float]) -> float:
         if len(output) != 1:
             raise ValueError("Single value reporter returned multiple values")
-        return float(next(iter(output.values())))
+        return float(next(iter(output.values()))) / 1_000_000.0
 
 class AveragingReporter(Reporter):
     def process_output(self, output: dict[str, float]) -> float:
