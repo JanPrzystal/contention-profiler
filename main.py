@@ -76,7 +76,7 @@ def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], comp
 
 def spec_experiment():
     workloads = [SpecWorkload(name) for name in SPEC_NAMES]
-    reporter = rp.AveragingReporter(REPORTER_SCRIPT_FILES["streaming"])
+    reporter = rp.AveragingReporter(REPORTER_SCRIPT_FILES["hybrid"])
 
     # We use the same workloads for applications and competitors
     conduct_experiment(reporter, workloads, workloads)

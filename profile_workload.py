@@ -63,12 +63,12 @@ def _profile_sensitivity_dial(workload: Workload, size_mb: int) -> float:
     finally:
         bubble.stop()
 
-def _profile_contentiousness(workload: Workload, reporter: rp.Reporter, lookup: list[tuple[float, int]]):
+def _profile_contentiousness(workload: Workload, reporter: rp.Reporter):
         workload.run_in_background(constants.WORKLOAD_IN_BACKGROUND_CORES)
         try:
             time.sleep(10)
             score = reporter.run(constants.REPORTER_CORES, constants.REPORTER_REPETITIONS)
-            return cnt.find_dial(score, lookup)
+            return cnt.contentiousness_lookup(score)
         finally:
             workload.stop()
 
@@ -87,12 +87,12 @@ def profile_sensitivity(workloads: list[Workload]) -> None:
 def profile_contentiousness(workloads: list[Workload], reporter: rp.Reporter) -> None:
     contentiousness = {}
     max_contentiousness = 0
-    lookup = cnt.construct_sensitivity_lookup()
+    # lookup = cnt.construct_sensitivity_lookup()
 
     for workload in workloads:
         if not workload.name:
             continue
-        contentiousness[workload.name] = _profile_contentiousness(workload, reporter, lookup)
+        contentiousness[workload.name] = _profile_contentiousness(workload, reporter)
         logger.info(f"{workload.name} contentiousness: {contentiousness[workload.name]}")
         _save_contentiousness_data(contentiousness)
         if contentiousness[workload.name] > max_contentiousness:

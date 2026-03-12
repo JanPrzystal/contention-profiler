@@ -26,4 +26,4 @@ N_BUBBLES = 2
 
 REPORTER_REPETITIONS = 50
 
-use_root_priority = False
+use_root_priority = True

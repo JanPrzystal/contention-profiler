@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 import pathlib
-from scipy.interpolate import CubicSpline
+from scipy.interpolate import PchipInterpolator, interp1d
 
 import constants
 
@@ -42,9 +42,9 @@ def draw_sensitivity(x_max = 32):
         y = df["perf"].to_numpy()
 
         # Interpolate
-        spline = CubicSpline(x, y)
+        spline = PchipInterpolator(x, y)
 
-        x_smooth = np.linspace(x.min(), x.max(), 200)
+        x_smooth = np.linspace(x.min(), x.max(), 400)
         y_smooth = spline(x_smooth)
 
         ax.plot(x, y, "o", markersize=4, label="measured")

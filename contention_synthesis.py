@@ -96,7 +96,7 @@ class Bubble():
 
     def run(self) -> None:
         for i in range(self.n_proc):
-            bubble_type = "bubble_stream.out" if i < self.n_proc // 2 else "bubble_rand.out"
+            bubble_type = "bubble_stream.out" if i % 2 == 1 else "bubble_rand.out"
             logger.info(f"Running {bubble_type}")
 
             cmd = [

@@ -4,31 +4,56 @@ import math
 import csv
 
 import constants
+from scipy.interpolate import PchipInterpolator
+from scipy.optimize import brentq
 
 logger = logging.getLogger(__name__)
 
 
-def construct_sensitivity_lookup():
-    res = []
+def get_sensitivity_spline():
+    x = []
+    y = []
     with open(f'{constants.RESULTS_DIR}/reporter_sensitivity.csv', 'r') as f:
         reader = csv.reader(f, delimiter=",")
         next(reader)
         for row in reader:
-            perf = float(row[1])
-            # We perform reverse lookup, that is we find dial from performance
-            dial = int(row[0])
-            res.append((perf, dial))
-    return res
+            x.append(int(row[0]))
+            y.append(float(row[1]))
 
-def find_dial(sample_perf: float, lookup: list[tuple[float, int]]) -> int:
-    min_diff = math.inf
-    res = -1
-    for perf, dial in lookup:
-        diff = abs(sample_perf - perf)
-        if diff < min_diff:
-            res = dial
-            min_diff = diff
-    return res
+    return PchipInterpolator(x, y)
+
+def contentiousness_lookup(y):
+    spline = get_sensitivity_spline()
+
+    x_min, x_max = spline.x[0], spline.x[-1]
+
+    if y < spline(x_min) or y > spline(x_max):
+        raise ValueError("Value is out of bounds of the sensitivity data")
+
+    return brentq(lambda x: spline(x) - y, x_min, x_max)
+
+
+# def construct_sensitivity_lookup():
+#     res = []
+#     with open(f'{constants.RESULTS_DIR}/reporter_sensitivity.csv', 'r') as f:
+#         reader = csv.reader(f, delimiter=",")
+#         next(reader)
+#         for row in reader:
+#             perf = float(row[1])
+#             # We perform reverse lookup, that is we find dial from performance
+#             dial = int(row[0])
+#             res.append((perf, dial))
+#     return res
+
+# def find_dial(sample_perf: float, lookup: list[tuple[float, int]]) -> int:
+#     min_diff = math.inf
+#     res = -1
+#     for perf, dial in lookup:
+#         diff = abs(sample_perf - perf)
+#         if diff < min_diff:
+#             res = dial
+#             min_diff = diff
+#     return res
 
 def get_contentiousness():
     res = {}

@@ -42,7 +42,7 @@ class Reporter(ABC):
         return self.process_output(output)
     
     @abstractmethod
-    def process_output(self, output: dict[str, float]):
+    def process_output(self, output: dict[str, float]) -> float:
         raise NotImplementedError
     
 class SingleValueReporter(Reporter):
