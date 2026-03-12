@@ -24,4 +24,6 @@ ROOT_TASK_CMD = ["sudo", "nice", "-n", "-20"]
 
 N_BUBBLES = 2
 
+REPORTER_REPETITIONS = 50
+
 use_root_priority = False

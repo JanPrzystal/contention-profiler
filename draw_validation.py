@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 def get_validated_df():
     path = f'{constants.RESULTS_DIR}/validated.csv'
     # Read space-separated CSV
-    df = pd.read_csv(path, sep=' ')
+    df = pd.read_csv(path, sep=',')
     
     # Calculate % difference: (Prediction - Actual) / Actual * 100
     df['diff_pct'] = ((df['perf'] - df['actual_perf']) / df['actual_perf']) * 100

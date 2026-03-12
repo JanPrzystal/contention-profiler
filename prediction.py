@@ -5,12 +5,12 @@ from collections import namedtuple
 
 import constants
 
-def _get_contentiousness() -> dict[str, int]:
+def _get_contentiousness() -> dict[str, float]:
     scores = {}
     with open(f"{constants.RESULTS_DIR}/contentiousness_scores.csv", "r") as f:
         for line in f:
             name, score = line.split(",")
-            scores[name] = int(score)
+            scores[name] = float(score.strip())
     return scores
 
 
@@ -29,8 +29,8 @@ Prediction = namedtuple("Prediction", ["app", "competitor", "perf"])
 def _predict_pair_performance(
     app: str,
     competitor: str,
-    scores: Dict[str, int],
-    sensitivity: dict[str, dict[int, float]],
+    scores: Dict[str, float],
+    sensitivity: dict[str, dict[float, float]],
 ) -> Prediction:
     prediction = sensitivity[app][scores[competitor]]
     # Divide isolated performance by predicted performance to normalize

@@ -12,12 +12,12 @@ REPETITIONS = 100
 def profile_sensitivity(reporter: rp.Reporter, size_mb: int) -> float:
     if size_mb == 0:
         logger.info("Profiling in isolation")
-        return reporter.run(constants.REPORTER_CORES)
+        return reporter.run(constants.REPORTER_CORES, constants.REPORTER_REPETITIONS)
     bubble = Bubble(size_mb, constants.N_BUBBLES)
     bubble.run()
     time.sleep(5)
     try:
-        return reporter.run(constants.REPORTER_CORES)
+        return reporter.run(constants.REPORTER_CORES, constants.REPORTER_REPETITIONS)
     finally:
         bubble.stop()
 

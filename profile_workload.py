@@ -67,7 +67,7 @@ def _profile_contentiousness(workload: Workload, reporter: rp.Reporter, lookup: 
         workload.run_in_background(constants.WORKLOAD_IN_BACKGROUND_CORES)
         try:
             time.sleep(10)
-            score = reporter.run(constants.REPORTER_CORES)
+            score = reporter.run(constants.REPORTER_CORES, constants.REPORTER_REPETITIONS)
             return cnt.find_dial(score, lookup)
         finally:
             workload.stop()
@@ -90,6 +90,8 @@ def profile_contentiousness(workloads: list[Workload], reporter: rp.Reporter) ->
     lookup = cnt.construct_sensitivity_lookup()
 
     for workload in workloads:
+        if not workload.name:
+            continue
         contentiousness[workload.name] = _profile_contentiousness(workload, reporter, lookup)
         logger.info(f"{workload.name} contentiousness: {contentiousness[workload.name]}")
         _save_contentiousness_data(contentiousness)
