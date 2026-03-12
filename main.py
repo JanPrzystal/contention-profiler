@@ -65,15 +65,18 @@ GOVERNOR = Governor.PERFORMANCE
 
 def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], competitors: List[Workload]):
     profile_reporter.profile_reporter(reporter)
+    max_contentiousness = profile_workload.profile_contentiousness(competitors, reporter)
+
+    constants.DIAL_END_MB = int(max_contentiousness + 1.0)
+
     profile_workload.profile_sensitivity(applications)
-    profile_workload.profile_contentiousness(competitors, reporter)
     contentiousness.generate_scores()
     prediction.predict_performance(applications, competitors)
     validation.validate_predictions(applications, competitors)
 
 def spec_experiment():
     workloads = [SpecWorkload(name) for name in SPEC_NAMES]
-    reporter = rp.AveragingReporter(REPORTER_SCRIPT_FILES["hybrid"])
+    reporter = rp.AveragingReporter(REPORTER_SCRIPT_FILES["streaming"])
 
     # We use the same workloads for applications and competitors
     conduct_experiment(reporter, workloads, workloads)
@@ -105,10 +108,10 @@ if __name__ == "__main__":
     os.makedirs(constants.RESULTS_DIR, exist_ok=True)
     logging.basicConfig()
     logging.getLogger().setLevel(logging.INFO)
-    # CpuFreqPolicy.set_governor(GOVERNOR)
+    CpuFreqPolicy.set_governor(GOVERNOR)
     # mds_experiment()
     spec_experiment()
-    # CpuFreqPolicy.reset_governor()
+    CpuFreqPolicy.reset_governor()
 
     draw_sensitivity.draw_sensitivity()
     draw_validation.draw_validation()

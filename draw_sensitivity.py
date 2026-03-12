@@ -76,7 +76,7 @@ def get_data() -> tuple[list[str], list[pd.DataFrame]]:
     csv_paths += [pathlib.Path(constants.RESULTS_DIR) / "reporter_sensitivity.csv"]
     labels += ["reporter"]
 
-    dfs = [pd.read_csv(p, delimiter=", ") for p in csv_paths]
+    dfs = [pd.read_csv(p, delimiter=",") for p in csv_paths]
     return labels, dfs
 
 

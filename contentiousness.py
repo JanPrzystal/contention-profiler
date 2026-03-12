@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 def construct_sensitivity_lookup():
     res = []
     with open(f'{constants.RESULTS_DIR}/reporter_sensitivity.csv', 'r') as f:
-        reader = csv.reader(f, delimiter=" ")
+        reader = csv.reader(f, delimiter=",")
         next(reader)
         for row in reader:
             perf = float(row[1])
@@ -33,7 +33,7 @@ def find_dial(sample_perf: float, lookup: list[tuple[float, int]]) -> int:
 def get_contentiousness():
     res = {}
     with open(f"{constants.RESULTS_DIR}/contentiousness.csv", 'r') as f:
-        reader = csv.reader(f, delimiter=" ")
+        reader = csv.reader(f, delimiter=",")
         next(reader)
         for row in reader:
             res[row[0]] = float(row[1])
@@ -42,15 +42,15 @@ def get_contentiousness():
 def save_contentiousness(scores: dict[float, int]):
     with open(f"{constants.RESULTS_DIR}/contentiousness_scores.csv", "w") as f:
         for bench, score in scores.items():
-            f.write(f"{bench} {score}\n")
+            f.write(f"{bench},{score}\n")
 
 def generate_scores():
-    lookup = construct_sensitivity_lookup()
+    # lookup = construct_sensitivity_lookup()
     cont = get_contentiousness()
     data = {}
     for bench, perf in cont.items():
-        dial = find_dial(perf, lookup)
-        data[bench] = dial
+        # dial = find_dial(perf, lookup)
+        data[bench] = perf
 
     logger.info(str(data))
     save_contentiousness(data)

@@ -44,7 +44,7 @@ def read_snapshot() -> dict[str, ValidatedPrediction]:
         return {}
     with open(VALIDATION_FILE, "r") as f:
         data = {}
-        reader = csv.DictReader(f, delimiter=" ")
+        reader = csv.DictReader(f, delimiter=",")
         for row in reader:
             vp = ValidatedPrediction(**row)
             data[get_key(vp)] = vp
@@ -67,7 +67,7 @@ def validate_predictions(applications: List[Workload], competitors: List[Workloa
         f.seek(0)
         is_empty = f.read(1) == ""
 
-        writer = csv.writer(f, delimiter=" ")
+        writer = csv.writer(f, delimiter=",")
         if is_empty:
             writer.writerow(ValidatedPrediction._fields)
 

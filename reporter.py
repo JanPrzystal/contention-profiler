@@ -53,4 +53,4 @@ class SingleValueReporter(Reporter):
 
 class AveragingReporter(Reporter):
     def process_output(self, output: dict[str, float]) -> float:
-        return sum(output.values()) / len(output)
+        return sum(output.values()) / len(output) / 1_000_000.0
