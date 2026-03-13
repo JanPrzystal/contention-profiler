@@ -19,7 +19,7 @@ static double * srcGrid, * dstGrid;
 
 void hybrid_access(benchmark::State& state) {
     const unsigned long margin = 400000;
-    const unsigned long size = sizeof(LBMGrid) + 2 * margin * sizeof(double);
+    const unsigned long size = sizeof(LBMGrid) + 2 * margin;// * sizeof(double);
     srcGrid = new double[size];
     dstGrid = new double[size];
     srcGrid += margin;
@@ -47,6 +47,9 @@ void hybrid_access(benchmark::State& state) {
             dstGrid[i + 200035] = srcGrid[(18) + i];
             }
         }
+
+    delete[] (srcGrid - margin);
+    delete[] (dstGrid - margin);
 }
 
 BENCHMARK(hybrid_access);
