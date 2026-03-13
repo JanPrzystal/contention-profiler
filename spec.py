@@ -76,8 +76,9 @@ def run_benchmark(name: str, cores: str, size: str) -> float:
     )
     logger.info("Started process")
     try:
-        proc.check_returncode()
         output = proc.stdout.decode("utf-8")
+        logger.debug(f"Process output:\n{output}")
+        proc.check_returncode()
         output_filename = _get_output_filename(output)
         return _get_benchmark_time(output_filename, name)
 
