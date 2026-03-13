@@ -27,16 +27,25 @@ def read_predictions() -> list[Prediction]:
 
 def validate_prediction(prediction: Prediction, workload_map: dict[str, Workload]) -> float:
     primary = workload_map[prediction.app]
-    competitor = workload_map[prediction.competitor]
-    logging.info(f"Starting profiling for pair ({primary.name}, {competitor.name})")
+
+    competitors = []
+    for competitor in prediction.competitor.split(" + "):
+        competitors.append(workload_map[competitor])
+
+    # competitor = workload_map[prediction.competitor]
+
+    logging.info(f"Starting profiling for ({primary.name}, {', '.join(c.name for c in competitors)})")
     isolated_perf = primary.profile(config.WORKLOAD_UNDER_PROFILING_CORES)
-    competitor.run_in_background(config.WORKLOAD_IN_BACKGROUND_CORES)
-    time.sleep(20)
+    for competitor in competitors:
+        # competitor.run_in_background(config.WORKLOAD_IN_BACKGROUND_CORES)
+        competitor.run_in_background(None)
+    time.sleep(6)
     try:
         perf = primary.profile(config.WORKLOAD_UNDER_PROFILING_CORES)
         return ValidatedPrediction(actual_perf=(isolated_perf / perf), *prediction)
     finally:
-        competitor.stop()
+        for competitor in competitors:
+            competitor.stop()
     
 
 def read_snapshot() -> dict[str, ValidatedPrediction]:
@@ -58,8 +67,25 @@ def writerow_and_sync(f, writer, row):
     f.flush()  # flush Python buffers to OS
     os.fsync(f.fileno())  # force OS to write to disk
 
+def validate_predictions(predictions: List[Prediction], workload_map: dict[str, Workload]):
+    # snapshot = read_snapshot()
+    with open(VALIDATION_FILE, "a+") as f:
+        f.seek(0)
 
-def validate_predictions(applications: List[Workload], competitors: List[Workload]):
+        writer = csv.writer(f, delimiter=",")
+        writer.writerow(ValidatedPrediction._fields)
+
+        # f.seek(0, os.SEEK_END)
+
+        for p in predictions:
+            key = get_key(p)
+            # if key in snapshot:
+            #     continue
+            row = validate_prediction(p, workload_map)
+            logging.info(str(row))
+            writerow_and_sync(f, writer, row)
+
+def validate_pair_predictions(applications: List[Workload], competitors: List[Workload]):
     snapshot = read_snapshot()
     predictions = read_predictions()
     workload_map = {w.name: w for w in applications + competitors}

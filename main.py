@@ -38,16 +38,35 @@ REPORTER_SCRIPT_FILES = {
 
 GOVERNOR = Governor.PERFORMANCE
 
-def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], competitors: List[Workload]):
+def predict_performance(applications: List[Workload]) -> List[prediction.Prediction]:
+    contentiousness = prediction._get_contentiousness()
+
+    predictions = []
+    for app in applications:
+        competitors = [x for x in applications if x != app]
+        predictions.append(prediction.predict_app_performance(app, competitors, contentiousness, prediction.get_sensitivity(app.name)))
+
+    # TODO save predictions?
+
+    return predictions
+
+def validate_predictions(predictions: List[prediction.Prediction], workload_map: dict[str, Workload]) -> List[validation.ValidatedPrediction]:
+    validated_predictions = []
+    for pred in predictions:
+        validated_predictions.append(validation.validate_prediction(pred, workload_map))
+    return validated_predictions
+
+def conduct_experiment(reporter: rp.Reporter, applications: List[Workload]):
     profile_reporter.profile_reporter(reporter)
-    max_contentiousness = profile_workload.profile_contentiousness(competitors, reporter)
+    max_contentiousness = profile_workload.profile_contentiousness(applications, reporter)
 
     config.DIAL_END_MB = int(max_contentiousness + 1.0)
 
     profile_workload.profile_sensitivity(applications)
     contentiousness.generate_scores()
-    prediction.predict_performance(applications, competitors)
-    validation.validate_predictions(applications, competitors)
+    predictions = predict_performance(applications)
+    validated_predictions = validate_predictions(predictions, {w.name: w for w in applications})
+    print(validated_predictions)
 
 def spec_experiment(experiment: experiment.Experiment):
     reporter = rp.AveragingReporter(REPORTER_SCRIPT_FILES[experiment.reporter])
@@ -61,8 +80,7 @@ def spec_experiment(experiment: experiment.Experiment):
 
     config.REPORTER_REPETITIONS = experiment.reporter_repetitions
 
-    # We use the same workloads for applications and competitors
-    conduct_experiment(reporter, applications, applications)
+    conduct_experiment(reporter, applications)
 
 def setup_mds():
     logger.info("Setting up MDS on the Kubernetes cluster")

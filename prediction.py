@@ -16,7 +16,7 @@ def _get_contentiousness() -> dict[str, float]:
     return scores
 
 
-def _get_sensitivity(name: str) -> PchipInterpolator:
+def get_sensitivity(name: str) -> PchipInterpolator:
     res = {}
     sensitivity_file = name.replace(".", "_")
     with open(f"{config.RESULTS_DIR}/sensitivity/{sensitivity_file}_data.csv", "r") as f:
@@ -39,11 +39,16 @@ def _predict_pair_performance(
     # Divide isolated performance by predicted performance to normalize
     return Prediction(app=app, competitor=competitor, perf=sensitivity[app](0) / prediction)
 
+def predict_app_performance(app: Workload, competitors: List[Workload], contention: Dict[str, float], sensitivity: PchipInterpolator) -> Prediction:
+    # Combine the sensitivity of all competitors
+    total_contention = sum(contention[comp.name] for comp in competitors)
+    prediction = sensitivity(total_contention)
+    return Prediction(app=app.name, competitor=" + ".join(comp.name for comp in competitors), perf=sensitivity(0) / prediction)
 
-def predict_performance(applications: List[Workload], competitors: List[Workload]):
+def predict_pairs_performance(applications: List[Workload], competitors: List[Workload]):
     scores = _get_contentiousness()
 
-    sensitivity = {app.name: _get_sensitivity(app.name) for app in applications}
+    sensitivity = {app.name: get_sensitivity(app.name) for app in applications}
 
     res = []
     for app in applications:

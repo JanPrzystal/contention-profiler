@@ -1,3 +1,4 @@
+import signal
 import subprocess
 import os
 import logging
@@ -15,7 +16,42 @@ class SpecWorkload(Workload):
         super().__init__(name)
 
     def profile(self, cores: str) -> float:
-        return run_benchmark(self.name, cores, self.size)
+        # return run_benchmark(self, self.name, cores, self.size)
+        logger.info(f"Running benchmark {self.name}, size = {self.size}")
+        threads = 1
+        
+        cmd = [
+            "taskset",
+            "-c",
+            f"{cores}",
+            config.SPEC_PATH + "/bin/runcpu",
+            f"--threads={threads}",
+            "--config=try1",
+            "--tuning=base",
+            f"--size={self.size}",
+            self.name,
+        ]
+        
+        if config.use_root_priority:
+            cmd = config.ROOT_TASK_CMD + cmd
+
+        self.proc = subprocess.run(
+            cmd,
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+        )
+        logger.info("Started process")
+        try:
+            output = self.proc.stdout.decode("utf-8")
+            logger.debug(f"Process output:\n{output}")
+            self.proc.check_returncode()
+            output_filename = _get_output_filename(output)
+            return _get_benchmark_time(output_filename, self.name)
+
+        except subprocess.CalledProcessError:
+            errors = self.proc.stderr.decode("utf-8")
+            logger.error(errors)
+            raise Exception("SPEC process ended with non-zero exit code")
 
     def run_in_background(self, cores: str) -> None:
         self.proc = run_background_benchmark(self.name, cores, self.size)
@@ -23,15 +59,13 @@ class SpecWorkload(Workload):
     def stop(self) -> None:
         if not self.proc:
             raise Exception(f"No instance of SPEC CPU workload {self.name} found")
-        os.kill(self.proc.pid, 9)
+        os.killpg(os.getpgid(self.proc.pid), signal.SIGTERM)
+        
 
 def run_background_benchmark(name: str, cores: str, size: str) -> subprocess.Popen:
     logger.info(f"Running {name} in background, size = {size}")
 
     cmd = [
-        "taskset",
-        "-c",
-        f"{cores}",
         config.SPEC_PATH + "/bin/runcpu",
         "--iterations=10000",
         "--config=try1",
@@ -39,6 +73,9 @@ def run_background_benchmark(name: str, cores: str, size: str) -> subprocess.Pop
         f"--size={size}",
         name,
     ]
+
+    if cores is not None:
+        cmd = ["taskset", "-c", f"{cores}"] + cmd
 
     if config.use_root_priority:
         cmd = config.ROOT_TASK_CMD + cmd
@@ -50,45 +87,9 @@ def run_background_benchmark(name: str, cores: str, size: str) -> subprocess.Pop
         stdout=subprocess.DEVNULL
     )
 
-def run_benchmark(name: str, cores: str, size: str) -> float:
-    logger.info(f"Running benchmark {name}, size = {size}")
-    threads = 1
     
-    cmd = [
-        "taskset",
-        "-c",
-        f"{cores}",
-        config.SPEC_PATH + "/bin/runcpu",
-        f"--threads={threads}",
-        "--config=try1",
-        "--tuning=base",
-        f"--size={size}",
-        name,
-    ]
-    
-    if config.use_root_priority:
-        cmd = config.ROOT_TASK_CMD + cmd
-
-    proc = subprocess.run(
-        cmd,
-        stdin=subprocess.DEVNULL,
-        capture_output=True,
-    )
-    logger.info("Started process")
-    try:
-        output = proc.stdout.decode("utf-8")
-        logger.debug(f"Process output:\n{output}")
-        proc.check_returncode()
-        output_filename = _get_output_filename(output)
-        return _get_benchmark_time(output_filename, name)
-
-    except subprocess.CalledProcessError:
-        errors = proc.stderr.decode("utf-8")
-        logger.error(errors)
-        raise Exception("SPEC process ended with non-zero exit code")
-    
-def stop_benchmark(proc: subprocess.Popen):
-    os.kill(proc.pid, 9)
+# def stop_benchmark(proc: subprocess.Popen):
+    # os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
     
 def _get_output_filename(runcpu_output: str) -> str:
     for line in runcpu_output.splitlines():
