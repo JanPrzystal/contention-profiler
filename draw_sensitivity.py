@@ -7,7 +7,7 @@ import math
 import pathlib
 from scipy.interpolate import PchipInterpolator, interp1d
 
-import constants
+import config
 
 xpad = 8
 
@@ -62,18 +62,18 @@ def draw_sensitivity(x_max = 32):
         fig.delaxes(ax)
 
     plt.tight_layout()
-    image_output_path = pathlib.Path(constants.RESULTS_DIR) / "sensitivity.png"
+    image_output_path = pathlib.Path(config.RESULTS_DIR) / "sensitivity.png"
     plt.savefig(image_output_path, dpi=300)
     plt.close()
 
 
 def get_data() -> tuple[list[str], list[pd.DataFrame]]:
-    parent_dir = pathlib.Path(constants.RESULTS_DIR) / "sensitivity"
+    parent_dir = pathlib.Path(config.RESULTS_DIR) / "sensitivity"
     csv_paths = [parent_dir / f for f in os.listdir(parent_dir) if f.endswith(".csv")]
     labels = [p.parts[2].split('_')[1] for p in csv_paths]
 
     # Add reporter
-    csv_paths += [pathlib.Path(constants.RESULTS_DIR) / "reporter_sensitivity.csv"]
+    csv_paths += [pathlib.Path(config.RESULTS_DIR) / "reporter_sensitivity.csv"]
     labels += ["reporter"]
 
     dfs = [pd.read_csv(p, delimiter=",") for p in csv_paths]

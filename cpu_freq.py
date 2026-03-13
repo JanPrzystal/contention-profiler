@@ -1,7 +1,7 @@
 from enum import Enum
 import subprocess
 import logging
-import constants
+import config
 
 logger = logging.getLogger()
 
@@ -23,7 +23,7 @@ class CpuFreqPolicy:
 
     @staticmethod
     def set_governor(governor: Governor):
-        if not constants.use_root_priority:
+        if not config.use_root_priority:
             return
         logger.info(f"Setting cpu frequency governor to {governor}")
         cmd = CpuFreqPolicy.SET_COMMAND.format(governor=governor).split(" ")

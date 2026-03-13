@@ -1,7 +1,7 @@
 import pathlib
 from kube_controller import KubeController
 from kube_workload import KubeWorkload
-import constants
+import config
 
 class MdsFactory:
     METRICS = {
@@ -26,6 +26,6 @@ class MdsFactory:
             MdsFactory.YAML_ROOT / yaml_file_name,
             self.controller,
             is_required,
-            constants.MDS_PROFILING_TIME_S,
+            config.MDS_PROFILING_TIME_S,
             metric_name=metric
         )

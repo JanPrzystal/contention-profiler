@@ -1,7 +1,7 @@
 import os
 import logging
 import shutil
-import constants
+import config
 import draw_sensitivity
 import draw_validation
 import profile_workload
@@ -15,41 +15,16 @@ from mds import MdsFactory
 from kube_workload import KubeWorkload
 from typing import List
 from cpu_freq import CpuFreqPolicy, Governor
+import experiment
 
 import reporter as rp
 from workload import Workload
 
 logger = logging.getLogger(__name__)
 
-SPEC_NAMES = [
-    "600.perlbench_s",
-    # "602.gcc_s",
-    # "605.mcf_s",
-    # "620.omnetpp_s",
-    # "623.xalancbmk_s",
-    # "625.x264_s",
-    # "631.deepsjeng_s",
-    # "641.leela_s",
-    # "648.exchange2_s",
-    # "657.xz_s",
-    # "603.bwaves_s",
-    # "607.cactuBSSN_s",
-    # "619.lbm_s",
-    # "627.cam4_s",
-    # "628.pop2_s",
-    # "638.imagick_s",
-    # "644.nab_s",
-    "649.fotonik3d_s",
-    # "654.roms_s",
-]
-
 SPEC_COMPETITORS = [
-    # "607.cactuBSSN_s",
-    # "628.pop2_s",
-    # "603.bwaves_s",
-    # "654.roms_s",
+    "628.pop2_s",
     "649.fotonik3d_s",
-    "619.lbm_s"
 ]
 
 MDS_SERVICES = ["datatest", "dataforwarding", "datageneration"]
@@ -67,19 +42,27 @@ def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], comp
     profile_reporter.profile_reporter(reporter)
     max_contentiousness = profile_workload.profile_contentiousness(competitors, reporter)
 
-    constants.DIAL_END_MB = int(max_contentiousness + 1.0)
+    config.DIAL_END_MB = int(max_contentiousness + 1.0)
 
     profile_workload.profile_sensitivity(applications)
     contentiousness.generate_scores()
     prediction.predict_performance(applications, competitors)
     validation.validate_predictions(applications, competitors)
 
-def spec_experiment():
-    workloads = [SpecWorkload(name) for name in SPEC_NAMES]
-    reporter = rp.AveragingReporter(REPORTER_SCRIPT_FILES["hybrid"])
+def spec_experiment(experiment: experiment.Experiment):
+    reporter = rp.AveragingReporter(REPORTER_SCRIPT_FILES[experiment.reporter])
+    applications = [SpecWorkload(name) for name in experiment.benchmarks]
+
+    config.DIAL_STEP_MB = experiment.mem_interval
+    config.DIAL_END_MB = experiment.max_mem_footprint
+
+    config.N_BUBBLES = experiment.soi.number
+    config.BUBBLE_TYPE = experiment.soi.type
+
+    config.REPORTER_REPETITIONS = experiment.reporter_repetitions
 
     # We use the same workloads for applications and competitors
-    conduct_experiment(reporter, workloads, workloads)
+    conduct_experiment(reporter, applications, applications)
 
 def setup_mds():
     logger.info("Setting up MDS on the Kubernetes cluster")
@@ -101,19 +84,31 @@ def mds_experiment():
     conduct_experiment(reporter, applications, competitors)
 
 if __name__ == "__main__":
-    try:
-        shutil.rmtree(constants.RESULTS_DIR)
-    except FileNotFoundError:
-        pass
-    os.makedirs(constants.RESULTS_DIR, exist_ok=True)
     logging.basicConfig()
     logging.getLogger().setLevel(logging.INFO)
-    CpuFreqPolicy.set_governor(GOVERNOR)
-    # mds_experiment()
-    spec_experiment()
-    CpuFreqPolicy.reset_governor()
 
-    draw_sensitivity.draw_sensitivity()
-    draw_validation.draw_validation()
+    experiments = experiment.parse_config()
 
-    subprocess.run(["zip", "-r", "results.zip", constants.RESULTS_DIR], check=True)
+    for exp in experiments:
+        logger.info(f"Starting experiment: {exp.name}")
+        try:
+            shutil.rmtree(config.RESULTS_DIR)
+        except FileNotFoundError:
+            pass
+        os.makedirs(config.RESULTS_DIR, exist_ok=True)
+
+        CpuFreqPolicy.set_governor(GOVERNOR)
+
+        spec_experiment(exp)
+
+        CpuFreqPolicy.reset_governor()
+
+        draw_sensitivity.draw_sensitivity()
+        draw_validation.draw_validation()
+
+        subprocess.run(["zip", "-r", f"results_{exp.name}.zip", config.RESULTS_DIR], check=True)
+
+        logger.info(f"Experiment {exp.name} completed\n\n")
+    
+    print("All experiments completed.")
+

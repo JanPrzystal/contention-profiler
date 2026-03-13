@@ -8,12 +8,12 @@ import reporter as rp
 
 logger = logging.getLogger(__name__)
 from contention_synthesis import Bubble
-import constants
+import config
 from workload import Workload
 
 import contentiousness as cnt
 
-SENSITIVITY_DIR = Path(constants.RESULTS_DIR) / 'sensitivity'
+SENSITIVITY_DIR = Path(config.RESULTS_DIR) / 'sensitivity'
 
 def _get_sensitivity_data(workload_name: str) -> dict[int, float]:
     res = {}
@@ -41,7 +41,7 @@ def _save_sensitivity_data(workload_name: str, sensitivity: dict[int, float]):
 def _profile_sensitivity(workload: Workload) -> str:
     sensitivity = _get_sensitivity_data(workload.name)
 
-    sizes = range(constants.DIAL_START_MB, constants.DIAL_END_MB + constants.DIAL_STEP_MB, constants.DIAL_STEP_MB)
+    sizes = range(config.DIAL_START_MB, config.DIAL_END_MB + config.DIAL_STEP_MB, config.DIAL_STEP_MB)
     logger.info(f"profiling sizes {sizes}")
 
     for size_mb in sizes:
@@ -55,26 +55,26 @@ def _profile_sensitivity(workload: Workload) -> str:
 def _profile_sensitivity_dial(workload: Workload, size_mb: int) -> float:
     if size_mb == 0:
         logger.info("Profiling in isolation")
-        return workload.profile(constants.WORKLOAD_UNDER_PROFILING_CORES)
-    bubble = Bubble(size_mb, constants.N_BUBBLES)
+        return workload.profile(config.WORKLOAD_UNDER_PROFILING_CORES)
+    bubble = Bubble(size_mb, config.N_BUBBLES)
     bubble.run()
     try:
-        return workload.profile(constants.WORKLOAD_UNDER_PROFILING_CORES)
+        return workload.profile(config.WORKLOAD_UNDER_PROFILING_CORES)
     finally:
         bubble.stop()
 
 def _profile_contentiousness(workload: Workload, reporter: rp.Reporter):
-        workload.run_in_background(constants.WORKLOAD_IN_BACKGROUND_CORES)
+        workload.run_in_background(config.WORKLOAD_IN_BACKGROUND_CORES)
         try:
             time.sleep(10)
-            score = reporter.run(constants.REPORTER_CORES, constants.REPORTER_REPETITIONS)
+            score = reporter.run(config.REPORTER_CORES, config.REPORTER_REPETITIONS)
             return cnt.contentiousness_lookup(score)
         finally:
             workload.stop()
 
 def _save_contentiousness_data(data: dict[str, dict[str,str]]):
     df = pd.DataFrame.from_dict(data, orient="index")
-    df.to_csv(f"{constants.RESULTS_DIR}/contentiousness.csv", sep=",")
+    df.to_csv(f"{config.RESULTS_DIR}/contentiousness.csv", sep=",")
 
 def profile_sensitivity(workloads: list[Workload]) -> None:
     

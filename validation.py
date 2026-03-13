@@ -4,7 +4,7 @@ import csv
 import time
 from typing import Union, List
 from collections import namedtuple
-import constants
+import config
 from workload import Workload
 from prediction import Prediction
 import logging
@@ -18,7 +18,7 @@ def get_key(prediction: Union[Prediction, ValidatedPrediction]) -> str:
 
 
 def read_predictions() -> list[Prediction]:
-    with open(f"{constants.RESULTS_DIR}/predictions.json", "r") as f:
+    with open(f"{config.RESULTS_DIR}/predictions.json", "r") as f:
         data = json.load(f)["predictions"]
         return [
             Prediction(app=p["app"], competitor=p["competitor"], perf=p["perf"])
@@ -29,11 +29,11 @@ def validate_prediction(prediction: Prediction, workload_map: dict[str, Workload
     primary = workload_map[prediction.app]
     competitor = workload_map[prediction.competitor]
     logging.info(f"Starting profiling for pair ({primary.name}, {competitor.name})")
-    isolated_perf = primary.profile(constants.WORKLOAD_UNDER_PROFILING_CORES)
-    competitor.run_in_background(constants.WORKLOAD_IN_BACKGROUND_CORES)
+    isolated_perf = primary.profile(config.WORKLOAD_UNDER_PROFILING_CORES)
+    competitor.run_in_background(config.WORKLOAD_IN_BACKGROUND_CORES)
     time.sleep(20)
     try:
-        perf = primary.profile(constants.WORKLOAD_UNDER_PROFILING_CORES)
+        perf = primary.profile(config.WORKLOAD_UNDER_PROFILING_CORES)
         return ValidatedPrediction(actual_perf=(isolated_perf / perf), *prediction)
     finally:
         competitor.stop()
@@ -50,7 +50,7 @@ def read_snapshot() -> dict[str, ValidatedPrediction]:
             data[get_key(vp)] = vp
         return data
 
-VALIDATION_FILE = f"{constants.RESULTS_DIR}/validated.csv"
+VALIDATION_FILE = f"{config.RESULTS_DIR}/validated.csv"
 
 
 def writerow_and_sync(f, writer, row):

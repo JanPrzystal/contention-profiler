@@ -1,14 +1,14 @@
 import pandas as pd
 import logging
 import matplotlib.pyplot as plt
-import constants
+import config
 
 # Setup basic logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def get_validated_df():
-    path = f'{constants.RESULTS_DIR}/validated.csv'
+    path = f'{config.RESULTS_DIR}/validated.csv'
     # Read space-separated CSV
     df = pd.read_csv(path, sep=',')
     
@@ -53,7 +53,7 @@ def draw_single_validation_chart(df):
     # Adjust layout to prevent label clipping
     plt.tight_layout()
     
-    output_path = f"{constants.RESULTS_DIR}//all_validation_results.png"
+    output_path = f"{config.RESULTS_DIR}//all_validation_results.png"
     plt.savefig(output_path, dpi=300)
     plt.close()
     

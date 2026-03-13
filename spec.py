@@ -2,7 +2,7 @@ import subprocess
 import os
 import logging
 
-import constants
+import config
 
 from workload import Workload
 
@@ -32,7 +32,7 @@ def run_background_benchmark(name: str, cores: str, size: str) -> subprocess.Pop
         "taskset",
         "-c",
         f"{cores}",
-        constants.SPEC_PATH + "/bin/runcpu",
+        config.SPEC_PATH + "/bin/runcpu",
         "--iterations=10000",
         "--config=try1",
         "--tuning=base",
@@ -40,8 +40,8 @@ def run_background_benchmark(name: str, cores: str, size: str) -> subprocess.Pop
         name,
     ]
 
-    if constants.use_root_priority:
-        cmd = constants.ROOT_TASK_CMD + cmd
+    if config.use_root_priority:
+        cmd = config.ROOT_TASK_CMD + cmd
 
     return subprocess.Popen(
         cmd,
@@ -58,7 +58,7 @@ def run_benchmark(name: str, cores: str, size: str) -> float:
         "taskset",
         "-c",
         f"{cores}",
-        constants.SPEC_PATH + "/bin/runcpu",
+        config.SPEC_PATH + "/bin/runcpu",
         f"--threads={threads}",
         "--config=try1",
         "--tuning=base",
@@ -66,8 +66,8 @@ def run_benchmark(name: str, cores: str, size: str) -> float:
         name,
     ]
     
-    if constants.use_root_priority:
-        cmd = constants.ROOT_TASK_CMD + cmd
+    if config.use_root_priority:
+        cmd = config.ROOT_TASK_CMD + cmd
 
     proc = subprocess.run(
         cmd,

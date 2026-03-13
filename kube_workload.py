@@ -5,7 +5,7 @@ from metrics import query_median_latency
 import pathlib
 import time
 import logging
-import constants
+import config
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ class KubeWorkload(Workload):
 
     def setup(self):
         if self.is_required and self.deployed_on is None:
-            self._deploy_on_node(constants.REMOTE_NODE_NAME)
+            self._deploy_on_node(config.REMOTE_NODE_NAME)
 
     def tear_down(self):
         self.controller.remove_application(self.name)
@@ -49,19 +49,19 @@ class KubeWorkload(Workload):
         if not self.metric_name:
                 raise Exception(f"Profiling of workload {self.name} is not supported")
         try:
-            self._deploy_on_node(constants.PROFILING_NODE_NAME)
+            self._deploy_on_node(config.PROFILING_NODE_NAME)
             # Wait for the microservices to be ready
-            time.sleep(constants.MDS_STARTUP_WAIT_TIME_S)
+            time.sleep(config.MDS_STARTUP_WAIT_TIME_S)
             time.sleep(self.profiling_time_s)
             return query_median_latency(self.metric_name, self.profiling_time_s)
         finally:
             self.stop()
 
     def run_in_background(self, cores) -> None:
-        self._deploy_on_node(constants.PROFILING_NODE_NAME)
+        self._deploy_on_node(config.PROFILING_NODE_NAME)
 
     def stop(self) -> None:
         if self.is_required:
-            self._deploy_on_node(constants.REMOTE_NODE_NAME)
+            self._deploy_on_node(config.REMOTE_NODE_NAME)
         else:
             self.controller.remove_application(self.name)

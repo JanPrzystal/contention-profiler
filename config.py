@@ -5,10 +5,10 @@ WORKLOAD_UNDER_PROFILING_CORES: Final[str] = "0"
 WORKLOAD_IN_BACKGROUND_CORES: Final[str] = "3"
 
 # Reporter and SoI dial constants
-REPORTER_CORES: Final[str] = "0"
-DIAL_START_MB: Final[int] = 0
-DIAL_STEP_MB: Final[int] = 4
-DIAL_END_MB: Final[int] = 32
+REPORTER_CORES: str = "0"
+DIAL_START_MB: int = 0
+DIAL_STEP_MB: int = 4
+DIAL_END_MB: int = 32
 
 # MDS constants
 MDS_PROFILING_TIME_S: Final[int] = 120
@@ -22,8 +22,9 @@ SPEC_PATH: Final[str] = "../cpu2017"
 
 ROOT_TASK_CMD = ["sudo", "nice", "-n", "-20"]
 
-N_BUBBLES = 2
+N_BUBBLES: int = 2
+BUBBLE_TYPE = "alternating"
 
-REPORTER_REPETITIONS = 50
+REPORTER_REPETITIONS: int = 50
 
 use_root_priority = True

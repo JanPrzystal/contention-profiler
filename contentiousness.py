@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import math
 import csv
 
-import constants
+import config
 from scipy.interpolate import PchipInterpolator
 from scipy.optimize import brentq
 
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 def get_sensitivity_spline():
     x = []
     y = []
-    with open(f'{constants.RESULTS_DIR}/reporter_sensitivity.csv', 'r') as f:
+    with open(f'{config.RESULTS_DIR}/reporter_sensitivity.csv', 'r') as f:
         reader = csv.reader(f, delimiter=",")
         next(reader)
         for row in reader:
@@ -27,8 +27,10 @@ def contentiousness_lookup(y):
 
     x_min, x_max = spline.x[0], spline.x[-1]
 
-    if y < spline(x_min) or y > spline(x_max):
-        raise ValueError("Value is out of bounds of the sensitivity data")
+    if y < spline(x_min):
+        y = spline(x_min)
+    elif y > spline(x_max):
+        y = spline(x_max)
 
     return brentq(lambda x: spline(x) - y, x_min, x_max)
 
@@ -57,7 +59,7 @@ def contentiousness_lookup(y):
 
 def get_contentiousness():
     res = {}
-    with open(f"{constants.RESULTS_DIR}/contentiousness.csv", 'r') as f:
+    with open(f"{config.RESULTS_DIR}/contentiousness.csv", 'r') as f:
         reader = csv.reader(f, delimiter=",")
         next(reader)
         for row in reader:
@@ -65,7 +67,7 @@ def get_contentiousness():
     return res
 
 def save_contentiousness(scores: dict[float, int]):
-    with open(f"{constants.RESULTS_DIR}/contentiousness_scores.csv", "w") as f:
+    with open(f"{config.RESULTS_DIR}/contentiousness_scores.csv", "w") as f:
         for bench, score in scores.items():
             f.write(f"{bench},{score}\n")
 
@@ -108,7 +110,7 @@ def generate_scores():
 
     # Display the chart
     plt.tight_layout()
-    output_path = f"{constants.RESULTS_DIR}/contentiousness.png"
+    output_path = f"{config.RESULTS_DIR}/contentiousness.png"
     plt.savefig(output_path, dpi=300)
     plt.close()
 

@@ -2,7 +2,7 @@ import subprocess
 import os
 import logging
 
-import constants
+import config
 
 logger = logging.getLogger(__name__)
 
@@ -38,8 +38,8 @@ class Sledge():
             f"./{BUILD_DIR}/sledge.out",
         ]
         
-        if constants.use_root_priority:
-            cmd = constants.ROOT_TASK_CMD + cmd
+        if config.use_root_priority:
+            cmd = config.ROOT_TASK_CMD + cmd
 
         self.proc = subprocess.Popen(
             cmd,
@@ -96,7 +96,12 @@ class Bubble():
 
     def run(self) -> None:
         for i in range(self.n_proc):
-            bubble_type = "bubble_stream.out" if i % 2 == 1 else "bubble_rand.out"
+            if config.BUBBLE_TYPE == "stream":
+                bubble_type = "bubble_stream.out"
+            elif config.BUBBLE_TYPE == "rand":
+                bubble_type = "bubble_rand.out"
+            else:
+                bubble_type = "bubble_stream.out" if i % 2 == 0 else "bubble_rand.out"
             logger.info(f"Running {bubble_type}")
 
             cmd = [
@@ -106,8 +111,8 @@ class Bubble():
                 f"./{BUILD_DIR}/{bubble_type}",
             ]
             
-            if constants.use_root_priority:
-                cmd = constants.ROOT_TASK_CMD + cmd
+            if config.use_root_priority:
+                cmd = config.ROOT_TASK_CMD + cmd
 
             self.procs.append(subprocess.Popen(
                 cmd,

@@ -5,11 +5,11 @@ from collections import namedtuple
 
 from scipy.interpolate import PchipInterpolator
 
-import constants
+import config
 
 def _get_contentiousness() -> dict[str, float]:
     scores = {}
-    with open(f"{constants.RESULTS_DIR}/contentiousness_scores.csv", "r") as f:
+    with open(f"{config.RESULTS_DIR}/contentiousness_scores.csv", "r") as f:
         for line in f:
             name, score = line.split(",")
             scores[name] = float(score.strip())
@@ -19,7 +19,7 @@ def _get_contentiousness() -> dict[str, float]:
 def _get_sensitivity(name: str) -> PchipInterpolator:
     res = {}
     sensitivity_file = name.replace(".", "_")
-    with open(f"{constants.RESULTS_DIR}/sensitivity/{sensitivity_file}_data.csv", "r") as f:
+    with open(f"{config.RESULTS_DIR}/sensitivity/{sensitivity_file}_data.csv", "r") as f:
         next(f)
         for line in f:
             dial, perf = line.split(",")
@@ -53,6 +53,6 @@ def predict_performance(applications: List[Workload], competitors: List[Workload
 
     json_data = json.dumps({"predictions": res})
 
-    with open(f"{constants.RESULTS_DIR}/predictions.json", "w") as f:
+    with open(f"{config.RESULTS_DIR}/predictions.json", "w") as f:
         f.write(json_data)
 

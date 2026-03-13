@@ -8,3 +8,4 @@ websockets
 avro
 fastavro
 scipy
+pyyaml

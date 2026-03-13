@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import logging
 import subprocess
-import constants
+import config
 
 
 logger = logging.getLogger(__name__)
@@ -24,8 +24,8 @@ class Reporter(ABC):
             "--benchmark_enable_random_interleaving=true",
         ]
         
-        if constants.use_root_priority:
-            cmd = constants.ROOT_TASK_CMD + cmd
+        if config.use_root_priority:
+            cmd = config.ROOT_TASK_CMD + cmd
 
         reporter = subprocess.run(
             cmd,
