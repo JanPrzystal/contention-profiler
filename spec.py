@@ -35,23 +35,28 @@ class SpecWorkload(Workload):
         if config.use_root_priority:
             cmd = config.ROOT_TASK_CMD + cmd
 
-        self.proc = subprocess.run(
+        self.proc = subprocess.Popen(
             cmd,
             stdin=subprocess.DEVNULL,
-            capture_output=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            start_new_session=True
         )
         logger.info("Started process")
-        try:
-            output = self.proc.stdout.decode("utf-8")
-            logger.debug(f"Process output:\n{output}")
-            self.proc.check_returncode()
-            output_filename = _get_output_filename(output)
-            return _get_benchmark_time(output_filename, self.name)
 
-        except subprocess.CalledProcessError:
+        stdout_data, stderr_data = self.proc.communicate()
+
+        output = stdout_data.decode("utf-8")
+        logger.debug(f"Process output:\n{output}")
+
+        if self.proc.returncode != 0:
             errors = self.proc.stderr.decode("utf-8")
             logger.error(errors)
             raise Exception("SPEC process ended with non-zero exit code")
+
+        output_filename = _get_output_filename(output)
+        return _get_benchmark_time(output_filename, self.name)
+
 
     def run_in_background(self, cores: str) -> None:
         self.proc = run_background_benchmark(self.name, cores, self.size)
@@ -59,7 +64,8 @@ class SpecWorkload(Workload):
     def stop(self) -> None:
         if not self.proc:
             raise Exception(f"No instance of SPEC CPU workload {self.name} found")
-        os.killpg(os.getpgid(self.proc.pid), signal.SIGTERM)
+        if self.proc.poll() is None:
+            os.killpg(self.proc.pid, signal.SIGTERM)
         
 
 def run_background_benchmark(name: str, cores: str, size: str) -> subprocess.Popen:
@@ -84,7 +90,8 @@ def run_background_benchmark(name: str, cores: str, size: str) -> subprocess.Pop
         cmd,
         stdin=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
-        stdout=subprocess.DEVNULL
+        stdout=subprocess.DEVNULL,
+        start_new_session=True
     )
 
     

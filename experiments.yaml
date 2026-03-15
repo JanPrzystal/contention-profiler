@@ -1,9 +1,9 @@
 experiments:
   - name: 1stream_hybrid
     benchmarks:
-      - 602.gcc_s
+      # - 602.gcc_s
       - 605.mcf_s
-      # - 620.omnetpp_s
+      - 620.omnetpp_s
       # - 627.cam4_s
       - 628.pop2_s
       - 649.fotonik3d_s
@@ -14,6 +14,7 @@ experiments:
     max_mem_footprint: 32
     mem_interval: 2
     reporter_repetitions: 30
+    deployment: pairwise
 
   # - name: 2stream_alternating
   #   benchmarks:

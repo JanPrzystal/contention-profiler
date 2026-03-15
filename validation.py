@@ -2,6 +2,7 @@ import json
 import os
 import csv
 import time
+from tracemalloc import start
 from typing import Union, List
 from collections import namedtuple
 import config
@@ -36,10 +37,19 @@ def validate_prediction(prediction: Prediction, workload_map: dict[str, Workload
 
     logging.info(f"Starting profiling for ({primary.name}, {', '.join(c.name for c in competitors)})")
     isolated_perf = primary.profile(config.WORKLOAD_UNDER_PROFILING_CORES)
-    for competitor in competitors:
-        # competitor.run_in_background(config.WORKLOAD_IN_BACKGROUND_CORES)
-        competitor.run_in_background(None)
-    time.sleep(6)
+
+    # Get cores for background workloads
+    start, end = map(int, config.WORKLOAD_IN_BACKGROUND_CORES.split("-"))
+    cores = iter(range(start, end + 1))
+
+    # Check if there are enough cores for all competitors
+    if len(competitors) > len(cores):
+        raise ValueError("Not enough cores for all competitors")
+
+    for competitor, core in zip(competitors, cores):
+        competitor.run_in_background(str(core))
+
+    time.sleep(5)
     try:
         perf = primary.profile(config.WORKLOAD_UNDER_PROFILING_CORES)
         return ValidatedPrediction(actual_perf=(isolated_perf / perf), *prediction)

@@ -2,7 +2,7 @@ from typing import Final
 
 RESULTS_DIR: Final[str] = "experiment_results"
 WORKLOAD_UNDER_PROFILING_CORES: Final[str] = "0"
-WORKLOAD_IN_BACKGROUND_CORES: Final[str] = "3"
+WORKLOAD_IN_BACKGROUND_CORES: Final[str] = "1-7"
 
 # Reporter and SoI dial constants
 REPORTER_CORES: str = "0"

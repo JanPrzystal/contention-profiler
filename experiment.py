@@ -16,6 +16,7 @@ class Experiment:
     max_mem_footprint: int
     mem_interval: int
     reporter_repetitions: int
+    deployment: str
 
 def parse_config():
     with open("experiments.yaml", "r") as f:
@@ -32,6 +33,7 @@ def parse_config():
             max_mem_footprint=exp["max_mem_footprint"],
             mem_interval=exp["mem_interval"],
             reporter_repetitions=exp["reporter_repetitions"],
+            deployment=exp["deployment"],
         )
         experiments.append(experiment)
         print(exp)

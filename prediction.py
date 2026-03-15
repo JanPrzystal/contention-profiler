@@ -45,7 +45,7 @@ def predict_app_performance(app: Workload, competitors: List[Workload], contenti
     prediction = sensitivity(total_contention)
     return Prediction(app=app.name, competitor=" + ".join(comp.name for comp in competitors), perf=sensitivity(0) / prediction)
 
-def predict_pairs_performance(applications: List[Workload], competitors: List[Workload]):
+def predict_pair_performance(applications: List[Workload], competitors: List[Workload]):
     scores = _get_contentiousness()
 
     sensitivity = {app.name: get_sensitivity(app.name) for app in applications}

@@ -56,7 +56,7 @@ def validate_predictions(predictions: List[prediction.Prediction], workload_map:
         validated_predictions.append(validation.validate_prediction(pred, workload_map))
     return validated_predictions
 
-def conduct_experiment(reporter: rp.Reporter, applications: List[Workload]):
+def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], pairwise: bool):
     profile_reporter.profile_reporter(reporter)
     max_contentiousness = profile_workload.profile_contentiousness(applications, reporter)
 
@@ -64,9 +64,16 @@ def conduct_experiment(reporter: rp.Reporter, applications: List[Workload]):
 
     profile_workload.profile_sensitivity(applications)
     contentiousness.generate_scores()
-    predictions = predict_performance(applications)
-    validated_predictions = validate_predictions(predictions, {w.name: w for w in applications})
-    print(validated_predictions)
+
+    if pairwise:
+        logger.info("Starting pairwise prediction and validation")
+        prediction.predict_pair_performance(applications, applications)
+        validation.validate_pair_predictions(applications, applications)
+
+    else:
+        predictions = predict_performance(applications)
+        validated_predictions = validate_predictions(predictions, {w.name: w for w in applications})
+        print(validated_predictions)
 
 def spec_experiment(experiment: experiment.Experiment):
     reporter = rp.AveragingReporter(REPORTER_SCRIPT_FILES[experiment.reporter])
@@ -80,7 +87,7 @@ def spec_experiment(experiment: experiment.Experiment):
 
     config.REPORTER_REPETITIONS = experiment.reporter_repetitions
 
-    conduct_experiment(reporter, applications)
+    conduct_experiment(reporter, applications, experiment.deployment == "pairwise")
 
 def setup_mds():
     logger.info("Setting up MDS on the Kubernetes cluster")
