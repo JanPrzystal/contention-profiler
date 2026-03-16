@@ -27,4 +27,6 @@ BUBBLE_TYPE = "alternating"
 
 REPORTER_REPETITIONS: int = 50
 
+DATA_SIZE = "test"
+
 use_root_priority = True

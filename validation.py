@@ -9,6 +9,7 @@ import config
 from workload import Workload
 from prediction import Prediction
 import logging
+from spec import run_background_benchmark, stop_benchmark
 
 ValidatedPrediction = namedtuple(
     "ValidatedPrediction", Prediction._fields + ("actual_perf",)
@@ -40,23 +41,26 @@ def validate_prediction(prediction: Prediction, workload_map: dict[str, Workload
 
     # Get cores for background workloads
     start, end = map(int, config.WORKLOAD_IN_BACKGROUND_CORES.split("-"))
+    ncores = end - start + 1
     cores = iter(range(start, end + 1))
 
     # Check if there are enough cores for all competitors
-    if len(competitors) > len(cores):
+    if len(competitors) > ncores:
         raise ValueError("Not enough cores for all competitors")
 
+    # Start competitors in the background
+    background_processes = []
     for competitor, core in zip(competitors, cores):
-        competitor.run_in_background(str(core))
+        background_processes.append(run_background_benchmark(competitor.name, str(core), competitor.size))
+        # competitor.run_in_background(str(core))
 
-    time.sleep(5)
+    time.sleep(10)
     try:
         perf = primary.profile(config.WORKLOAD_UNDER_PROFILING_CORES)
         return ValidatedPrediction(actual_perf=(isolated_perf / perf), *prediction)
     finally:
-        for competitor in competitors:
-            competitor.stop()
-    
+        for process in background_processes:
+            stop_benchmark(process)
 
 def read_snapshot() -> dict[str, ValidatedPrediction]:
     if not os.path.exists(VALIDATION_FILE):

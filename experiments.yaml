@@ -11,9 +11,9 @@ experiments:
     soi: 
       type: stream
       number: 1
-    max_mem_footprint: 32
+    max_mem_footprint: 24
     mem_interval: 2
-    reporter_repetitions: 30
+    reporter_repetitions: 20
     deployment: pairwise
 
   # - name: 2stream_alternating

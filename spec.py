@@ -40,7 +40,7 @@ class SpecWorkload(Workload):
             stdin=subprocess.DEVNULL,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            start_new_session=True
+            # start_new_session=True
         )
         logger.info("Started process")
 
@@ -50,11 +50,12 @@ class SpecWorkload(Workload):
         logger.debug(f"Process output:\n{output}")
 
         if self.proc.returncode != 0:
-            errors = self.proc.stderr.decode("utf-8")
-            logger.error(errors)
+            # errors = self.proc.stderr.decode("utf-8")
+            logger.error(stderr_data.decode("utf-8"))
             raise Exception("SPEC process ended with non-zero exit code")
 
         output_filename = _get_output_filename(output)
+        self.stop()
         return _get_benchmark_time(output_filename, self.name)
 
 
@@ -86,17 +87,19 @@ def run_background_benchmark(name: str, cores: str, size: str) -> subprocess.Pop
     if config.use_root_priority:
         cmd = config.ROOT_TASK_CMD + cmd
 
+    logger.debug(f"Running command: {' '.join(cmd)}")
+    
     return subprocess.Popen(
         cmd,
         stdin=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
         stdout=subprocess.DEVNULL,
-        start_new_session=True
+        # start_new_session=True
     )
 
     
-# def stop_benchmark(proc: subprocess.Popen):
-    # os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+def stop_benchmark(proc: subprocess.Popen):
+    os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
     
 def _get_output_filename(runcpu_output: str) -> str:
     for line in runcpu_output.splitlines():
