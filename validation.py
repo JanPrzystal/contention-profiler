@@ -36,7 +36,7 @@ def validate_prediction(prediction: Prediction, workload_map: dict[str, Workload
 
     # competitor = workload_map[prediction.competitor]
 
-    logging.info(f"Starting profiling for ({primary.name}, {', '.join(c.name for c in competitors)})")
+    logging.info(f"Starting profiling for ({primary.name} with {', '.join(c.name for c in competitors)})")
     isolated_perf = primary.profile(config.WORKLOAD_UNDER_PROFILING_CORES)
 
     # Get cores for background workloads
@@ -61,6 +61,7 @@ def validate_prediction(prediction: Prediction, workload_map: dict[str, Workload
     finally:
         for process in background_processes:
             stop_benchmark(process)
+        time.sleep(1)
 
 def read_snapshot() -> dict[str, ValidatedPrediction]:
     if not os.path.exists(VALIDATION_FILE):

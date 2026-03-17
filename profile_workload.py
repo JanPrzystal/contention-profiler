@@ -82,6 +82,7 @@ def profile_sensitivity(workloads: list[Workload]) -> None:
         os.mkdir(SENSITIVITY_DIR)
     for workload in workloads:
         _profile_sensitivity(workload)
+        time.sleep(1)
     
 
 def profile_contentiousness(workloads: list[Workload], reporter: rp.Reporter) -> None:
@@ -92,6 +93,8 @@ def profile_contentiousness(workloads: list[Workload], reporter: rp.Reporter) ->
     for workload in workloads:
         if not workload.name:
             continue
+        time.sleep(1)
+
         contentiousness[workload.name] = _profile_contentiousness(workload, reporter)
         logger.info(f"{workload.name} contentiousness: {contentiousness[workload.name]}")
         _save_contentiousness_data(contentiousness)

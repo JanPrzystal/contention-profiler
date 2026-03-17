@@ -16,6 +16,7 @@ from kube_workload import KubeWorkload
 from typing import List
 from cpu_freq import CpuFreqPolicy, Governor
 import experiment
+import csv
 
 import reporter as rp
 from workload import Workload
@@ -46,7 +47,11 @@ def predict_performance(applications: List[Workload]) -> List[prediction.Predict
         competitors = [x for x in applications if x != app]
         predictions.append(prediction.predict_app_performance(app, competitors, contentiousness, prediction.get_sensitivity(app.name)))
 
-    # TODO save predictions?
+    with open(f"{config.RESULTS_DIR}/predictions.csv", "w") as f:
+        writer = csv.writer(f, delimiter=",")
+        writer.writerow(prediction.Prediction._fields)
+        for pred in predictions:
+            writer.writerow(pred)._asdict().values()
 
     return predictions
 
@@ -54,6 +59,13 @@ def validate_predictions(predictions: List[prediction.Prediction], workload_map:
     validated_predictions = []
     for pred in predictions:
         validated_predictions.append(validation.validate_prediction(pred, workload_map))
+
+    with open(f"{config.RESULTS_DIR}/validated.csv", "w") as f:
+        writer = csv.writer(f, delimiter=",")
+        writer.writerow(validation.ValidatedPrediction._fields)
+        for pred in validated_predictions:
+            writer.writerow(pred)._asdict().values()
+
     return validated_predictions
 
 def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], pairwise: bool):
@@ -77,7 +89,7 @@ def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], pair
 
 def spec_experiment(experiment: experiment.Experiment):
     reporter = rp.AveragingReporter(REPORTER_SCRIPT_FILES[experiment.reporter])
-    applications = [SpecWorkload(name) for name in experiment.benchmarks]
+    applications = [SpecWorkload(name, config.DATA_SIZE) for name in experiment.benchmarks]
 
     config.DIAL_STEP_MB = experiment.mem_interval
     config.DIAL_END_MB = experiment.max_mem_footprint

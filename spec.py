@@ -40,7 +40,7 @@ class SpecWorkload(Workload):
             stdin=subprocess.DEVNULL,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            # start_new_session=True
+            start_new_session=True
         )
         logger.info("Started process")
 
@@ -66,7 +66,7 @@ class SpecWorkload(Workload):
         if not self.proc:
             raise Exception(f"No instance of SPEC CPU workload {self.name} found")
         if self.proc.poll() is None:
-            os.killpg(self.proc.pid, signal.SIGTERM)
+            os.killpg(os.getpgid(self.proc.pid), signal.SIGTERM)
         
 
 def run_background_benchmark(name: str, cores: str, size: str) -> subprocess.Popen:
@@ -94,11 +94,12 @@ def run_background_benchmark(name: str, cores: str, size: str) -> subprocess.Pop
         stdin=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
         stdout=subprocess.DEVNULL,
-        # start_new_session=True
+        start_new_session=True
     )
 
     
 def stop_benchmark(proc: subprocess.Popen):
+    logger.info(f"Stopping background process with PID {proc.pid}")
     os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
     
 def _get_output_filename(runcpu_output: str) -> str:
