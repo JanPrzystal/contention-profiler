@@ -1,20 +1,20 @@
 experiments:
-  - name: pairwise
-    benchmarks:
-      # - 602.gcc_s
-      - 605.mcf_s
-      - 620.omnetpp_s
-      # - 627.cam4_s
-      - 628.pop2_s
-      - 649.fotonik3d_s
-    reporter: hybrid
-    soi: 
-      type: stream
-      number: 1
-    max_mem_footprint: 4
-    mem_interval: 2
-    reporter_repetitions: 10
-    deployment: pairwise
+  # - name: pairwise
+  #   benchmarks:
+  #     # - 602.gcc_s
+  #     - 605.mcf_s
+  #     - 620.omnetpp_s
+  #     # - 627.cam4_s
+  #     - 628.pop2_s
+  #     - 649.fotonik3d_s
+  #   reporter: hybrid
+  #   soi: 
+  #     type: stream
+  #     number: 1
+  #   max_mem_footprint: 4
+  #   mem_interval: 2
+  #   reporter_repetitions: 10
+  #   deployment: pairwise
 
   - name: multi
     benchmarks:

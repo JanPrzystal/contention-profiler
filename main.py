@@ -51,7 +51,8 @@ def predict_performance(applications: List[Workload]) -> List[prediction.Predict
         writer = csv.writer(f, delimiter=",")
         writer.writerow(prediction.Prediction._fields)
         for pred in predictions:
-            writer.writerow(pred)._asdict().values()
+            row = [str(c) for c in list(pred._asdict().values())]
+            writer.writerow(row)
 
     return predictions
 
@@ -64,7 +65,8 @@ def validate_predictions(predictions: List[prediction.Prediction], workload_map:
         writer = csv.writer(f, delimiter=",")
         writer.writerow(validation.ValidatedPrediction._fields)
         for pred in validated_predictions:
-            writer.writerow(pred)._asdict().values()
+            row = [str(c) for c in list(pred._asdict().values())]
+            writer.writerow(row)
 
     return validated_predictions
 
