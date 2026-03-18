@@ -101,6 +101,10 @@ def spec_experiment(experiment: experiment.Experiment):
 
     config.REPORTER_REPETITIONS = experiment.reporter_repetitions
 
+    config.DATA_SIZE = experiment.data_size
+    
+    config.USE_ROOT_PRIORITY = experiment.root
+
     conduct_experiment(reporter, applications, experiment.deployment == "pairwise")
 
 def setup_mds():

@@ -32,7 +32,7 @@ class SpecWorkload(Workload):
             self.name,
         ]
         
-        if config.use_root_priority:
+        if config.USE_ROOT_PRIORITY:
             cmd = config.ROOT_TASK_CMD + cmd
 
         self.proc = subprocess.Popen(
@@ -40,7 +40,7 @@ class SpecWorkload(Workload):
             stdin=subprocess.DEVNULL,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            start_new_session=True
+            preexec_fn=os.setpgrp
         )
         logger.info("Started process")
 
@@ -66,7 +66,7 @@ class SpecWorkload(Workload):
         if not self.proc:
             raise Exception(f"No instance of SPEC CPU workload {self.name} found")
         if self.proc.poll() is None:
-            os.killpg(os.getpgid(self.proc.pid), signal.SIGTERM)
+            os.killpg(os.getpgid(self.proc.pid), signal.SIGKILL)
         
 
 def run_background_benchmark(name: str, cores: str, size: str) -> subprocess.Popen:
@@ -84,7 +84,7 @@ def run_background_benchmark(name: str, cores: str, size: str) -> subprocess.Pop
     if cores is not None:
         cmd = ["taskset", "-c", f"{cores}"] + cmd
 
-    if config.use_root_priority:
+    if config.USE_ROOT_PRIORITY:
         cmd = config.ROOT_TASK_CMD + cmd
 
     logger.debug(f"Running command: {' '.join(cmd)}")
@@ -94,13 +94,13 @@ def run_background_benchmark(name: str, cores: str, size: str) -> subprocess.Pop
         stdin=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
         stdout=subprocess.DEVNULL,
-        start_new_session=True
+        preexec_fn=os.setpgrp
     )
 
     
 def stop_benchmark(proc: subprocess.Popen):
     logger.info(f"Stopping background process with PID {proc.pid}")
-    os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+    os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
     
 def _get_output_filename(runcpu_output: str) -> str:
     for line in runcpu_output.splitlines():

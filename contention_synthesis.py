@@ -38,7 +38,7 @@ class Sledge():
             f"./{BUILD_DIR}/sledge.out",
         ]
         
-        if config.use_root_priority:
+        if config.USE_ROOT_PRIORITY:
             cmd = config.ROOT_TASK_CMD + cmd
 
         self.proc = subprocess.Popen(
@@ -111,7 +111,7 @@ class Bubble():
                 f"./{BUILD_DIR}/{bubble_type}",
             ]
             
-            if config.use_root_priority:
+            if config.USE_ROOT_PRIORITY:
                 cmd = config.ROOT_TASK_CMD + cmd
 
             self.procs.append(subprocess.Popen(

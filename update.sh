@@ -1,4 +1,5 @@
 #!/bin/bash
+git restore .
 git fetch
 git pull
 

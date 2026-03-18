@@ -17,6 +17,8 @@ class Experiment:
     mem_interval: int
     reporter_repetitions: int
     deployment: str
+    root: bool
+    data_size: str
 
 def parse_config():
     with open("experiments.yaml", "r") as f:
@@ -34,6 +36,8 @@ def parse_config():
             mem_interval=exp["mem_interval"],
             reporter_repetitions=exp["reporter_repetitions"],
             deployment=exp["deployment"],
+            root=exp["root"],
+            data_size=exp["data_size"],
         )
         experiments.append(experiment)
         print(exp)

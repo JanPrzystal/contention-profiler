@@ -29,4 +29,4 @@ REPORTER_REPETITIONS: int = 50
 
 DATA_SIZE = "test"
 
-use_root_priority = False
+USE_ROOT_PRIORITY = True

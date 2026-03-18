@@ -23,7 +23,7 @@ class CpuFreqPolicy:
 
     @staticmethod
     def set_governor(governor: Governor):
-        if not config.use_root_priority:
+        if not config.USE_ROOT_PRIORITY:
             return
         logger.info(f"Setting cpu frequency governor to {governor}")
         cmd = CpuFreqPolicy.SET_COMMAND.format(governor=governor).split(" ")

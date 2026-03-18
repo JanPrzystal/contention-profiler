@@ -1,53 +1,117 @@
 experiments:
-  # - name: pairwise
-  #   benchmarks:
-  #     # - 602.gcc_s
-  #     - 605.mcf_s
-  #     - 620.omnetpp_s
-  #     # - 627.cam4_s
-  #     - 628.pop2_s
-  #     - 649.fotonik3d_s
-  #   reporter: hybrid
-  #   soi: 
-  #     type: stream
-  #     number: 1
-  #   max_mem_footprint: 4
-  #   mem_interval: 2
-  #   reporter_repetitions: 10
-  #   deployment: pairwise
-
-  - name: multi
+  - name: 1rand_alternating_1
     benchmarks:
-      # - 602.gcc_s
+      - 657.xz_s
       - 605.mcf_s
       - 620.omnetpp_s
-      # - 627.cam4_s
+      - 603.bwaves_s
       - 628.pop2_s
       - 649.fotonik3d_s
-    reporter: hybrid
+    reporter: alternating
+    soi: 
+      type: rand
+      number: 1
+    max_mem_footprint: 32
+    mem_interval: 2
+    reporter_repetitions: 30
+    deployment: pairwise
+    data_size: train
+    root: true
+
+  - name: 1rand_alternating_2
+    benchmarks:
+      - 657.xz_s
+      - 605.mcf_s
+      - 620.omnetpp_s
+      - 603.bwaves_s
+      - 628.pop2_s
+      - 649.fotonik3d_s
+    reporter: alternating
+    soi: 
+      type: rand
+      number: 1
+    max_mem_footprint: 32
+    mem_interval: 2
+    reporter_repetitions: 30
+    deployment: pairwise
+    data_size: train
+    root: true
+
+  - name: 1stream_alternating_1
+    benchmarks:
+      - 657.xz_s
+      - 605.mcf_s
+      - 620.omnetpp_s
+      - 603.bwaves_s
+      - 628.pop2_s
+      - 649.fotonik3d_s
+    reporter: alternating
     soi: 
       type: stream
       number: 1
-    max_mem_footprint: 4
+    max_mem_footprint: 32
     mem_interval: 2
-    reporter_repetitions: 10
-    deployment: multi
+    reporter_repetitions: 50
+    deployment: pairwise
+    data_size: train
+    root: true
 
-  # - name: 2stream_alternating
-  #   benchmarks:
-  #     - 602.gcc_s
-  #     - 605.mcf_s
-  #     - 620.omnetpp_s
-  #     - 627.cam4_s
-  #     - 628.pop2_s
-  #     - 649.fotonik3d_s
-  #   reporter: alternating
-  #   soi: 
-  #     type: stream
-  #     number: 2
-  #   max_mem_footprint: 48
-  #   mem_interval: 2
-  #   reporter_repetitions: 50
+  - name: 1stream_alternating_2
+    benchmarks:
+      - 657.xz_s
+      - 605.mcf_s
+      - 620.omnetpp_s
+      - 603.bwaves_s
+      - 628.pop2_s
+      - 649.fotonik3d_s
+    reporter: alternating
+    soi: 
+      type: stream
+      number: 1
+    max_mem_footprint: 32
+    mem_interval: 2
+    reporter_repetitions: 50
+    deployment: pairwise
+    data_size: train
+    root: true
+
+  - name: 2stream_alternating_1
+    benchmarks:
+      - 657.xz_s
+      - 605.mcf_s
+      - 620.omnetpp_s
+      - 603.bwaves_s
+      - 628.pop2_s
+      - 649.fotonik3d_s
+    reporter: alternating
+    soi: 
+      type: stream
+      number: 2
+    max_mem_footprint: 32
+    mem_interval: 2
+    reporter_repetitions: 50
+    deployment: pairwise
+    data_size: train
+    root: true
+
+  - name: 2stream_alternating_2
+    benchmarks:
+      - 657.xz_s
+      - 605.mcf_s
+      - 620.omnetpp_s
+      - 603.bwaves_s
+      - 628.pop2_s
+      - 649.fotonik3d_s
+    reporter: alternating
+    soi: 
+      type: stream
+      number: 2
+    max_mem_footprint: 32
+    mem_interval: 2
+    reporter_repetitions: 50
+    deployment: pairwise
+    data_size: train
+    root: true
 
 # 600.perlbench_s,
 # 602.gcc_s,

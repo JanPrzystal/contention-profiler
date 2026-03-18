@@ -24,7 +24,7 @@ class Reporter(ABC):
             "--benchmark_enable_random_interleaving=true",
         ]
         
-        if config.use_root_priority:
+        if config.USE_ROOT_PRIORITY:
             cmd = config.ROOT_TASK_CMD + cmd
 
         reporter = subprocess.run(
