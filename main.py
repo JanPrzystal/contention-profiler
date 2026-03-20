@@ -90,9 +90,6 @@ def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], pair
         print(validated_predictions)
 
 def spec_experiment(experiment: experiment.Experiment):
-    reporter = rp.AveragingReporter(REPORTER_SCRIPT_FILES[experiment.reporter])
-    applications = [SpecWorkload(name, config.DATA_SIZE) for name in experiment.benchmarks]
-
     config.DIAL_STEP_MB = experiment.mem_interval
     config.DIAL_END_MB = experiment.max_mem_footprint
 
@@ -104,6 +101,9 @@ def spec_experiment(experiment: experiment.Experiment):
     config.DATA_SIZE = experiment.data_size
     
     config.USE_ROOT_PRIORITY = experiment.root
+
+    reporter = rp.AveragingReporter(REPORTER_SCRIPT_FILES[experiment.reporter])
+    applications = [SpecWorkload(name, config.DATA_SIZE) for name in experiment.benchmarks]
 
     conduct_experiment(reporter, applications, experiment.deployment == "pairwise")
 

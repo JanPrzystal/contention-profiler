@@ -27,6 +27,6 @@ BUBBLE_TYPE = "alternating"
 
 REPORTER_REPETITIONS: int = 50
 
-DATA_SIZE = "test"
+DATA_SIZE = "train"
 
 USE_ROOT_PRIORITY = True
