@@ -100,7 +100,7 @@ def generate_scores():
         plt.text(
             bar.get_x() + bar.get_width() / 2, 
             height + 0.2, 
-            f'{height}', 
+            f'{height:.1f}', 
             ha='center', va='bottom'
         )
 
