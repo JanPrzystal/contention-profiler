@@ -30,28 +30,34 @@ def draw_single_validation_chart(df):
     
     # Color coding: Green for over-prediction, Red for under-prediction
     colors = ['#2ecc71' if x >= 0 else '#e74c3c' for x in df_sorted['diff_pct']]
+
+    # Shorten benchmark names
+    df_sorted['label'] = df_sorted['label'].str.replace(r'\b\d+\.', '', regex=True).str.strip()
     
     # Plot horizontal bars
-    bars = plt.barh(df_sorted['label'], df_sorted['diff_pct'], color=colors, alpha=0.8, edgecolor='black', linewidth=0.5)
+    bars = plt.bar(df_sorted['label'], df_sorted['diff_pct'], color=colors, alpha=0.8, edgecolor='black', linewidth=0.5)
     
-    # Formatting
-    plt.axvline(0, color='black', linewidth=1) # Zero line
-    plt.xlabel("Performance Error (%)", fontsize=12, fontweight='bold')
-    plt.title("Prediction Error by Application Pair", fontsize=14, fontweight='bold', pad=20)
-    plt.grid(axis='x', linestyle='--', alpha=0.7)
+    plt.axhline(0, color='black', linewidth=1)
     
-    # Add text labels at the end of each bar
+    # Add text labels on top of each bar
     for bar in bars:
-        width = bar.get_width()
-        label_x_pos = width + (1 if width >= 0 else -1)
-        plt.text(label_x_pos, bar.get_y() + bar.get_height()/2, 
-                 f'{width:.2f}%', 
-                 va='center', 
-                 ha='left' if width >= 0 else 'right',
-                 fontsize=9)
+        height = bar.get_height()
+        label_y_pos = height + (1 if height >= 0 else -1)
 
+        plt.text(
+            bar.get_x() + bar.get_width() / 2,
+            label_y_pos,
+            f'{height:.2f}%',
+            ha='center',
+            va='bottom' if height >= 0 else 'top',
+            fontsize=9
+        )
+
+    plt.xticks(rotation=35, ha='right')
+    
     # Adjust layout to prevent label clipping
     plt.tight_layout()
+    # plt.figure(figsize=(10, 5))
     
     output_path = f"{config.RESULTS_DIR}//all_validation_results.png"
     plt.savefig(output_path, dpi=300)
