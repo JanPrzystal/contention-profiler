@@ -70,7 +70,7 @@ class SpecWorkload(Workload):
         
 
 def run_background_benchmark(name: str, cores: str, size: str) -> subprocess.Popen:
-    logger.info(f"Running {name} in background, size = {size}")
+    logger.info(f"Running {name} in background on core {cores}, size = {size}")
 
     cmd = [
         config.SPEC_PATH + "/bin/runcpu",

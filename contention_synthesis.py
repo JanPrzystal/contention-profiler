@@ -59,7 +59,7 @@ class Bubble():
         self.n_proc = n_proc
         self.size = size_mb * 1_000_000 
         end_size = round(self.size / n_proc / Bubble.ELEM_SIZE)
-        logger.info(f"Building bubble with total footprint size {self.size} and per-process footprint size {end_size}")
+        logger.info(f"Building bubble with total footprint size {self.size} and per-process size {end_size} ({self.ELEM_SIZE} bytes)")
 
         os.makedirs(BUILD_DIR, exist_ok=True)
         subprocess.run(

@@ -53,4 +53,8 @@ class SingleValueReporter(Reporter):
 
 class AveragingReporter(Reporter):
     def process_output(self, output: dict[str, float]) -> float:
-        return sum(output.values()) / len(output) / 1_000_000.0
+        try:
+            return sum(output.values()) / len(output) / 1_000_000.0
+        except ZeroDivisionError:
+            logger.warning(f"Division by zero: {output}")
+            return 0.0

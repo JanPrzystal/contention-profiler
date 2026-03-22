@@ -64,7 +64,8 @@ def _profile_sensitivity_dial(workload: Workload, size_mb: int) -> float:
         bubble.stop()
 
 def _profile_contentiousness(workload: Workload, reporter: rp.Reporter):
-        workload.run_in_background(config.WORKLOAD_IN_BACKGROUND_CORES)
+        core = config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[0]
+        workload.run_in_background(core)
         try:
             time.sleep(10)
             score = reporter.run(config.REPORTER_CORES, config.REPORTER_REPETITIONS)

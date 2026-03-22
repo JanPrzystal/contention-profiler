@@ -105,6 +105,8 @@ def spec_experiment(experiment: experiment.Experiment):
     reporter = rp.AveragingReporter(REPORTER_SCRIPT_FILES[experiment.reporter])
     applications = [SpecWorkload(name, config.DATA_SIZE) for name in experiment.benchmarks]
 
+    CpuFreqPolicy.set_governor(GOVERNOR)
+
     conduct_experiment(reporter, applications, experiment.deployment == "pairwise")
 
 def setup_mds():
@@ -140,11 +142,7 @@ if __name__ == "__main__":
             pass
         os.makedirs(config.RESULTS_DIR, exist_ok=True)
 
-        CpuFreqPolicy.set_governor(GOVERNOR)
-
         spec_experiment(exp)
-
-        CpuFreqPolicy.reset_governor()
 
         draw_sensitivity.draw_sensitivity()
         draw_validation.draw_validation()
@@ -152,6 +150,8 @@ if __name__ == "__main__":
         subprocess.run(["zip", "-r", f"results_{exp.name}.zip", config.RESULTS_DIR], check=True)
 
         logger.info(f"Experiment {exp.name} completed\n\n")
+
+    CpuFreqPolicy.reset_governor()
     
     print("All experiments completed.")
 
