@@ -1,5 +1,6 @@
 import os
 import logging
+import time
 import constants
 import profile_workload
 import profile_reporter
@@ -60,12 +61,28 @@ REPORTER_SCRIPT_FILES = {
 GOVERNOR = Governor.PERFORMANCE
 
 def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], competitors: List[Workload]):
+    tstart = time()
     profile_reporter.profile_reporter(reporter)
+    treporter = time() - tstart
     profile_workload.profile_sensitivity(applications)
+    tsensitivity = time() - tstart - treporter
     profile_workload.profile_contentiousness(competitors, reporter)
+    tcontentiousness = time() - tstart - treporter - tsensitivity
     contentiousness.generate_scores()
+    ttotal = time() - tstart
     prediction.predict_performance(applications, competitors)
     validation.validate_predictions(applications, competitors)
+
+    texperiment = time() - tstart
+    logger.info(f"Experiment timings: \nreporter={treporter:.3f}s, \ncontentiousness={tcontentiousness:.3f}s, \nsensitivity={tsensitivity:.3f}s, \nprofiling total={ttotal:.3f}s, \nexperiment total={texperiment:.3f}s")
+
+    # Write the times to a file
+    with open(f"{constants.RESULTS_DIR}/timings.txt", "w") as f:
+        f.write(f"reporter={treporter:.3f}s\n")
+        f.write(f"contentiousness={tcontentiousness:.3f}s\n")
+        f.write(f"sensitivity={tsensitivity:.3f}s\n")
+        f.write(f"profiling_total={ttotal:.3f}s\n")
+        f.write(f"experiment_total={texperiment:.3f}s\n")
 
 def spec_experiment():
     workloads = [SpecWorkload(name) for name in SPEC_NAMES]
@@ -98,5 +115,5 @@ if __name__ == "__main__":
     logging.basicConfig()
     logging.getLogger().setLevel(logging.INFO)
     CpuFreqPolicy.set_governor(GOVERNOR)
-    mds_experiment()
+    spec_experiment()
     CpuFreqPolicy.reset_governor()
