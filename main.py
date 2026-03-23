@@ -17,6 +17,9 @@ from typing import List
 from cpu_freq import CpuFreqPolicy, Governor
 import experiment
 import csv
+from datetime import datetime
+
+from time import time
 
 import reporter as rp
 from workload import Workload
@@ -71,13 +74,21 @@ def validate_predictions(predictions: List[prediction.Prediction], workload_map:
     return validated_predictions
 
 def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], pairwise: bool):
+    tstart = time()
     profile_reporter.profile_reporter(reporter)
+    treporter = time() - tstart
+
     max_contentiousness = profile_workload.profile_contentiousness(applications, reporter)
+    tcontentiousness = time() - tstart - treporter
 
     config.DIAL_END_MB = int(max_contentiousness + 1.0)
 
     profile_workload.profile_sensitivity(applications)
+    tsensitivity = time() - tstart - treporter - tcontentiousness
+
     contentiousness.generate_scores()
+
+    ttotal = time() - tstart
 
     if pairwise:
         logger.info("Starting pairwise prediction and validation")
@@ -88,6 +99,18 @@ def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], pair
         predictions = predict_performance(applications)
         validated_predictions = validate_predictions(predictions, {w.name: w for w in applications})
         print(validated_predictions)
+
+    texperiment = time() - tstart
+    logger.info(f"Experiment timings: \nreporter={treporter:.3f}s, \ncontentiousness={tcontentiousness:.3f}s, \nsensitivity={tsensitivity:.3f}s, \nprofiling total={ttotal:.3f}s, \nexperiment total={texperiment:.3f}s")
+
+    # Write the times to a file
+    with open(f"{config.RESULTS_DIR}/timings.txt", "w") as f:
+        f.write(f"reporter={treporter:.3f}s\n")
+        f.write(f"contentiousness={tcontentiousness:.3f}s\n")
+        f.write(f"sensitivity={tsensitivity:.3f}s\n")
+        f.write(f"profiling_total={ttotal:.3f}s\n")
+        f.write(f"experiment_total={texperiment:.3f}s\n")
+
 
 def spec_experiment(experiment: experiment.Experiment):
     config.DIAL_STEP_MB = experiment.mem_interval
@@ -104,6 +127,19 @@ def spec_experiment(experiment: experiment.Experiment):
 
     reporter = rp.AveragingReporter(REPORTER_SCRIPT_FILES[experiment.reporter])
     applications = [SpecWorkload(name, config.DATA_SIZE) for name in experiment.benchmarks]
+
+    # Create a description file 
+    with open(f"{config.RESULTS_DIR}/description.txt", "w") as f:
+        f.write(f"Time of experiment: {datetime.now()}\n")
+        f.write(f"Experiment: {experiment.name}\n")
+        f.write(f"Benchmarks: {', '.join(experiment.benchmarks)}\n")
+        f.write(f"Reporter: {experiment.reporter}\n")
+        f.write(f"SOI: {experiment.soi.type} ({experiment.soi.number})\n")
+        f.write(f"Max Memory Footprint: {experiment.max_mem_footprint} MB\n")
+        f.write(f"Memory Interval: {experiment.mem_interval} MB\n")
+        f.write(f"Reporter Repetitions: {experiment.reporter_repetitions}\n")
+        f.write(f"Data Size: {experiment.data_size}\n")
+        f.write(f"Root Priority: {experiment.root}\n")
 
     CpuFreqPolicy.set_governor(GOVERNOR)
 
