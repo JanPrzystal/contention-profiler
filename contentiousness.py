@@ -6,6 +6,7 @@ import csv
 import config
 from scipy.interpolate import PchipInterpolator
 from scipy.optimize import brentq
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -22,17 +23,34 @@ def get_sensitivity_spline():
 
     return PchipInterpolator(x, y)
 
+def inverse_leftmost_exact(spline, y):
+    for c, x0, x1 in zip(spline.c.T, spline.x[:-1], spline.x[1:]):
+        coeffs = c.copy()
+        coeffs[-1] -= y
+
+        roots = np.roots(coeffs)
+        roots = roots[np.isreal(roots)].real + x0
+        roots = roots[(roots >= x0) & (roots <= x1)]
+
+        if len(roots) > 0:
+            return roots.min()
+
+    return None
+
 def contentiousness_lookup(y):
     spline = get_sensitivity_spline()
 
-    x_min, x_max = spline.x[0], spline.x[-1]
+    contentiousness = inverse_leftmost_exact(spline, y)
+    if contentiousness is None:
+        x_min, x_max = spline.x[0], spline.x[-1]
+        if y < spline(x_min):
+            contentiousness = x_min
+        elif y > spline(x_max):
+            contentiousness = x_max
+        else:
+            raise ValueError("Unexpected case: y is within the range of the spline but no root was found.")
 
-    if y < spline(x_min):
-        y = spline(x_min)
-    elif y > spline(x_max):
-        y = spline(x_max)
-
-    return brentq(lambda x: spline(x) - y, x_min, x_max)
+    return contentiousness
 
 
 # def construct_sensitivity_lookup():
