@@ -6,14 +6,13 @@ import numpy as np
 
 import config
 
-data = {
-    "1MB interval": [6.94, 1.90, 6.94 + 6.63],
-    "4MB interval": [6.96, 2.0, 6.96 + 4.85],
-    "20 R. repetitions": [16.41, 1.98, 16.41 + 8.77],
-    "100 R. repetitions": [11.30, 1.44, 7.66 + 6.53],
-    "50 rr 2MB": [7.66, 1.40, 7.66 + 6.99],
-    # "1rand": [4.62, 0.94, 13.18 + 12.27],
-    # "2rand": [29.49, 5.80, 29.49 + 14.23],
+data = {    
+    #c6
+    "baseline": [48.71, 13.04, 48.71 + 7.49],
+    "1 rand": [51.53, 1.4, 51.53 + 10.83],
+    "1 rand (no cactu)": [23.50, 1.4, 23.50 + 4.54],
+    "2 mixed": [50.60, 1.60, 50.60 + 33.79],
+    "2 mixed (no cactu)": [21.95, 1.60, 21.95 + 13.00],
 }
 
 legend_labels = ["Max Absolute Error", "Absolute Mean Error", "Range [pp]"]

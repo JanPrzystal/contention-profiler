@@ -8,11 +8,16 @@ import signal
 import sys
 import prediction
 import validation
+import contentiousness
 
 if __name__ == "__main__":
 
     logging.basicConfig()
     logging.getLogger().setLevel(logging.DEBUG)
+
+    y = 16.50
+    cont = contentiousness.contentiousness_lookup(y)
+    print(f"Contentiousness for {y} is {cont}")
 
     # bench = spec.SpecWorkload("620.omnetpp_s", "train")
 
@@ -22,9 +27,9 @@ if __name__ == "__main__":
 
     # spec.stop_benchmark(process)
 
-    pred = prediction.Prediction(app="620.omnetpp_s", competitor="605.mcf_s", perf=1.5)
-    valid = validation.ValidatedPrediction(app="620.omnetpp_s", competitor="605.mcf_s", perf=1.5, actual_perf=1.2)
-    row = [str(c) for c in list(pred._asdict().values())]
-    print(row)
-    vals = [str(c) for c in list(valid._asdict().values())]
-    print(f"{vals}")
+    # pred = prediction.Prediction(app="620.omnetpp_s", competitor="605.mcf_s", perf=1.5)
+    # valid = validation.ValidatedPrediction(app="620.omnetpp_s", competitor="605.mcf_s", perf=1.5, actual_perf=1.2)
+    # row = [str(c) for c in list(pred._asdict().values())]
+    # print(row)
+    # vals = [str(c) for c in list(valid._asdict().values())]
+    # print(f"{vals}")
