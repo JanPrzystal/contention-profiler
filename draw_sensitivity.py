@@ -11,12 +11,10 @@ import config
 
 xpad = 8
 
-def draw_sensitivity(x_max = 32):
+def draw_sensitivity():
     labels, dfs = get_data()
-    # print(f"{dfs}")
 
     n = len(dfs)
-    xlim = x_max + xpad
 
     cols = math.ceil(math.sqrt(n))
     rows = math.ceil(n / cols)
@@ -46,6 +44,8 @@ def draw_sensitivity(x_max = 32):
 
         x_smooth = np.linspace(x.min(), x.max(), 400)
         y_smooth = spline(x_smooth)
+
+        xlim = x.max() + xpad
 
         ax.plot(x, y, "o", markersize=4, label="measured")
         ax.plot(x_smooth, y_smooth, "-", linewidth=1.5, label="spline")
@@ -81,4 +81,4 @@ def get_data() -> tuple[list[str], list[pd.DataFrame]]:
 
 
 if __name__ == "__main__":
-    draw_sensitivity(int(sys.argv[1]) if len(sys.argv) > 1 else 32)
+    draw_sensitivity()
