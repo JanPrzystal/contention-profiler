@@ -22,10 +22,10 @@
 
 #define STRIDE 64
 
-static size_t stream_size = FOOTPRINT_SIZE + (2 * PADDING_SIZE);
-static size_t rand_size = FOOTPRINT_SIZE + (2 * PADDING_SIZE);
+#define STREAM_SIZE (FOOTPRINT_SIZE + (2 * PADDING_SIZE))
+#define RAND_SIZE (FOOTPRINT_SIZE + (2 * PADDING_SIZE))
 
-static double *bw_data;
+static int64_t *bw_data;
 static int64_t *data_chunk;
 static volatile int64_t dump[200];
 
@@ -34,10 +34,10 @@ static uint32_t seed = 0xACE1u;
 
 void streaming_access() {
     while(1) {
-        double volatile *mid = bw_data + PADDING_SIZE;
+        int64_t volatile *mid = bw_data + PADDING_SIZE;
         size_t offset = 0;
         // #pragma omp parallel for
-        for (int i = offset; i < stream_size - PADDING_SIZE; i += (STRIDE * 8)) {
+        for (int i = offset; i < STREAM_SIZE - PADDING_SIZE; i += (STRIDE * 8)) {
             mid[i] = bw_data[i];
             mid[i + STRIDE] = bw_data[i + STRIDE]++;
             mid[i + (STRIDE * 2)] = bw_data[i + (STRIDE * 2)]++;
@@ -51,7 +51,7 @@ void streaming_access() {
         offset = (offset + (STRIDE * 8)) % 4096;
 
         // #pragma omp parallel for
-        // for (int i = 0; i < stream_size - PADDING_SIZE; i += 10) {
+        // for (int i = 0; i < STREAM_SIZE - PADDING_SIZE; i += 10) {
         //     bw_data[i] = mid[i];
         //     bw_data[i+1] = mid[i+1];
         //     bw_data[i+2] = mid[i+2];
@@ -172,9 +172,9 @@ void random_access() {
 }
 
 int main() {
-    size_t bw_data_size = stream_size * sizeof(double);
+    size_t bw_data_size = STREAM_SIZE * sizeof(double);
     bw_data = malloc(bw_data_size);
-    size_t rand_data_size = rand_size * sizeof(int64_t);
+    size_t rand_data_size = RAND_SIZE * sizeof(int64_t);
     data_chunk = malloc(rand_data_size);
     data_chunk += PADDING_SIZE;
     // omp_set_num_threads(NUM_THREADS);
