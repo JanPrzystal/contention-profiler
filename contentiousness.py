@@ -11,7 +11,7 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 
-def get_sensitivity_spline():
+def get_reporter_sensitivity_spline():
     x = []
     y = []
     with open(f'{config.RESULTS_DIR}/reporter_sensitivity.csv', 'r') as f:
@@ -38,7 +38,7 @@ def inverse_leftmost_exact(spline, y):
     return None
 
 def contentiousness_lookup(y):
-    spline = get_sensitivity_spline()
+    spline = get_reporter_sensitivity_spline()
 
     contentiousness = inverse_leftmost_exact(spline, y)
     if contentiousness is None:

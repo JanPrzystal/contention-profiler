@@ -58,7 +58,7 @@ def predict_performance(applications: List[Workload]) -> List[prediction.Predict
                 logger.debug(f"Predicting performance for {app.name} with competitors: {', '.join(c.name for c in competitors)}")
                 predictions.append(prediction.predict_app_performance(app, competitors, contentiousness, prediction.get_sensitivity(app.name)))
 
-    logger.debug(f"Predictions: {'\n'.join(str(p) for p in predictions)}")
+    # logger.debug(f"Predictions: {'\n'.join(str(p) for p in predictions)}")
 
     with open(f"{config.RESULTS_DIR}/predictions.csv", "w") as f:
         writer = csv.writer(f, delimiter=",")

@@ -15,7 +15,7 @@ class SpecWorkload(Workload):
         self.proc = None
         super().__init__(name)
 
-    def profile(self, cores: str) -> float:
+    def profile(self, cores: str, iterations: int = 1) -> float:
         # return run_benchmark(self, self.name, cores, self.size)
         logger.info(f"Running benchmark {self.name}, size = {self.size}")
         threads = 1
@@ -28,6 +28,7 @@ class SpecWorkload(Workload):
             f"--threads={threads}",
             "--config=try1",
             "--tuning=base",
+            f"--iterations={iterations}",
             f"--size={self.size}",
             self.name,
         ]
