@@ -28,13 +28,12 @@ def read_predictions() -> list[Prediction]:
         ]
 
 def validate_prediction(prediction: Prediction, workload_map: dict[str, Workload]) -> float:
+    # Get the tested app as a Workload object
     primary = workload_map[prediction.app]
 
     competitors = []
     for competitor in prediction.competitor.split(" + "):
         competitors.append(workload_map[competitor])
-
-    # competitor = workload_map[prediction.competitor]
 
     logging.info(f"Starting profiling for ({primary.name} with {', '.join(c.name for c in competitors)})")
     isolated_perf = primary.profile(config.WORKLOAD_UNDER_PROFILING_CORES)

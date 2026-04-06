@@ -1,5 +1,7 @@
+from itertools import combinations
 import os
 import logging
+import random
 import shutil
 import config
 import draw_sensitivity
@@ -47,8 +49,16 @@ def predict_performance(applications: List[Workload]) -> List[prediction.Predict
 
     predictions = []
     for app in applications:
-        competitors = [x for x in applications if x != app]
-        predictions.append(prediction.predict_app_performance(app, competitors, contentiousness, prediction.get_sensitivity(app.name)))
+        all_competitors = [x for x in applications if x != app]
+        logger.debug(f"Competitors for {app.name}: {', '.join(c.name for c in all_competitors)}")
+        # Generate predictions for all combinations of competitors
+        # Currently just combinations, no multisets
+        for k in range(1, len(all_competitors)):
+            for competitors in combinations(all_competitors, k):
+                logger.debug(f"Predicting performance for {app.name} with competitors: {', '.join(c.name for c in competitors)}")
+                predictions.append(prediction.predict_app_performance(app, competitors, contentiousness, prediction.get_sensitivity(app.name)))
+
+    logger.debug(f"Predictions: {'\n'.join(str(p) for p in predictions)}")
 
     with open(f"{config.RESULTS_DIR}/predictions.csv", "w") as f:
         writer = csv.writer(f, delimiter=",")
@@ -61,7 +71,9 @@ def predict_performance(applications: List[Workload]) -> List[prediction.Predict
 
 def validate_predictions(predictions: List[prediction.Prediction], workload_map: dict[str, Workload]) -> List[validation.ValidatedPrediction]:
     validated_predictions = []
-    for pred in predictions:
+
+    sampled_predictions = random.sample(predictions, 16)
+    for pred in sampled_predictions:
         validated_predictions.append(validation.validate_prediction(pred, workload_map))
 
     with open(f"{config.RESULTS_DIR}/validated.csv", "w") as f:
@@ -81,7 +93,7 @@ def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], pair
     max_contentiousness = profile_workload.profile_contentiousness(applications, reporter)
     tcontentiousness = time() - tstart - treporter
 
-    config.DIAL_END_MB = int(max_contentiousness + 1.0)
+    config.DIAL_END_MB = min(int(max_contentiousness * 3.0 + 1.0), config.DIAL_END_MB)
 
     profile_workload.profile_sensitivity(applications)
     tsensitivity = time() - tstart - treporter - tcontentiousness

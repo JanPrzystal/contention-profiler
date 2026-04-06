@@ -1,51 +1,20 @@
 experiments:
-  - name: 1nstream_alternating1
-    benchmarks:
-    - 600.perlbench_s
-    - 602.gcc_s
-    # - 605.mcf_s
-    # - 620.omnetpp_s
-    # - 623.xalancbmk_s
-    - 625.x264_s
-    - 631.deepsjeng_s
-    - 641.leela_s
-    # - 648.exchange2_s
-    # - 657.xz_s
-    - 603.bwaves_s
-    - 607.cactuBSSN_s
-    - 619.lbm_s
-    # - 627.cam4_s
-    # - 628.pop2_s
-    # - 638.imagick_s
-    # - 644.nab_s
-    - 649.fotonik3d_s
-    - 654.roms_s
-    reporter: alternating
-    soi: 
-      type: stream
-      number: 1
-    max_mem_footprint: 48
-    mem_interval: 4
-    reporter_repetitions: 30
-    deployment: pairwise
-    data_size: train
-    root: true
 
-  - name: 1nrand_alternating1
+  - name: 2nrand_alternating_multi
     benchmarks:
-    - 600.perlbench_s
-    - 602.gcc_s
-    # - 605.mcf_s
-    # - 620.omnetpp_s
+    # - 600.perlbench_s
+    # - 602.gcc_s
+    - 605.mcf_s
+    - 620.omnetpp_s
     # - 623.xalancbmk_s
     - 625.x264_s
     - 631.deepsjeng_s
-    - 641.leela_s
+    # - 641.leela_s
     # - 648.exchange2_s
     # - 657.xz_s
     - 603.bwaves_s
-    - 607.cactuBSSN_s
-    - 619.lbm_s
+    # - 607.cactuBSSN_s
+    # - 619.lbm_s
     # - 627.cam4_s
     # - 628.pop2_s
     # - 638.imagick_s
@@ -55,77 +24,14 @@ experiments:
     reporter: alternating
     soi: 
       type: rand
-      number: 1
-    max_mem_footprint: 64
+      number: 2
+    max_mem_footprint: 32
     mem_interval: 4
-    reporter_repetitions: 30
-    deployment: pairwise
-    data_size: train
-    root: true
+    reporter_repetitions: 10
+    deployment: multi
+    data_size: test
+    root: false
 
-  - name: 1nstream_alternating2
-    benchmarks:
-    - 600.perlbench_s
-    - 602.gcc_s
-    # - 605.mcf_s
-    # - 620.omnetpp_s
-    # - 623.xalancbmk_s
-    - 625.x264_s
-    - 631.deepsjeng_s
-    - 641.leela_s
-    # - 648.exchange2_s
-    # - 657.xz_s
-    - 603.bwaves_s
-    - 607.cactuBSSN_s
-    - 619.lbm_s
-    # - 627.cam4_s
-    # - 628.pop2_s
-    # - 638.imagick_s
-    # - 644.nab_s
-    - 649.fotonik3d_s
-    - 654.roms_s
-    reporter: alternating
-    soi: 
-      type: stream
-      number: 1
-    max_mem_footprint: 48
-    mem_interval: 4
-    reporter_repetitions: 30
-    deployment: pairwise
-    data_size: train
-    root: true
-
-  - name: 1nrand_alternating2
-    benchmarks:
-    - 600.perlbench_s
-    - 602.gcc_s
-    # - 605.mcf_s
-    # - 620.omnetpp_s
-    # - 623.xalancbmk_s
-    - 625.x264_s
-    - 631.deepsjeng_s
-    - 641.leela_s
-    # - 648.exchange2_s
-    # - 657.xz_s
-    - 603.bwaves_s
-    - 607.cactuBSSN_s
-    - 619.lbm_s
-    # - 627.cam4_s
-    # - 628.pop2_s
-    # - 638.imagick_s
-    # - 644.nab_s
-    - 649.fotonik3d_s
-    - 654.roms_s
-    reporter: alternating
-    soi: 
-      type: rand
-      number: 1
-    max_mem_footprint: 64
-    mem_interval: 4
-    reporter_repetitions: 30
-    deployment: pairwise
-    data_size: train
-    root: true
 
 # 600.perlbench_s,
 # 602.gcc_s,

@@ -42,7 +42,14 @@ def _predict_pair_performance(
 def predict_app_performance(app: Workload, competitors: List[Workload], contention: Dict[str, float], sensitivity: PchipInterpolator) -> Prediction:
     # Combine the sensitivity of all competitors
     total_contention = sum(contention[comp.name] for comp in competitors)
+
     prediction = sensitivity(total_contention)
+    y_min, y_max = sensitivity(0), sensitivity(sensitivity.x[-1])
+    if prediction < y_max:
+        prediction = y_max
+    elif prediction > y_min:
+        prediction = y_min
+
     return Prediction(app=app.name, competitor=" + ".join(comp.name for comp in competitors), perf=sensitivity(0) / prediction)
 
 def predict_pair_performance(applications: List[Workload], competitors: List[Workload]):

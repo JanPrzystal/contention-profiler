@@ -9,7 +9,7 @@
 #include <set>
 #include <iostream>
 #include <benchmark/benchmark.h>
-#include "xorshift.h"
+#include "../soi/xorshift.h"
 
 #define FOOTPRINT_SIZE 8388608 / sizeof(uint64_t) // 8MiB
 #define STREAM_SIZE (FOOTPRINT_SIZE / 2)
