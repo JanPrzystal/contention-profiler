@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "xorshift.h"
+#include <assert.h>
 
 #ifndef FOOTPRINT_SIZE
     #define FOOTPRINT_SIZE 16000000
@@ -37,8 +38,8 @@ void streaming_access() {
         int64_t volatile *mid = bw_data + PADDING_SIZE;
         size_t offset = 0;
         // #pragma omp parallel for
-        for (int i = offset; i < STREAM_SIZE - PADDING_SIZE; i += (STRIDE * 8)) {
-            mid[i] = bw_data[i];
+        for (int i = offset; i < STREAM_SIZE - PADDING_SIZE - 4096; i += (STRIDE * 8)) {
+            mid[i] = bw_data[i]++;
             mid[i + STRIDE] = bw_data[i + STRIDE]++;
             mid[i + (STRIDE * 2)] = bw_data[i + (STRIDE * 2)]++;
             mid[i + (STRIDE * 3)] = bw_data[i + (STRIDE * 3)]++;
@@ -172,17 +173,17 @@ void random_access() {
 }
 
 int main() {
-    size_t bw_data_size = STREAM_SIZE * sizeof(double);
-    bw_data = malloc(bw_data_size);
-    size_t rand_data_size = RAND_SIZE * sizeof(int64_t);
-    data_chunk = malloc(rand_data_size);
-    data_chunk += PADDING_SIZE;
-    // omp_set_num_threads(NUM_THREADS);
     char *bub_type = BUBBLE_TYPE == 0 ? "stream" : "rand";
     printf("Bubble type = %s, threads = %d\n", bub_type, NUM_THREADS);
     if (BUBBLE_TYPE == 0) {
+        size_t bw_data_size = STREAM_SIZE * sizeof(int64_t);
+        bw_data = malloc(bw_data_size);
+        assert(bw_data != NULL);
         streaming_access();
     } else {
+        size_t rand_data_size = RAND_SIZE * sizeof(int64_t);
+        data_chunk = malloc(rand_data_size);
+        assert(data_chunk != NULL);
         random_access();
     }
 
