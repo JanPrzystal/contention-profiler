@@ -59,7 +59,7 @@ if __name__ == '__main__':
 
     with open("ideal_contentiousness.csv", "w", newline="") as f:
         writer = csv.writer(f)
-        writer.writerow(["app", "competitor", "competitor contentiousness", "ideal contentiousness"])
+        writer.writerow(["app", "competitor", "competitor contentiousness", "ideal contentiousness", "prediction error"])
 
         for filename in os.listdir(f'{config.RESULTS_DIR}/sensitivity'):
             # sensitivity = get_sensitivity(filename)
@@ -94,7 +94,8 @@ if __name__ == '__main__':
                 # print(f"looking up cont for perf {perf_normal * perf} (normal is {perf_normal})")
                 needed = contentiousness_lookup(spline, perf_normal / perf)
 
-                writer.writerow([appname, compname, cont, needed])
+                error = (row['perf'] - perf) / perf * 100
+                writer.writerow([appname, compname, cont, needed, error])
                 # print(f"For {appname}, {compname} should have contentiousness {needed}, actually has {cont}")
 
 

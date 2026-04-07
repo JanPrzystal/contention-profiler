@@ -25,12 +25,12 @@ experiments:
     soi: 
       type: rand
       number: 2
-    max_mem_footprint: 32
+    max_mem_footprint: 64
     mem_interval: 4
-    reporter_repetitions: 10
+    reporter_repetitions: 20
     deployment: multi
-    data_size: test
-    root: false
+    data_size: train
+    root: true
 
 
 # 600.perlbench_s,

@@ -72,7 +72,8 @@ def predict_performance(applications: List[Workload]) -> List[prediction.Predict
 def validate_predictions(predictions: List[prediction.Prediction], workload_map: dict[str, Workload]) -> List[validation.ValidatedPrediction]:
     validated_predictions = []
 
-    sampled_predictions = random.sample(predictions, 16)
+    sample_size = min(64, len(predictions))
+    sampled_predictions = random.sample(predictions, sample_size)
     for pred in sampled_predictions:
         validated_predictions.append(validation.validate_prediction(pred, workload_map))
 
