@@ -72,7 +72,7 @@ def predict_performance(applications: List[Workload]) -> List[prediction.Predict
 def validate_predictions(predictions: List[prediction.Prediction], workload_map: dict[str, Workload]) -> List[validation.ValidatedPrediction]:
     validated_predictions = []
 
-    sample_size = min(64, len(predictions))
+    sample_size = min(config.VALIDATIONS, len(predictions))
     sampled_predictions = random.sample(predictions, sample_size)
     for pred in sampled_predictions:
         validated_predictions.append(validation.validate_prediction(pred, workload_map))
@@ -94,7 +94,7 @@ def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], pair
     max_contentiousness = profile_workload.profile_contentiousness(applications, reporter)
     tcontentiousness = time() - tstart - treporter
 
-    config.DIAL_END_MB = min(int(max_contentiousness * 3.0 + 1.0), config.DIAL_END_MB)
+    config.DIAL_END_MB = min(int(max_contentiousness * 2.0 + 1.0), config.DIAL_END_MB)
 
     profile_workload.profile_sensitivity(applications)
     tsensitivity = time() - tstart - treporter - tcontentiousness

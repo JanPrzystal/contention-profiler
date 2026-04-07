@@ -44,10 +44,16 @@ def predict_app_performance(app: Workload, competitors: List[Workload], contenti
     total_contention = sum(contention[comp.name] for comp in competitors)
 
     prediction = sensitivity(total_contention)
-    y_min, y_max = sensitivity(0), sensitivity(sensitivity.x[-1])
-    if prediction < y_max:
+    y_min = sensitivity(0) 
+    y_max = sensitivity(sensitivity.x[-1])
+    for x in sensitivity.x:
+        y = sensitivity(x)
+        if y > y_max:
+            y_max = y
+            
+    if prediction > y_max:
         prediction = y_max
-    elif prediction > y_min:
+    elif prediction < y_min:
         prediction = y_min
 
     return Prediction(app=app.name, competitor=" + ".join(comp.name for comp in competitors), perf=sensitivity(0) / prediction, contentiousness=total_contention)

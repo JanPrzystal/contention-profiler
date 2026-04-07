@@ -9,27 +9,61 @@ import sys
 import prediction
 import validation
 import contentiousness
+from contention_synthesis import Bubble, BUILD_DIR
+import config
 
 if __name__ == "__main__":
 
     logging.basicConfig()
-    logging.getLogger().setLevel(logging.DEBUG)
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
 
-    y = 16.50
-    cont = contentiousness.contentiousness_lookup(y)
-    print(f"Contentiousness for {y} is {cont}")
+    # bubble = Bubble(32, 2)
+    # sleep(1)
+    # bubble.run()
+    # sleep(1)
+    # print("Running bubble for 500 seconds")
+    # sleep(500)
+    # bubble.stop()
 
-    # bench = spec.SpecWorkload("620.omnetpp_s", "train")
+
+    # spec.run_background_benchmark("600.perlbench_s", "1", "train")
+    # spec.run_background_benchmark("602.gcc_s", "2", "train")
+    # spec.run_background_benchmark("631.deepsjeng_s", "3", "train")
+    # spec.run_background_benchmark("649.fotonik3d_s", "4", "train")
+    # spec.run_background_benchmark("628.pop2_s", "5", "train")
+    # spec.run_background_benchmark("607.cactuBSSN_s", "6", "train")
+
+    bench = spec.SpecWorkload("607.cactuBSSN_s", "train")
 
     # process = spec.run_background_benchmark("605.mcf_s", "1", "train")
+    for i in range(6):
+        result = bench.profile("0")
+        sleep(2)
 
-    # bench.profile("0")
+        logger.info(f"Cactu alone: {result}")
+        
+        proc = spec.run_background_benchmark("619.lbm_s", "1", "train")
+        sleep(2)
+        result = bench.profile("0")
+        spec.stop_benchmark(proc)
+        sleep(2)
 
-    # spec.stop_benchmark(process)
+        logger.info(f"Cactu with lbm: {result}")
 
-    # pred = prediction.Prediction(app="620.omnetpp_s", competitor="605.mcf_s", perf=1.5)
-    # valid = validation.ValidatedPrediction(app="620.omnetpp_s", competitor="605.mcf_s", perf=1.5, actual_perf=1.2)
-    # row = [str(c) for c in list(pred._asdict().values())]
-    # print(row)
-    # vals = [str(c) for c in list(valid._asdict().values())]
-    # print(f"{vals}")
+        proc = spec.run_background_benchmark("631.deepsjeng_s", "2", "train")
+        sleep(2)
+        result = bench.profile("0")
+        spec.stop_benchmark(proc)
+        sleep(2)
+
+        logger.info(f"Cactu with deepsjeng: {result}")
+
+        proc = spec.run_background_benchmark("628.pop2_s", "3", "train")
+        sleep(2)
+        result = bench.profile("0")
+        spec.stop_benchmark(proc)
+        sleep(2)
+
+        logger.info(f"Cactu with pop2: {result}")
+
