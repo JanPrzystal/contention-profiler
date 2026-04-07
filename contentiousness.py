@@ -53,27 +53,27 @@ def contentiousness_lookup(y):
     return contentiousness
 
 
-# def construct_sensitivity_lookup():
-#     res = []
-#     with open(f'{constants.RESULTS_DIR}/reporter_sensitivity.csv', 'r') as f:
-#         reader = csv.reader(f, delimiter=",")
-#         next(reader)
-#         for row in reader:
-#             perf = float(row[1])
-#             # We perform reverse lookup, that is we find dial from performance
-#             dial = int(row[0])
-#             res.append((perf, dial))
-#     return res
+def construct_sensitivity_lookup():
+    res = []
+    with open(f'{config.RESULTS_DIR}/reporter_sensitivity.csv', 'r') as f:
+        reader = csv.reader(f, delimiter=",")
+        next(reader)
+        for row in reader:
+            perf = float(row[1])
+            # We perform reverse lookup, that is we find dial from performance
+            dial = int(row[0])
+            res.append((perf, dial))
+    return res
 
-# def find_dial(sample_perf: float, lookup: list[tuple[float, int]]) -> int:
-#     min_diff = math.inf
-#     res = -1
-#     for perf, dial in lookup:
-#         diff = abs(sample_perf - perf)
-#         if diff < min_diff:
-#             res = dial
-#             min_diff = diff
-#     return res
+def find_dial(sample_perf: float, lookup: list[tuple[float, int]]) -> int:
+    min_diff = math.inf
+    res = -1
+    for perf, dial in lookup:
+        diff = abs(sample_perf - perf)
+        if diff < min_diff:
+            res = dial
+            min_diff = diff
+    return res
 
 def get_contentiousness():
     res = {}
