@@ -11,15 +11,10 @@
 #include <benchmark/benchmark.h>
 #include "../soi/xorshift.h"
 
-#define FOOTPRINT_SIZE 8388608 / sizeof(uint64_t) // 8MiB
+#define FOOTPRINT_SIZE 8388608 // 64MiB
 #define STREAM_SIZE (FOOTPRINT_SIZE / 2)
 #define RAND_SIZE (FOOTPRINT_SIZE / 2)
 #define PADDING_SIZE 32768 * 4 // 128KiB
-
-// unsigned lfsr;
-// #define MASK 0xd0000001u
-// #define rand (lfsr = (lfsr >> 1) ^ (-(int)(lfsr & 1u) & MASK))
-// #define r (rand % RAND_SIZE)
 
 #define STRIDE 4096
 
@@ -36,24 +31,27 @@ void streaming_access(benchmark::State& state) {
         volatile uint64_t *mid = bw_data + PADDING_SIZE;
         benchmark::DoNotOptimize(mid);
 
-        for (int i = 0; i < STREAM_SIZE - PADDING_SIZE; i+= STRIDE) {
-            bw_data[i] = mid[i]++;
-            bw_data[i + 64] = mid[i + 64]++;
-            bw_data[i + 128] = mid[i + 128]++;
-            bw_data[i + 192] = mid[i + 192]++;
-            bw_data[i + 256] = mid[i + 256]++;
-            bw_data[i + 384] = mid[i + 384]++;
-            bw_data[i + 512] = mid[i + 512]++;
+        for (int offset = 0; offset < STRIDE/sizeof(uint64_t); offset++) {
+            for (int i = offset; i < STREAM_SIZE - PADDING_SIZE; i+= STRIDE/sizeof(uint64_t)) {
+                bw_data[i] = mid[i]++;
+                bw_data[i + 8] = mid[i + 8]++;
+                bw_data[i + 16] = mid[i + 16]++;
+                bw_data[i + 24] = mid[i + 24]++;
+                bw_data[i + 32] = mid[i + 32]++;
+                bw_data[i + 40] = mid[i + 40]++;
+                bw_data[i + 48] = mid[i + 48]++;
+                bw_data[i + 56] = mid[i + 56]++;
+                bw_data[i + 64] = mid[i + 64]++;
+            }
+            benchmark::ClobberMemory();
         }
-
-        benchmark::ClobberMemory();
     }
 }
 
 void random_access(benchmark::State& state) {
     //std::cout << "RAND thread: " << state.thread_index() << " executed on CPU: " << sched_getcpu() << std::endl;
     for (auto _ : state) {
-        for (int i = 0; i < RAND_SIZE / STRIDE; i++) {
+        for (int i = 0; i < RAND_SIZE; i++) {
             dump[0] += data_chunk[r]++;
             dump[1] += data_chunk[r]++;
             dump[2] += data_chunk[r]++;
