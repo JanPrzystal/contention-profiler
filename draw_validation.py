@@ -1,6 +1,7 @@
 import pandas as pd
 import logging
 import matplotlib.pyplot as plt
+import numpy as np
 import config
 
 # Setup basic logging
@@ -34,53 +35,76 @@ def draw_single_validation_chart(df):
 
 
         n = len(chunk)
+        x = np.arange(n)
+        width = 0.35
         # Adjust figure height dynamically based on the number of entries
         fig_height = max(10, n * 0.4) 
-        plt.figure(figsize=(12, fig_height))
+        fig, ax1 = plt.subplots(figsize=(12, fig_height))
+        ax2 = ax1.twinx()
 
-        # plt.figure(figsize=(10, 5))
-
-        bars = plt.bar(
-            chunk['label'],
+        bars1 = ax1.bar(
+            x - width/2,
             chunk['diff_pct'],
-            color=colors[i:i + len(chunk)],
+            width,
+            color='#e74c3c', #colors[i:i + len(chunk)],
             alpha=0.8,
             edgecolor='black',
-            linewidth=0.5
+            linewidth=0.5,
+            label='Performance Error (%)'
         )
 
-        plt.ylabel("Performance Error (%)", fontsize=12, fontweight='bold')
-        plt.title(f"Prediction Error (part {i//max_per_chart + 1})", fontsize=14, fontweight='bold', pad=20)
-
-        plt.axhline(0, color='black', linewidth=1)
-
-        # Rotate labels
-        plt.xticks(rotation=35, ha='right')
-
-        margin = max(abs(chunk['diff_pct'])) * 0.1
-        plt.ylim(
-            chunk['diff_pct'].min() - margin,
-            chunk['diff_pct'].max() + margin
+        bars2 = ax2.bar(
+            x + width/2,
+            chunk['contentiousness'],
+            width,
+            color='#3498db',
+            alpha=0.8,
+            edgecolor='black',
+            linewidth=0.5,
+            label='Contentiousness'
         )
 
-        margin *= 0.1
+        ax1.set_ylabel("Performance Error (%)", fontsize=12, fontweight='bold')
+        ax2.set_ylabel("Contentiousness (MB)", fontsize=12, fontweight='bold')
+        ax1.set_title(f"Prediction Error (part {i//max_per_chart + 1})", fontsize=14, fontweight='bold', pad=20)
+        ax1.legend(loc='upper left')
+        ax2.legend(loc='upper right')
+
+        ax1.axhline(0, color='black', linewidth=1)
+
+        ax1.set_xticks(x)
+        ax1.set_xticklabels(chunk['label'], rotation=35, ha='right')
+
+        # Set ylim for each axis to align 0 at the same position
+        margin1 = abs(chunk['diff_pct']).max() * 0.1
+        margin2 = abs(chunk['contentiousness']).max() * 0.1
+        bottom = min(chunk['diff_pct'].min() - margin1, chunk['contentiousness'].min() - margin2)
+        top1 = chunk['diff_pct'].max() + margin1
+        top2 = chunk['contentiousness'].max() + margin2
+        range_ax1 = top1 - bottom
+        range_ax2 = top2 - bottom
+        max_range = max(range_ax1, range_ax2)
+        ax1.set_ylim(bottom, bottom + max_range)
+        ax2.set_ylim(bottom, bottom + max_range)
+
+        margin1 *= 0.1
         
-        # Add labels
-        for bar in bars:
+        # Add labels for the first bars (error %)
+        for bar in bars1:
             height = bar.get_height()
-            plt.text(
+            ax1.text(
                 bar.get_x() + bar.get_width()/2,
-                height + (margin if height >= 0 else -margin),
+                height + (margin1 if height >= 0 else -margin1),
                 f'{height:.2f}%',
                 ha='center',
                 va='bottom' if height >= 0 else 'top',
                 fontsize=9
             )
 
-        plt.tight_layout()
+        fig.tight_layout()
         
         output_path = f"{config.RESULTS_DIR}//all_validation_results{i}.png"
-        plt.savefig(output_path, dpi=300)
+        fig.savefig(output_path, dpi=300)
         plt.close()
     
     # logger.info(f"Generated combined chart with {n} entries at {output_path}")

@@ -10,6 +10,7 @@ from workload import Workload
 from prediction import Prediction
 import logging
 from spec import run_background_benchmark, stop_benchmark
+from prediction import get_sensitivity
 
 ValidatedPrediction = namedtuple(
     "ValidatedPrediction", Prediction._fields + ("actual_perf",)
@@ -36,7 +37,9 @@ def validate_prediction(prediction: Prediction, workload_map: dict[str, Workload
         competitors.append(workload_map[competitor])
 
     logging.info(f"Starting profiling for ({primary.name} with {', '.join(c.name for c in competitors)})")
-    isolated_perf = primary.profile(config.WORKLOAD_UNDER_PROFILING_CORES)
+    
+    isolated_perf = get_sensitivity(primary.name)(0) 
+        # primary.profile(config.WORKLOAD_UNDER_PROFILING_CORES)
 
     # Get cores for background workloads
     start, end = map(int, config.WORKLOAD_IN_BACKGROUND_CORES.split("-"))

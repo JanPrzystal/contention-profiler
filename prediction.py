@@ -27,7 +27,7 @@ def get_sensitivity(name: str) -> PchipInterpolator:
 
     return PchipInterpolator(list(res.keys()), list(res.values()))
 
-Prediction = namedtuple("Prediction", ["app", "competitor", "perf"])
+Prediction = namedtuple("Prediction", ["app", "competitor", "perf", "contentiousness"])
 
 def _predict_pair_performance(
     app: str,
@@ -50,7 +50,7 @@ def predict_app_performance(app: Workload, competitors: List[Workload], contenti
     elif prediction > y_min:
         prediction = y_min
 
-    return Prediction(app=app.name, competitor=" + ".join(comp.name for comp in competitors), perf=sensitivity(0) / prediction)
+    return Prediction(app=app.name, competitor=" + ".join(comp.name for comp in competitors), perf=sensitivity(0) / prediction, contentiousness=total_contention)
 
 def predict_pair_performance(applications: List[Workload], competitors: List[Workload]):
     scores = _get_contentiousness()
