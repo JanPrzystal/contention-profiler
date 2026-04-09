@@ -28,7 +28,7 @@ def draw_single_validation_chart(df):
     # Color coding: Green for over-prediction, Red for under-prediction
     colors = ['#2ecc71' if x >= 0 else '#e74c3c' for x in df_sorted['diff_pct']]
 
-    max_per_chart = 16
+    max_per_chart = 12
 
     for i in range(0, len(df_sorted), max_per_chart):
         chunk = df_sorted.iloc[i:i + max_per_chart]

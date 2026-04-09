@@ -35,9 +35,10 @@ def _predict_pair_performance(
     scores: Dict[str, float],
     sensitivity: dict[str, PchipInterpolator],
 ) -> Prediction:
-    prediction = sensitivity[app](scores[competitor])
+    contention = scores[competitor]
+    prediction = sensitivity[app](contention)
     # Divide isolated performance by predicted performance to normalize
-    return Prediction(app=app, competitor=competitor, perf=sensitivity[app](0) / prediction)
+    return Prediction(app=app, competitor=competitor, perf=sensitivity[app](0) / prediction, contentiousness=contention)
 
 def predict_app_performance(app: Workload, competitors: List[Workload], contention: Dict[str, float], sensitivity: PchipInterpolator) -> Prediction:
     # Combine the sensitivity of all competitors

@@ -24,7 +24,7 @@ def read_predictions() -> list[Prediction]:
     with open(f"{config.RESULTS_DIR}/predictions.json", "r") as f:
         data = json.load(f)["predictions"]
         return [
-            Prediction(app=p["app"], competitor=p["competitor"], perf=p["perf"])
+            Prediction(app=p["app"], competitor=p["competitor"], perf=p["perf"], contentiousness=p["contentiousness"])
             for p in data
         ]
 
