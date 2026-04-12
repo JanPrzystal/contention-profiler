@@ -11,7 +11,7 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 
-def get_reporter_sensitivity_spline():
+def get_reporter_sensitivity_spline() -> PchipInterpolator:
     x = []
     y = []
     with open(f'{config.RESULTS_DIR}/reporter_sensitivity.csv', 'r') as f:
@@ -23,7 +23,7 @@ def get_reporter_sensitivity_spline():
 
     return PchipInterpolator(x, y)
 
-def inverse_leftmost_exact(spline, y):
+def inverse_leftmost_exact(spline, y) -> float | None:
     for c, x0, x1 in zip(spline.c.T, spline.x[:-1], spline.x[1:]):
         coeffs = c.copy()
         coeffs[-1] -= y
@@ -37,7 +37,7 @@ def inverse_leftmost_exact(spline, y):
 
     return None
 
-def contentiousness_lookup(y):
+def contentiousness_lookup(y) -> float:
     spline = get_reporter_sensitivity_spline()
 
     contentiousness = inverse_leftmost_exact(spline, y)

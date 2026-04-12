@@ -1,6 +1,9 @@
 from time import sleep
 import logging
 
+from profile_reporter import profile_reporter
+import profile_workload
+import reporter
 import spec
 import atexit
 import os
@@ -11,11 +14,14 @@ import validation
 import contentiousness
 from contention_synthesis import Bubble, BUILD_DIR
 import config
+import reporter as rp
+
+logger = logging.getLogger(__name__)
+
 
 if __name__ == "__main__":
 
     logging.basicConfig()
-    logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
 
     # bubble = Bubble(32, 2)
@@ -34,36 +40,44 @@ if __name__ == "__main__":
     # spec.run_background_benchmark("628.pop2_s", "5", "train")
     # spec.run_background_benchmark("607.cactuBSSN_s", "6", "train")
 
-    bench = spec.SpecWorkload("607.cactuBSSN_s", "train")
+    bench = spec.SpecWorkload("600.perlbench_s", "train")
 
-    # process = spec.run_background_benchmark("605.mcf_s", "1", "train")
-    for i in range(6):
-        result = bench.profile("0")
-        sleep(2)
+    reporter = rp.AveragingReporter("build/altern_reporter.out")
 
-        logger.info(f"Cactu alone: {result}")
+    # profile_reporter(reporter)
+    os.makedirs(f"{config.RESULTS_DIR}/contentiousness", exist_ok=True)
+
+
+    profile_workload.profile_added_contentiousness(bench, reporter)
+
+    # # process = spec.run_background_benchmark("605.mcf_s", "1", "train")
+    # for i in range(6):
+    #     result = bench.profile("0")
+    #     sleep(2)
+
+    #     logger.info(f"Cactu alone: {result}")
         
-        proc = spec.run_background_benchmark("619.lbm_s", "1", "train")
-        sleep(2)
-        result = bench.profile("0")
-        spec.stop_benchmark(proc)
-        sleep(2)
+    #     proc = spec.run_background_benchmark("619.lbm_s", "1", "train")
+    #     sleep(2)
+    #     result = bench.profile("0")
+    #     spec.stop_benchmark(proc)
+    #     sleep(2)
 
-        logger.info(f"Cactu with lbm: {result}")
+    #     logger.info(f"Cactu with lbm: {result}")
 
-        proc = spec.run_background_benchmark("631.deepsjeng_s", "2", "train")
-        sleep(2)
-        result = bench.profile("0")
-        spec.stop_benchmark(proc)
-        sleep(2)
+    #     proc = spec.run_background_benchmark("631.deepsjeng_s", "2", "train")
+    #     sleep(2)
+    #     result = bench.profile("0")
+    #     spec.stop_benchmark(proc)
+    #     sleep(2)
 
-        logger.info(f"Cactu with deepsjeng: {result}")
+    #     logger.info(f"Cactu with deepsjeng: {result}")
 
-        proc = spec.run_background_benchmark("628.pop2_s", "3", "train")
-        sleep(2)
-        result = bench.profile("0")
-        spec.stop_benchmark(proc)
-        sleep(2)
+    #     proc = spec.run_background_benchmark("628.pop2_s", "3", "train")
+    #     sleep(2)
+    #     result = bench.profile("0")
+    #     spec.stop_benchmark(proc)
+    #     sleep(2)
 
-        logger.info(f"Cactu with pop2: {result}")
+    #     logger.info(f"Cactu with pop2: {result}")
 
