@@ -55,11 +55,11 @@ def _profile_sensitivity(workload: Workload) -> str:
 def _profile_sensitivity_dial(workload: Workload, size_mb: int) -> float:
     if size_mb == 0:
         logger.info("Profiling in isolation")
-        return workload.profile(config.WORKLOAD_UNDER_PROFILING_CORES)
+        return workload.profile(config.WORKLOAD_UNDER_PROFILING_CORES, config.PROFILING_REPETITIONS)
     bubble = Bubble(size_mb, config.N_BUBBLES)
     bubble.run()
     try:
-        return workload.profile(config.WORKLOAD_UNDER_PROFILING_CORES)
+        return workload.profile(config.WORKLOAD_UNDER_PROFILING_CORES, config.PROFILING_REPETITIONS)
     finally:
         bubble.stop()
 
