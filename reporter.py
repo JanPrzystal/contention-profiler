@@ -41,6 +41,24 @@ class Reporter(ABC):
                 output[line[0]] = float(line[1])
         return self.process_output(output)
     
+    def run_background(self, cores: str):
+        logger.info("Running reporter in the background")
+
+        cmd = [
+            "taskset",
+            "-c",
+            f"{cores}",
+            f"{self.script_file}",
+            "--benchmark_min_warmup_time=1",
+            "--benchmark_repetitions=10000",
+            "--benchmark_enable_random_interleaving=true",
+        ]
+
+        if config.USE_ROOT_PRIORITY:
+            cmd = config.ROOT_TASK_CMD + cmd
+
+        return subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    
     @abstractmethod
     def process_output(self, output: dict[str, float]) -> float:
         raise NotImplementedError

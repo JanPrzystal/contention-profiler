@@ -5,6 +5,7 @@ import logging
 from pathlib import Path
 
 import reporter as rp
+import workload
 
 logger = logging.getLogger(__name__)
 from contention_synthesis import Bubble
@@ -55,11 +56,11 @@ def _profile_sensitivity(workload: Workload) -> str:
 def _profile_sensitivity_dial(workload: Workload, size_mb: int) -> float:
     if size_mb == 0:
         logger.info("Profiling in isolation")
-        return workload.profile(config.WORKLOAD_UNDER_PROFILING_CORES, config.PROFILING_REPETITIONS)
+        return workload.profile(config.WORKLOAD_UNDER_PROFILING_CORES)
     bubble = Bubble(size_mb, config.N_BUBBLES)
     bubble.run()
     try:
-        return workload.profile(config.WORKLOAD_UNDER_PROFILING_CORES, config.PROFILING_REPETITIONS)
+        return workload.profile(config.WORKLOAD_UNDER_PROFILING_CORES)
     finally:
         bubble.stop()
 
@@ -73,9 +74,10 @@ def _profile_contentiousness(workload: Workload, reporter: rp.Reporter):
         finally:
             workload.stop()
 
-def _save_contentiousness_data(data: dict[str, dict[str,str]]):
-    df = pd.DataFrame.from_dict(data, orient="index")
-    df.to_csv(f"{config.RESULTS_DIR}/contentiousness.csv", sep=",")
+def _save_contentiousness_data(data: dict[str,float]):
+    csv_data = {"application": list(data.keys()), "contentiousness": list(data.values())}
+    df = pd.DataFrame(csv_data)
+    df.to_csv(f"{config.RESULTS_DIR}/contentiousness.csv", sep=",", index=False, header=True)
 
 def profile_sensitivity(workloads: list[Workload]) -> None:
     
@@ -99,8 +101,48 @@ def profile_contentiousness(workloads: list[Workload], reporter: rp.Reporter) ->
         contentiousness[workload.name] = _profile_contentiousness(workload, reporter)
         logger.info(f"{workload.name} contentiousness: {contentiousness[workload.name]}")
         _save_contentiousness_data(contentiousness)
+        # Find biggest contentiousness score
         if contentiousness[workload.name] > max_contentiousness:
             max_contentiousness = contentiousness[workload.name]
     
     logger.info(f"MaxContentiousness: {max_contentiousness}")
     return max_contentiousness
+
+def profile_added_contentiousness(workload: Workload, reporter: rp.Reporter) -> float:
+
+    sizes = range(config.DIAL_START_MB, config.DIAL_END_MB + config.DIAL_STEP_MB, config.DIAL_STEP_MB)
+
+    contentiousness = {}
+
+    for size_mb in sizes:
+        result = 0.0
+
+        print(f"Profiling {workload.name} with SoI size {size_mb}MB")
+
+        if size_mb == 0:
+            logger.info("Profiling in isolation")
+            result = _profile_contentiousness(workload, reporter)
+        bubble = Bubble(size_mb, config.N_BUBBLES)
+        bubble.run()
+        try:
+            result = _profile_contentiousness(workload, reporter) - size_mb
+        finally:
+            bubble.stop()
+
+        contentiousness[size_mb] = result
+
+    print(f"Saving contentiousness data for {workload.name}")
+    # Save the contentiousness data 
+    benchmark_file = workload.name.replace(".", "_")
+    path = f"{config.RESULTS_DIR}/contentiousness/{benchmark_file}_contentiousness.csv"
+    print(f"Path: {path}")
+    with open(path, "w+") as f:
+        f.write("footprint_mb,contentiousness\n")
+        for k, v in contentiousness.items():
+            f.write(f"{k},{v}\n")
+
+    print(f"Written")
+    
+        
+
+

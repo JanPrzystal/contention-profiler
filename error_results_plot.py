@@ -8,11 +8,9 @@ import config
 
 data = {    
     #c6
-    "baseline": [48.71, 13.04, 48.71 + 7.49],
-    "1 rand": [51.53, 1.4, 51.53 + 10.83],
-    "1 rand (no cactu)": [23.50, 1.4, 23.50 + 4.54],
-    "2 mixed": [50.60, 1.60, 50.60 + 33.79],
-    "2 mixed (no cactu)": [21.95, 1.60, 21.95 + 13.00],
+    "4MB interval (no cactu)": [18.27, 2.13, 18.27 + 15.54],
+    "8MB interval (no cactu)": [23.94, 2.11, 23.94 + 13.79],
+    "16MB interval": [18.46, 1.95, 18.46 + 13.47],
 }
 
 legend_labels = ["Max Absolute Error", "Absolute Mean Error", "Range [pp]"]
