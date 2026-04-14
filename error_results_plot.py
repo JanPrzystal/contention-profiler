@@ -8,12 +8,22 @@ import config
 
 data = {    
     #c6
-    "4MB interval (no cactu)": [18.27, 2.13, 18.27 + 15.54],
-    "8MB interval (no cactu)": [23.94, 2.11, 23.94 + 13.79],
-    "16MB interval": [18.46, 1.95, 18.46 + 13.47],
+    # "4MB interval (no cactu)": [18.27, 2.13, 18.27 + 15.54],
+    # "8MB interval (no cactu)": [23.94, 2.11, 23.94 + 13.79],
+    # "16MB interval": [18.46, 1.95, 18.46 + 13.47],
+    "4MB interval": [115, 75, 171],
+    "8MB interval": [169, 40, 152],
+    "16MB interval": [208, 20, 133],
 }
 
-legend_labels = ["Max Absolute Error", "Absolute Mean Error", "Range [pp]"]
+legend_labels = [
+    "Interpolation better", 
+    "No interpolation better", 
+    "Equal"
+    # "Max Absolute Error", 
+    # "Absolute Mean Error", 
+    # "Range [pp]"
+    ]
 
 if __name__ == "__main__":
     labels = list(data.keys())

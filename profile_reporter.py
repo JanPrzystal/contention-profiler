@@ -48,10 +48,15 @@ def profile_reporter_contentiousness(reporter: rp.Reporter) -> float:
 
         score = reporter.run(config.REPORTER_CORES, config.REPORTER_REPETITIONS)
 
+        logger.info(f"Reporter score: {score}")
+        
         contentiousness = cnt.contentiousness_lookup(score)
+
+        os.kill(background.pid, signal.SIGKILL)
+
         f.write(f"{0},{contentiousness}\n")
 
-        os.killpg(os.getpgid(background.pid), signal.SIGKILL)
+        result = contentiousness
 
     return result
 

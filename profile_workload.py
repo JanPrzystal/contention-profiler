@@ -117,7 +117,7 @@ def profile_added_contentiousness(workload: Workload, reporter: rp.Reporter) -> 
     for size_mb in sizes:
         result = 0.0
 
-        print(f"Profiling {workload.name} with SoI size {size_mb}MB")
+        logger.info(f"Profiling {workload.name} with SoI size {size_mb}MB")
 
         if size_mb == 0:
             logger.info("Profiling in isolation")
@@ -131,17 +131,16 @@ def profile_added_contentiousness(workload: Workload, reporter: rp.Reporter) -> 
 
         contentiousness[size_mb] = result
 
-    print(f"Saving contentiousness data for {workload.name}")
+    logger.info(f"Saving contentiousness data for {workload.name}")
     # Save the contentiousness data 
     benchmark_file = workload.name.replace(".", "_")
     path = f"{config.RESULTS_DIR}/contentiousness/{benchmark_file}_contentiousness.csv"
-    print(f"Path: {path}")
+    logger.info(f"Path: {path}")
     with open(path, "w+") as f:
         f.write("footprint_mb,contentiousness\n")
         for k, v in contentiousness.items():
             f.write(f"{k},{v}\n")
 
-    print(f"Written")
     
         
 
