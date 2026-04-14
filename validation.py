@@ -1,7 +1,7 @@
 import json
 import os
 import csv
-from random import random
+import random
 import time
 from tracemalloc import start
 from typing import Union, List

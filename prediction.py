@@ -86,12 +86,13 @@ def predict_performance(applications: List[Workload]) -> List[Prediction]:
         logger.debug(f"Competitors for {app.name}: {', '.join(c.name for c in all_competitors)}")
         # Generate predictions for all combinations of competitors
         # Currently just combinations, no multisets
-        for k in range(1, len(all_competitors)):
-            for competitors in combinations(all_competitors, k):
+        for k in range(0, len(all_competitors)):
+            for competitors in combinations(all_competitors, k+1):
                 logger.debug(f"Predicting performance for {app.name} with competitors: {', '.join(c.name for c in competitors)}")
                 predictions.append(prediction.predict_app_performance(app, competitors, prediction.get_sensitivity(app.name)))
 
     # logger.debug(f"Predictions: {'\n'.join(str(p) for p in predictions)}")
+    return predictions
 
 def save_predictions(predictions: List[Prediction]) -> None:
     with open(f"{config.RESULTS_DIR}/predictions.csv", "w") as f:
