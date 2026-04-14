@@ -174,7 +174,7 @@ void random_access() {
 
 int main() {
     char *bub_type = BUBBLE_TYPE == 0 ? "stream" : "rand";
-    printf("Bubble type = %s, threads = %d\n", bub_type, NUM_THREADS);
+    // printf("Bubble type = %s, threads = %d\n", bub_type, NUM_THREADS);
     if (BUBBLE_TYPE == 0) {
         size_t bw_data_size = STREAM_SIZE * sizeof(int64_t);
         bw_data = malloc(bw_data_size);

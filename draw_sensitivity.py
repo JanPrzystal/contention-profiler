@@ -38,16 +38,17 @@ def draw_sensitivity():
         x = df["footprint_mb"].to_numpy()
         y = df["perf"].to_numpy()
 
-        # Interpolate
-        spline = PchipInterpolator(x, y)
-
-        x_smooth = np.linspace(x.min(), x.max(), 400)
-        y_smooth = spline(x_smooth)
-
         xlim = x.max() + xpad
 
         ax.plot(x, y, "o", markersize=4, label="measured")
-        ax.plot(x_smooth, y_smooth, "-", linewidth=1.5, label="spline")
+
+        if config.USE_INTERPOLATION:
+            # Interpolate
+            spline = PchipInterpolator(x, y)
+
+            x_smooth = np.linspace(x.min(), x.max(), 400)
+            y_smooth = spline(x_smooth)
+            ax.plot(x_smooth, y_smooth, "-", linewidth=1.5, label="spline")
         
         ax.set_title(label)
         ax.set_xlabel("MemBW footprint (MB)")
