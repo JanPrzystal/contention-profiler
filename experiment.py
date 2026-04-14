@@ -19,6 +19,10 @@ class Experiment:
     deployment: str
     root: bool
     data_size: str
+    profiling_repetitions: int
+    use_interpolation: bool
+
+# VALIDATIONS = 8
 
 def parse_config():
     with open("experiments.yaml", "r") as f:
@@ -38,6 +42,8 @@ def parse_config():
             deployment=exp["deployment"],
             root=exp["root"],
             data_size=exp["data_size"],
+            profiling_repetitions=exp["profiling_repetitions"],
+            use_interpolation=exp["use_interpolation"]
         )
         experiments.append(experiment)
         print(exp)

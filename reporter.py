@@ -11,7 +11,7 @@ class Reporter(ABC):
     def __init__(self, script_file: str):
         self.script_file = script_file
 
-    def run(self, cores: str, repetitions: int = 25):
+    def run(self, cores: str, repetitions: int = 25) -> float:
         logger.info("Profiling with the reporter")
 
         cmd = [

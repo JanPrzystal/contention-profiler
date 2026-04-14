@@ -11,7 +11,7 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 
-def get_reporter_sensitivity_spline():
+def get_reporter_sensitivity_spline() -> PchipInterpolator:
     x = []
     y = []
     with open(f'{config.RESULTS_DIR}/reporter_sensitivity.csv', 'r') as f:
@@ -23,7 +23,7 @@ def get_reporter_sensitivity_spline():
 
     return PchipInterpolator(x, y)
 
-def inverse_leftmost_exact(spline, y):
+def inverse_leftmost_exact(spline: PchipInterpolator, y: float) -> float | None:
     for c, x0, x1 in zip(spline.c.T, spline.x[:-1], spline.x[1:]):
         coeffs = c.copy()
         coeffs[-1] -= y
@@ -37,7 +37,39 @@ def inverse_leftmost_exact(spline, y):
 
     return None
 
-def contentiousness_lookup(y):
+# Sensitivity lookup used for contentiousness calculation without interpolation
+def construct_sensitivity_lookup() -> list[tuple[float, int]]:
+    res = []
+    with open(f'{config.RESULTS_DIR}/reporter_sensitivity.csv', 'r') as f:
+        reader = csv.reader(f, delimiter=",")
+        next(reader)
+        for row in reader:
+            perf = float(row[1])
+            # We perform reverse lookup, that is we find dial from performance
+            dial = int(row[0])
+            res.append((perf, dial))
+    return res
+
+# Uses lookup without interpolation to find the contentiousness
+def find_dial(sample_perf: float, lookup: list[tuple[float, int]]) -> int:
+    min_diff = math.inf
+    res = -1
+    for perf, dial in lookup:
+        diff = abs(sample_perf - perf)
+        if diff < min_diff:
+            res = dial
+            min_diff = diff
+    return res
+
+
+def contentiousness_lookup(y: float) -> float | None:
+    if not config.USE_INTERPOLATION:
+        # Use lookup table instead of interpolation
+        lookup = construct_sensitivity_lookup()
+        contentiousness = find_dial(y, lookup)
+        return float(contentiousness)
+
+    # Uses interpolation to find the contentiousness for a given performance value
     spline = get_reporter_sensitivity_spline()
 
     contentiousness = inverse_leftmost_exact(spline, y)
@@ -53,52 +85,27 @@ def contentiousness_lookup(y):
     return contentiousness
 
 
-def construct_sensitivity_lookup():
-    res = []
-    with open(f'{config.RESULTS_DIR}/reporter_sensitivity.csv', 'r') as f:
-        reader = csv.reader(f, delimiter=",")
-        next(reader)
-        for row in reader:
-            perf = float(row[1])
-            # We perform reverse lookup, that is we find dial from performance
-            dial = int(row[0])
-            res.append((perf, dial))
-    return res
-
-def find_dial(sample_perf: float, lookup: list[tuple[float, int]]) -> int:
-    min_diff = math.inf
-    res = -1
-    for perf, dial in lookup:
-        diff = abs(sample_perf - perf)
-        if diff < min_diff:
-            res = dial
-            min_diff = diff
-    return res
-
-def get_contentiousness():
-    res = {}
+contentiousness = None
+def read_contentiousness(force_update=True) -> dict[str, float]:
+    global contentiousness
+    if not force_update and contentiousness:
+        return contentiousness
+    
+    contentiousness = {}
     with open(f"{config.RESULTS_DIR}/contentiousness.csv", 'r') as f:
         reader = csv.reader(f, delimiter=",")
         next(reader)
         for row in reader:
-            res[row[0]] = float(row[1])
-    return res
+            contentiousness[row[0]] = float(row[1])
+    return contentiousness
 
-def save_contentiousness(scores: dict[float, int]):
-    with open(f"{config.RESULTS_DIR}/contentiousness_scores.csv", "w") as f:
-        for bench, score in scores.items():
-            f.write(f"{bench},{score}\n")
-
-def generate_scores():
-    # lookup = construct_sensitivity_lookup()
-    cont = get_contentiousness()
+def save_contentiousness_chart():
+    cont = read_contentiousness()
     data = {}
     for bench, perf in cont.items():
-        # dial = find_dial(perf, lookup)
         data[bench] = perf
 
     logger.info(str(data))
-    save_contentiousness(data)
 
     # Extract keys and values
     labels = list(data.keys())
@@ -107,7 +114,7 @@ def generate_scores():
     values, labels = zip(*sorted(zip(values, labels)))
 
     # Create the column chart
-    plt.figure(figsize=(20, 12))
+    plt.figure(figsize=(20, 10))
     bars = plt.bar(labels, values)
 
     plt.tick_params(axis='x', length=0)
@@ -132,5 +139,7 @@ def generate_scores():
     plt.savefig(output_path, dpi=300)
     plt.close()
 
+
+
 if __name__ == "__main__":
-    generate_scores()
+    save_contentiousness_chart()

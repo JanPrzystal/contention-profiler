@@ -1,7 +1,7 @@
 from time import sleep
 import logging
 
-from profile_reporter import profile_sensitivity, profile_reporter, profile_reporter_contentiousness
+from profile_reporter import profile_reporter_sensitivity, profile_reporter, profile_reporter_contentiousness
 import profile_workload
 import reporter
 import spec

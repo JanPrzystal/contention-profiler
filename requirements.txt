@@ -1,11 +1,6 @@
 pandas
 requests
-black
 matplotlib
-jinja2
 kubernetes
-websockets
-avro
-fastavro
 scipy
 pyyaml

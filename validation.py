@@ -1,6 +1,7 @@
 import json
 import os
 import csv
+from random import random
 import time
 from tracemalloc import start
 from typing import Union, List
@@ -84,24 +85,6 @@ def writerow_and_sync(f, writer, row):
     f.flush()  # flush Python buffers to OS
     os.fsync(f.fileno())  # force OS to write to disk
 
-def validate_predictions(predictions: List[Prediction], workload_map: dict[str, Workload]):
-    # snapshot = read_snapshot()
-    with open(VALIDATION_FILE, "a+") as f:
-        f.seek(0)
-
-        writer = csv.writer(f, delimiter=",")
-        writer.writerow(ValidatedPrediction._fields)
-
-        # f.seek(0, os.SEEK_END)
-
-        for p in predictions:
-            key = get_key(p)
-            # if key in snapshot:
-            #     continue
-            row = validate_prediction(p, workload_map)
-            logging.info(str(row))
-            writerow_and_sync(f, writer, row)
-
 def validate_pair_predictions(applications: List[Workload], competitors: List[Workload]):
     snapshot = read_snapshot()
     predictions = read_predictions()
@@ -123,3 +106,43 @@ def validate_pair_predictions(applications: List[Workload], competitors: List[Wo
             row = validate_prediction(p, workload_map)
             logging.info(str(row))
             writerow_and_sync(f, writer, row)
+
+def choose_predictions(predictions: List[Prediction]) -> List[Prediction]:
+    sample_size = min(config.VALIDATIONS, len(predictions))
+    return random.sample(predictions, sample_size)
+
+def validate_predictions(predictions: List[Prediction], workload_map: dict[str, Workload]) -> List[ValidatedPrediction]:
+    validated_predictions = []
+
+    sampled_predictions = choose_predictions(predictions)
+
+    for pred in sampled_predictions:
+        validated_predictions.append(validate_prediction(pred, workload_map))
+
+    return validated_predictions
+
+def save_validated_predictions(validated_predictions: List[ValidatedPrediction]) -> None:
+    with open(f"{config.RESULTS_DIR}/validated.csv", "w") as f:
+        writer = csv.writer(f, delimiter=",")
+        writer.writerow(ValidatedPrediction._fields)
+        for pred in validated_predictions:
+            row = [str(c) for c in list(pred._asdict().values())]
+            writer.writerow(row)
+
+# def validate_predictions(predictions: List[Prediction], workload_map: dict[str, Workload]):
+#     # snapshot = read_snapshot()
+#     with open(VALIDATION_FILE, "a+") as f:
+#         f.seek(0)
+
+#         writer = csv.writer(f, delimiter=",")
+#         writer.writerow(ValidatedPrediction._fields)
+
+#         # f.seek(0, os.SEEK_END)
+
+#         for p in predictions:
+#             key = get_key(p)
+#             # if key in snapshot:
+#             #     continue
+#             row = validate_prediction(p, workload_map)
+#             logging.info(str(row))
+#             writerow_and_sync(f, writer, row)

@@ -113,7 +113,7 @@ def _get_output_filename(runcpu_output: str) -> str:
     raise Exception("Output file not found")
 
 
-def _get_benchmark_time(output_file: str, benchmark_name: str):
+def _get_benchmark_time(output_file: str, benchmark_name: str) -> float:
     bench_format = benchmark_name.replace(".", "_")
     line_format = f"spec.cpu2017.results.{bench_format}.base.000.reported_time"
     with open(output_file, "r") as f:

@@ -1,4 +1,3 @@
-from itertools import combinations
 import os
 import logging
 import random
@@ -45,50 +44,14 @@ REPORTER_SCRIPT_FILES = {
 GOVERNOR = Governor.PERFORMANCE
 
 def predict_performance(applications: List[Workload]) -> List[prediction.Prediction]:
-    contentiousness = prediction._get_contentiousness()
-
-    predictions = []
-    for app in applications:
-        all_competitors = [x for x in applications if x != app]
-        logger.debug(f"Competitors for {app.name}: {', '.join(c.name for c in all_competitors)}")
-        # Generate predictions for all combinations of competitors
-        # Currently just combinations, no multisets
-        for k in range(1, len(all_competitors)):
-            for competitors in combinations(all_competitors, k):
-                logger.debug(f"Predicting performance for {app.name} with competitors: {', '.join(c.name for c in competitors)}")
-                predictions.append(prediction.predict_app_performance(app, competitors, contentiousness, prediction.get_sensitivity(app.name)))
-
-    # logger.debug(f"Predictions: {'\n'.join(str(p) for p in predictions)}")
-
-    with open(f"{config.RESULTS_DIR}/predictions.csv", "w") as f:
-        writer = csv.writer(f, delimiter=",")
-        writer.writerow(prediction.Prediction._fields)
-        for pred in predictions:
-            row = [str(c) for c in list(pred._asdict().values())]
-            writer.writerow(row)
+    predictions = prediction.predict_performance(applications)
+    prediction.save_predictions(predictions)
 
     return predictions
 
-def validate_predictions(predictions: List[prediction.Prediction], workload_map: dict[str, Workload]) -> List[validation.ValidatedPrediction]:
-    validated_predictions = []
-
-    sample_size = min(config.VALIDATIONS, len(predictions))
-    sampled_predictions = random.sample(predictions, sample_size)
-    for pred in sampled_predictions:
-        validated_predictions.append(validation.validate_prediction(pred, workload_map))
-
-    with open(f"{config.RESULTS_DIR}/validated.csv", "w") as f:
-        writer = csv.writer(f, delimiter=",")
-        writer.writerow(validation.ValidatedPrediction._fields)
-        for pred in validated_predictions:
-            row = [str(c) for c in list(pred._asdict().values())]
-            writer.writerow(row)
-
-    return validated_predictions
-
 def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], pairwise: bool):
     tstart = time()
-    profile_reporter.profile_reporter(reporter)
+    # profile_reporter.profile_reporter(reporter)
     treporter = time() - tstart
 
     max_contentiousness = profile_workload.profile_contentiousness(applications, reporter)
@@ -99,7 +62,7 @@ def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], pair
     profile_workload.profile_sensitivity(applications)
     tsensitivity = time() - tstart - treporter - tcontentiousness
 
-    contentiousness.generate_scores()
+    contentiousness.save_contentiousness_chart()
 
     ttotal = time() - tstart
 
@@ -110,8 +73,8 @@ def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], pair
 
     else:
         predictions = predict_performance(applications)
-        validated_predictions = validate_predictions(predictions, {w.name: w for w in applications})
-        print(validated_predictions)
+        validated_predictions = validation.validate_predictions(predictions, {w.name: w for w in applications})
+        validation.save_validated_predictions(validated_predictions)
 
     texperiment = time() - tstart
     logger.info(f"Experiment timings: \nreporter={treporter:.3f}s, \ncontentiousness={tcontentiousness:.3f}s, \nsensitivity={tsensitivity:.3f}s, \nprofiling total={ttotal:.3f}s, \nexperiment total={texperiment:.3f}s")
@@ -128,18 +91,19 @@ def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], pair
 def spec_experiment(experiment: experiment.Experiment):
     config.DIAL_STEP_MB = experiment.mem_interval
     config.DIAL_END_MB = experiment.max_mem_footprint
-
     config.N_BUBBLES = experiment.soi.number
     config.BUBBLE_TYPE = experiment.soi.type
-
     config.REPORTER_REPETITIONS = experiment.reporter_repetitions
-
     config.DATA_SIZE = experiment.data_size
-    
     config.USE_ROOT_PRIORITY = experiment.root
+    config.PROFILING_REPETITIONS = experiment.profiling_repetitions
+    config.USE_INTERPOLATION = experiment.use_interpolation
 
     reporter = rp.AveragingReporter(REPORTER_SCRIPT_FILES[experiment.reporter])
     applications = [SpecWorkload(name, config.DATA_SIZE) for name in experiment.benchmarks]
+
+    # CPU Governor set here to take into account root priviledge configuration
+    CpuFreqPolicy.set_governor(GOVERNOR)
 
     # Create a description file 
     with open(f"{config.RESULTS_DIR}/description.txt", "w") as f:
@@ -153,8 +117,6 @@ def spec_experiment(experiment: experiment.Experiment):
         f.write(f"Reporter Repetitions: {experiment.reporter_repetitions}\n")
         f.write(f"Data Size: {experiment.data_size}\n")
         f.write(f"Root Priority: {experiment.root}\n")
-
-    CpuFreqPolicy.set_governor(GOVERNOR)
 
     conduct_experiment(reporter, applications, experiment.deployment == "pairwise")
 
@@ -185,11 +147,13 @@ if __name__ == "__main__":
 
     for exp in experiments:
         logger.info(f"Starting experiment: {exp.name}")
-        try:
-            shutil.rmtree(config.RESULTS_DIR)
-        except FileNotFoundError:
-            pass
-        os.makedirs(config.RESULTS_DIR, exist_ok=True)
+
+        # Clear results directory
+        # try:
+        #     shutil.rmtree(config.RESULTS_DIR)
+        # except FileNotFoundError:
+        #     pass
+        # os.makedirs(config.RESULTS_DIR, exist_ok=True)
 
         spec_experiment(exp)
 
