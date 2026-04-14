@@ -149,11 +149,11 @@ if __name__ == "__main__":
         logger.info(f"Starting experiment: {exp.name}")
 
         # Clear results directory
-        # try:
-        #     shutil.rmtree(config.RESULTS_DIR)
-        # except FileNotFoundError:
-        #     pass
-        # os.makedirs(config.RESULTS_DIR, exist_ok=True)
+        try:
+            shutil.rmtree(config.RESULTS_DIR)
+        except FileNotFoundError:
+            pass
+        os.makedirs(config.RESULTS_DIR, exist_ok=True)
 
         spec_experiment(exp)
 
