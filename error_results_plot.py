@@ -11,18 +11,19 @@ data = {
     # "4MB interval (no cactu)": [18.27, 2.13, 18.27 + 15.54],
     # "8MB interval (no cactu)": [23.94, 2.11, 23.94 + 13.79],
     # "16MB interval": [18.46, 1.95, 18.46 + 13.47],
-    "4MB interval": [115, 75, 171],
-    "8MB interval": [169, 40, 152],
-    "16MB interval": [208, 20, 133],
+    "b8 4MB interval": [16.4, 1.5, 16.4 + 15.8],
+    "b8 16MB interpolation": [23.0, 3.1, 23.0 + 21.4],
+    "c6 4MB interval": [23.9, 2.0, 23.9 + 13.4],
+    "c6 16MB interpolation": [21.8, 2.3, 21.8 + 12.2], #99th 16.4
 }
 
 legend_labels = [
-    "Interpolation better", 
-    "No interpolation better", 
-    "Equal"
-    # "Max Absolute Error", 
-    # "Absolute Mean Error", 
-    # "Range [pp]"
+    # "Interpolation better", 
+    # "No interpolation better", 
+    # "Equal"
+    "Max Absolute Error", 
+    "Absolute Mean Error", 
+    "Range [pp]"
     ]
 
 if __name__ == "__main__":

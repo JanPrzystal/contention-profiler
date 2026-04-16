@@ -51,10 +51,10 @@ def draw_single_validation_chart(df):
             alpha=0.9
         )
 
-        ax.set_xlabel("Entry", fontsize=12, fontweight='bold')
-        ax.set_ylabel("Performance Error (%)", fontsize=12, fontweight='bold')
+        # ax.set_xlabel("Entry", fontsize=12, fontweight='bold')
+        ax.set_ylabel("Prediction Error (%)", fontsize=12, fontweight='bold')
         ax.set_zlabel("Number of Competitors", fontsize=12, fontweight='bold')
-        ax.set_title(f"Prediction Error vs Competitors (part {i//max_per_chart + 1})", fontsize=14, fontweight='bold', pad=20)
+        ax.set_title(f"Prediction Validation (part {i//max_per_chart + 1})", fontsize=14, fontweight='bold', pad=20)
 
         ax.set_xticks(x)
         ax.set_xticklabels(chunk['label'], rotation=35, ha='right', fontsize=8)
