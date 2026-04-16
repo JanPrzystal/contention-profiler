@@ -87,7 +87,6 @@ def _save_contentiousness_data(data: dict[str,float]) -> None:
     df = pd.DataFrame(csv_data)
     df.to_csv(f"{config.RESULTS_DIR}/contentiousness.csv", sep=",", index=False, header=True)
 
-
 def profile_sensitivity(workloads: list[Workload]) -> None:
     if not os.path.isdir(SENSITIVITY_DIR):
         os.mkdir(SENSITIVITY_DIR)
@@ -151,6 +150,4 @@ def profile_added_contentiousness(workload: Workload, reporter: rp.Reporter) -> 
             f.write(f"{k},{v}\n")
 
     
-        
-
 

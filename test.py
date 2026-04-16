@@ -23,7 +23,6 @@ logger = logging.getLogger(__name__)
 if __name__ == "__main__":
 
     logging.basicConfig()
-    logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
 
     CpuFreqPolicy.set_governor(Governor.PERFORMANCE)

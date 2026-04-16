@@ -51,7 +51,7 @@ def predict_performance(applications: List[Workload]) -> List[prediction.Predict
 
 def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], pairwise: bool):
     tstart = time()
-    profile_reporter.profile_reporter(reporter)
+    profile_reporter.profile_reporter_progressive(reporter)
     treporter = time() - tstart
 
     max_contentiousness = profile_workload.profile_contentiousness(applications, reporter)
