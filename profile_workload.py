@@ -58,11 +58,11 @@ def _profile_sensitivity(workload: Workload) -> None:
 
     _save_sensitivity_data(workload.name, sensitivity)
 
-def _profile_sensitivity_dial(workload: Workload, size_mb: int) -> float:
+def _profile_sensitivity_dial(workload: Workload, size_mb: int, nproc: int) -> float:
     if size_mb == 0:
         logger.info("Profiling in isolation")
         return workload.profile(config.WORKLOAD_UNDER_PROFILING_CORES)
-    bubble = Bubble(size_mb, config.N_BUBBLES)
+    bubble = Bubble(size_mb, nproc)
     bubble.run()
 
     time.sleep(WARMUP_TIME)
@@ -91,7 +91,8 @@ def profile_sensitivity(workloads: list[Workload]) -> None:
     if not os.path.isdir(SENSITIVITY_DIR):
         os.mkdir(SENSITIVITY_DIR)
     for workload in workloads:
-        _profile_sensitivity(workload)
+        # _profile_sensitivity(workload)
+        _profile_sensitivity_progressive(workload)
     
 
 # Profiles the contentiousness of each workload and saves the results to a file. Returns the maximum contentiousness score across all workloads.
@@ -150,4 +151,19 @@ def profile_added_contentiousness(workload: Workload, reporter: rp.Reporter) -> 
             f.write(f"{k},{v}\n")
 
     
+def _profile_sensitivity_progressive(reporter: Workload):
+    with open(f"{config.RESULTS_DIR}/reporter_sensitivity.csv", "a+") as f:
+        f.write(f"footprint_mb,perf\n")
+
+        max_soi = config.N_BUBBLES
+        dial_start = config.DIAL_START_MB
+        interval = config.DIAL_RANGE_MB // max_soi
+        for i in range(max_soi + 1):
+            dial_end = i * interval
+            for size_mb in range(dial_start, dial_end, config.DIAL_STEP_MB):
+                logger.info(f"Profiling reporter with {i} SOI footprint {size_mb} MB")
+                perf = _profile_sensitivity_dial(reporter, size_mb, i)
+                f.write(f"{size_mb},{perf}\n")
+
+            dial_start = dial_end
 

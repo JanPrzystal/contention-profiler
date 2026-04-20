@@ -6,12 +6,14 @@ import config
 
 data = {    
     #c6
-    "baseline": [4337.627, 3165.722, 33097.876, 70637.009 - 40601.753],
-    "current (1 rand)": [668.073, 1082.009, 11470.311, 45232.757 - 13220.949],
-    "current (2 mixed)": [576.676, 1351.268, 6007.805, 39982.873 - 7936.296],
+    # "c6": [4337.627, 3165.722, 33097.876, 70637.009 - 40601.753],
+    # "current (1 rand)": [668.073, 1082.009, 11470.311, 45232.757 - 13220.949],
+    # "current (2 mixed)": [576.676, 1351.268, 6007.805, 39982.873 - 7936.296],
+    "b8 4MB interval": [561.517, 623.728, 20292.338],
+    "b8 16MB interpolation": [182.062, 635.684, 7096.834],
+    "c6 4MB interval": [587.2, 730.2, 13794.9],
+    "c6 16MB interpolation": [168.553, 727.699, 4868.333], #99th 16.4
 }
-
-legend_labels = ["Max Absolute Error", "Absolute Mean Error", "Range [pp]"]
 
 if __name__ == "__main__":
 
@@ -23,7 +25,8 @@ if __name__ == "__main__":
 
     plt.figure(figsize=(10, 6))
 
-    legend = ['Reporter', 'Contentiousness', 'Sensitivity', 'Validation']
+    # legend = ['Reporter', 'Contentiousness', 'Sensitivity', 'Validation']
+    legend = ['Reporter', 'Contentiousness', 'Sensitivity']
 
     bottom = np.zeros(len(labels))
 

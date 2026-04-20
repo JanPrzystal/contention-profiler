@@ -39,14 +39,20 @@ def profile_reporter_progressive(reporter: rp.Reporter):
     with open(f"{config.RESULTS_DIR}/reporter_sensitivity.csv", "a+") as f:
         f.write(f"footprint_mb,perf\n")
 
-        max_soi = 6
+        max_soi = config.N_BUBBLES
         dial_start = config.DIAL_START_MB
-        interval = config.DIAL_END_MB // max_soi
-        for i in range(max_soi + 1):
-            dial_end = i * interval
+        interval = config.DIAL_RANGE_MB // max_soi
+
+        # Profile reporter alone
+        perf = profile_reporter_sensitivity(reporter, 0, 0)
+
+        for i in range(0, max_soi):
+            dial_start = i * interval + config.DIAL_STEP_MB
+            dial_end = (i + 1) * interval + 1
+            nsoi = i + 1
             for size_mb in range(dial_start, dial_end, config.DIAL_STEP_MB):
-                logger.info(f"Profiling reporter with {i} SOI footprint {size_mb} MB")
-                perf = profile_reporter_sensitivity(reporter, size_mb, i)
+                logger.info(f"Profiling reporter with {nsoi} SOI footprint {size_mb} MB")
+                perf = profile_reporter_sensitivity(reporter, size_mb, nsoi)
                 f.write(f"{size_mb},{perf}\n")
 
             dial_start = dial_end

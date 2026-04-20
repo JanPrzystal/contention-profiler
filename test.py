@@ -1,7 +1,7 @@
 from time import sleep
 import logging
 
-from profile_reporter import profile_reporter_sensitivity, profile_reporter, profile_reporter_contentiousness
+from profile_reporter import profile_reporter_progressive, profile_reporter_sensitivity, profile_reporter, profile_reporter_contentiousness
 import profile_workload
 import reporter
 import spec
@@ -25,7 +25,7 @@ if __name__ == "__main__":
     logging.basicConfig()
     logger.setLevel(logging.INFO)
 
-    CpuFreqPolicy.set_governor(Governor.PERFORMANCE)
+    # CpuFreqPolicy.set_governor(Governor.PERFORMANCE)
 
     # bubble = Bubble(32, 2)
     # sleep(1)
@@ -45,17 +45,20 @@ if __name__ == "__main__":
 
     bench = [spec.SpecWorkload("600.perlbench_s", "train"), spec.SpecWorkload("602.gcc_s", "train"), spec.SpecWorkload("649.fotonik3d_s", "train"), spec.SpecWorkload("619.lbm_s", "train")]
 
-    reporter = rp.AveragingReporter("build/altern_reporter.out")
+    # reporter = rp.AveragingReporter("build/altern_reporter.out")
+    reporter = rp.MembenchReporter("../membench/membench")
     
-    # profile_reporter(reporter)
+    # profile_reporter_progressive(reporter)
+    profile_reporter(reporter)
 
     # base = profile_sensitivity(reporter, 0)
 
     # print(f"Reporter base performance: {base}")
 
-    # rcnt = profile_reporter_contentiousness(reporter)
+    for i in range(6):
+        rcnt = profile_reporter_contentiousness(reporter)
 
-    # print(f"Reporter contentiousness: {rcnt}")
+        print(f"Reporter contentiousness: {rcnt}")
 
     # base = bench.profile(config.WORKLOAD_UNDER_PROFILING_CORES)
 
@@ -71,10 +74,10 @@ if __name__ == "__main__":
 
     # print(f"Workload performance with reporter in background: {score}")
 
-    os.makedirs(f"{config.RESULTS_DIR}/contentiousness", exist_ok=True)
+    # os.makedirs(f"{config.RESULTS_DIR}/contentiousness", exist_ok=True)
 
-    for b in bench:
-        profile_workload.profile_added_contentiousness(b, reporter)
+    # for b in bench:
+    #     profile_workload.profile_added_contentiousness(b, reporter)
 
     # # process = spec.run_background_benchmark("605.mcf_s", "1", "train")
     # for i in range(6):
@@ -107,5 +110,5 @@ if __name__ == "__main__":
 
         # logger.info(f"Cactu with pop2: {result}")
 
-    CpuFreqPolicy.reset_governor()
+    # CpuFreqPolicy.reset_governor()
 

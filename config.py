@@ -10,8 +10,9 @@ WORKLOAD_IN_BACKGROUND_CORES: Final[str] = "1-7"
 # Reporter and SoI dial constants
 REPORTER_CORES: str = "0"
 DIAL_START_MB: int = 0
-DIAL_STEP_MB: int = 8
-DIAL_END_MB: int = 32
+DIAL_STEP_MB: int = 16
+DIAL_END_MB: int = 64
+DIAL_RANGE_MB: int = DIAL_END_MB
 
 # MDS constants
 MDS_PROFILING_TIME_S: Final[int] = 120
@@ -23,14 +24,14 @@ REMOTE_NODE_NAME: Final[str] = "mc-b8"
 
 ROOT_TASK_CMD = ["sudo", "nice", "-n", "-20"]
 
-N_BUBBLES: int = 2
+N_BUBBLES: int = 4
 BUBBLE_TYPE = "rand"
 
-REPORTER_REPETITIONS: int = 20
+REPORTER_REPETITIONS: int = 40
 
 DATA_SIZE = "train"
 
-USE_ROOT_PRIORITY = True
+USE_ROOT_PRIORITY = False
 
 VALIDATIONS = 8
 

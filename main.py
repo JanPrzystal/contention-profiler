@@ -91,6 +91,7 @@ def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], pair
 def spec_experiment(experiment: experiment.Experiment):
     config.DIAL_STEP_MB = experiment.mem_interval
     config.DIAL_END_MB = experiment.max_mem_footprint
+    config.DIAL_RANGE_MB = config.DIAL_END_MB
     config.N_BUBBLES = experiment.soi.number
     config.BUBBLE_TYPE = experiment.soi.type
     config.REPORTER_REPETITIONS = experiment.reporter_repetitions
