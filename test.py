@@ -65,12 +65,15 @@ if __name__ == "__main__":
         procs = []
         for b in bench:
             cores = list(range(int(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[0]), int(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[1])))
-            proc = b.run_in_background(cores.pop(0))
+            proc = spec.run_background_benchmark(b.name, cores.pop(0), b.size)
             procs.append(proc)
 
         sleep(5)
 
         score = reporter.run(config.REPORTER_CORES, config.REPORTER_REPETITIONS)
+
+        for proc in procs:
+            os.kill(proc.pid, signal.SIGKILL)
 
         cnt = contentiousness.contentiousness_lookup(score)
 

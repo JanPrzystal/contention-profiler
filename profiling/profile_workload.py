@@ -146,7 +146,7 @@ def profile_added_contentiousness(workload: Workload, reporter: rp.Reporter) -> 
     # Save the contentiousness data 
     benchmark_file = workload.name.replace(".", "_")
     path = f"{config.RESULTS_DIR}/contentiousness/{benchmark_file}_contentiousness.csv"
-    logger.info(f"Path: {path}")
+    os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w+") as f:
         f.write("footprint_mb,contentiousness\n")
         for k, v in contentiousness.items():
