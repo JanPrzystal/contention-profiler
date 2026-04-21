@@ -43,19 +43,14 @@ def profile_reporter_progressive(reporter: rp.Reporter):
         dial_start = config.DIAL_START_MB
         interval = config.DIAL_RANGE_MB // max_soi
 
-        # Profile reporter alone
-        perf = profile_reporter_sensitivity(reporter, 0, 0)
+        nsoi = 0
 
-        for i in range(0, max_soi):
-            dial_start = i * interval + config.DIAL_STEP_MB
-            dial_end = (i + 1) * interval + 1
-            nsoi = i + 1
-            for size_mb in range(dial_start, dial_end, config.DIAL_STEP_MB):
-                logger.info(f"Profiling reporter with {nsoi} SOI footprint {size_mb} MB")
-                perf = profile_reporter_sensitivity(reporter, size_mb, nsoi)
-                f.write(f"{size_mb},{perf}\n")
+        for size_mb in range(config.DIAL_START_MB, config.DIAL_END_MB + config.DIAL_STEP_MB, config.DIAL_STEP_MB):
+            if size_mb > 0:
+                nsoi = size_mb // interval + 1
+            perf = profile_reporter_sensitivity(reporter, size_mb, nsoi)
+            f.write(f"{size_mb},{perf}\n")
 
-            dial_start = dial_end
 
 def profile_reporter_contentiousness(reporter: rp.Reporter) -> float:
     result = 0.0

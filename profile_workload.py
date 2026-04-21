@@ -151,19 +151,21 @@ def profile_added_contentiousness(workload: Workload, reporter: rp.Reporter) -> 
             f.write(f"{k},{v}\n")
 
     
-def _profile_sensitivity_progressive(reporter: Workload):
-    with open(f"{config.RESULTS_DIR}/reporter_sensitivity.csv", "a+") as f:
+def _profile_sensitivity_progressive(benchmark: Workload):
+    path = SENSITIVITY_DIR / f"{benchmark.name}_data.csv"
+    with open(path, "w+") as f:
         f.write(f"footprint_mb,perf\n")
 
         max_soi = config.N_BUBBLES
         dial_start = config.DIAL_START_MB
         interval = config.DIAL_RANGE_MB // max_soi
-        for i in range(max_soi + 1):
-            dial_end = i * interval
-            for size_mb in range(dial_start, dial_end, config.DIAL_STEP_MB):
-                logger.info(f"Profiling reporter with {i} SOI footprint {size_mb} MB")
-                perf = _profile_sensitivity_dial(reporter, size_mb, i)
-                f.write(f"{size_mb},{perf}\n")
 
-            dial_start = dial_end
+        nsoi = 0
+        
+        for size_mb in range(config.DIAL_START_MB, config.DIAL_END_MB + config.DIAL_STEP_MB, config.DIAL_STEP_MB):
+            if size_mb > 0:
+                nsoi = size_mb // interval + 1
+            perf = _profile_sensitivity_dial(benchmark, size_mb, nsoi)
+            f.write(f"{size_mb},{perf}\n")
+
 

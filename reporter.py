@@ -114,7 +114,7 @@ class MembenchReporter(Reporter):
                 logger.debug(f"reporter raw score: {number}")
 
                 # bigger number is better, but bigger score is worse, so invert the number
-                score = 1/number * 1000
+                score = 1/number * 100000
 
                 output[line_split[0].strip()] = score
     
