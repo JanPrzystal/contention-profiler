@@ -33,7 +33,7 @@ experiments:
     root: true
     profiling_repetitions: 1
     use_interpolation: true
-
+    progressive_profiling: false
 
 # 600.perlbench_s,
 # 602.gcc_s,

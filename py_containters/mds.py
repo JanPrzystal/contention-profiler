@@ -1,6 +1,6 @@
 import pathlib
-from kube_controller import KubeController
-from kube_workload import KubeWorkload
+from py_containters.kube_controller import KubeController
+from py_containters.kube_workload import KubeWorkload
 import config
 
 class MdsFactory:

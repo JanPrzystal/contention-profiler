@@ -6,7 +6,7 @@ import os
 import re
 import csv
 
-from contentiousness import inverse_leftmost_exact
+from profiling.contentiousness import inverse_leftmost_exact
 from scipy.interpolate import PchipInterpolator
 
 # Setup basic logging

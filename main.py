@@ -3,27 +3,27 @@ import logging
 import random
 import shutil
 import config
-import draw_sensitivity
-import draw_validation
-import profile_workload
-import profile_reporter
-import contentiousness
-import prediction
-import validation
+import analysis.draw_sensitivity as draw_sensitivity
+import analysis.draw_validation as draw_validation
+import profiling.profile_workload as profile_workload
+import profiling.profile_reporter as profile_reporter
+import profiling.contentiousness as contentiousness
+import prediction.prediction as prediction
+import prediction.validation as validation
 import subprocess
-from spec import SpecWorkload
-from mds import MdsFactory
-from kube_workload import KubeWorkload
+from experiment_setup.spec import SpecWorkload
+from py_containters.mds import MdsFactory
+from py_containters.kube_workload import KubeWorkload
 from typing import List
-from cpu_freq import CpuFreqPolicy, Governor
-import experiment
+from experiment_setup.cpu_freq import CpuFreqPolicy, Governor
+import experiment_setup.experiment as experiment
 import csv
 from datetime import datetime
 
 from time import time
 
-import reporter as rp
-from workload import Workload
+import experiment_setup.reporter as rp
+from experiment_setup.workload import Workload
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +51,7 @@ def predict_performance(applications: List[Workload]) -> List[prediction.Predict
 
 def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], pairwise: bool):
     tstart = time()
-    profile_reporter.profile_reporter_progressive(reporter)
+    profile_reporter.profile_reporter(reporter)
     treporter = time() - tstart
 
     max_contentiousness = profile_workload.profile_contentiousness(applications, reporter)
@@ -101,6 +101,9 @@ def spec_experiment(experiment: experiment.Experiment):
     config.USE_INTERPOLATION = experiment.use_interpolation
 
     reporter = rp.AveragingReporter(REPORTER_SCRIPT_FILES[experiment.reporter])
+    if experiment.reporter == "tinymembench":
+        reporter = rp.MembenchReporter(REPORTER_SCRIPT_FILES[experiment.reporter])
+        
     applications = [SpecWorkload(name, config.DATA_SIZE) for name in experiment.benchmarks]
 
     # CPU Governor set here to take into account root priviledge configuration

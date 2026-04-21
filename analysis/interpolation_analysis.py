@@ -9,8 +9,8 @@ from scipy.interpolate import PchipInterpolator
 
 import config
 
-import contentiousness
-import prediction
+import profiling.contentiousness as contentiousness
+import prediction.prediction as prediction
 
 reporter_sensitivity_spline = contentiousness.get_reporter_sensitivity_spline()
 

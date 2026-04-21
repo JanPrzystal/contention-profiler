@@ -7,11 +7,11 @@ from tracemalloc import start
 from typing import Union, List
 from collections import namedtuple
 import config
-from workload import Workload
-from prediction import Prediction
+from experiment_setup.workload import Workload
+from prediction.prediction import Prediction
 import logging
-from spec import run_background_benchmark, stop_benchmark
-from prediction import get_sensitivity
+from experiment_setup.spec import run_background_benchmark, stop_benchmark
+from prediction.prediction import get_sensitivity
 
 ValidatedPrediction = namedtuple(
     "ValidatedPrediction", Prediction._fields + ("actual_perf",)

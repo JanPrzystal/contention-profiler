@@ -1,8 +1,8 @@
 import json
 from typing import List, Dict
-from workload import Workload
+from experiment_setup.workload import Workload
 from collections import namedtuple
-from contentiousness import read_contentiousness
+from profiling.contentiousness import read_contentiousness
 
 from scipy.interpolate import PchipInterpolator
 
@@ -10,7 +10,7 @@ import config
 import logging
 from itertools import combinations
 import csv
-import prediction
+import prediction.prediction as prediction
 
 logger = logging.getLogger(__name__)
 

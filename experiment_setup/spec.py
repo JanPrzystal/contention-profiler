@@ -5,7 +5,7 @@ import logging
 
 import config
 
-from workload import Workload
+from experiment_setup.workload import Workload
 
 logger = logging.getLogger(__name__)
 

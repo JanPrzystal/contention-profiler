@@ -3,12 +3,12 @@ import time
 import logging
 import signal
 
-import reporter as rp
+import experiment_setup.reporter as rp
 
 logger = logging.getLogger(__name__)
-from contention_synthesis import Bubble
+from experiment_setup.contention_synthesis import Bubble
 import config
-import contentiousness as cnt
+import profiling.contentiousness as cnt
 
 
 def profile_reporter_sensitivity(reporter: rp.Reporter, size_mb: int, nsoi: int = config.N_BUBBLES) -> float:
@@ -26,8 +26,8 @@ def profile_reporter_sensitivity(reporter: rp.Reporter, size_mb: int, nsoi: int 
         bubble.stop()
 
 
-def profile_reporter(reporter: rp.Reporter) -> None:
-    with open(f"{config.RESULTS_DIR}/reporter_sensitivity.csv", "a+") as f:
+def _profile_reporter(reporter: rp.Reporter) -> None:
+    with open(f"{config.RESULTS_DIR}/reporter_sensitivity.csv", "w+") as f:
         f.write(f"footprint_mb,perf\n")
         
         for size_mb in range(config.DIAL_START_MB, config.DIAL_END_MB + config.DIAL_STEP_MB, config.DIAL_STEP_MB):
@@ -35,8 +35,8 @@ def profile_reporter(reporter: rp.Reporter) -> None:
             f.write(f"{size_mb},{perf}\n")
             
 
-def profile_reporter_progressive(reporter: rp.Reporter):
-    with open(f"{config.RESULTS_DIR}/reporter_sensitivity.csv", "a+") as f:
+def _profile_reporter_progressive(reporter: rp.Reporter) -> None:
+    with open(f"{config.RESULTS_DIR}/reporter_sensitivity.csv", "w+") as f:
         f.write(f"footprint_mb,perf\n")
 
         max_soi = config.N_BUBBLES
@@ -50,6 +50,12 @@ def profile_reporter_progressive(reporter: rp.Reporter):
                 nsoi = size_mb // interval + 1
             perf = profile_reporter_sensitivity(reporter, size_mb, nsoi)
             f.write(f"{size_mb},{perf}\n")
+
+def profile_reporter(reporter: rp.Reporter) -> None:
+    if config.PROGRESSIVE_PROFILING:
+        _profile_reporter_progressive(reporter)
+    else:
+        _profile_reporter(reporter)
 
 
 def profile_reporter_contentiousness(reporter: rp.Reporter) -> float:

@@ -1,7 +1,7 @@
-from workload import Workload
-from kube_controller import KubeController
+from experiment_setup.workload import Workload
+from py_containters.kube_controller import KubeController
 from typing import Optional
-from metrics import query_median_latency
+from py_containters.metrics import query_median_latency
 import pathlib
 import time
 import logging

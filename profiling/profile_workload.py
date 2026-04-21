@@ -4,15 +4,15 @@ import time
 import logging
 from pathlib import Path
 
-import reporter as rp
-import workload
+import experiment_setup.reporter as rp
+import experiment_setup.workload as workload
 
 logger = logging.getLogger(__name__)
-from contention_synthesis import Bubble
+from experiment_setup.contention_synthesis import Bubble
 import config
-from workload import Workload
+from experiment_setup.workload import Workload
 
-import contentiousness as cnt
+import profiling.contentiousness as cnt
 
 SENSITIVITY_DIR = Path(config.RESULTS_DIR) / 'sensitivity'
 
@@ -91,8 +91,10 @@ def profile_sensitivity(workloads: list[Workload]) -> None:
     if not os.path.isdir(SENSITIVITY_DIR):
         os.mkdir(SENSITIVITY_DIR)
     for workload in workloads:
-        # _profile_sensitivity(workload)
-        _profile_sensitivity_progressive(workload)
+        if config.PROGRESSIVE_PROFILING:
+            _profile_sensitivity_progressive(workload)
+        else:
+            _profile_sensitivity(workload)
     
 
 # Profiles the contentiousness of each workload and saves the results to a file. Returns the maximum contentiousness score across all workloads.
@@ -167,5 +169,4 @@ def _profile_sensitivity_progressive(benchmark: Workload):
                 nsoi = size_mb // interval + 1
             perf = _profile_sensitivity_dial(benchmark, size_mb, nsoi)
             f.write(f"{size_mb},{perf}\n")
-
 
