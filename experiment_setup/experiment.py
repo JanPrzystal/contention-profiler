@@ -21,6 +21,7 @@ class Experiment:
     data_size: str
     profiling_repetitions: int
     use_interpolation: bool
+    progressive_profiling: bool
 
 # VALIDATIONS = 8
 
@@ -43,7 +44,8 @@ def parse_config():
             root=exp["root"],
             data_size=exp["data_size"],
             profiling_repetitions=exp["profiling_repetitions"],
-            use_interpolation=exp["use_interpolation"]
+            use_interpolation=exp["use_interpolation"],
+            progressive_profiling=exp["progressive_profiling"]
         )
         experiments.append(experiment)
         print(exp)
