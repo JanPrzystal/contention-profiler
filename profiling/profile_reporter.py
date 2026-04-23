@@ -48,7 +48,7 @@ def _profile_reporter_progressive(reporter: rp.Reporter) -> None:
         for size_mb in range(config.DIAL_START_MB, config.DIAL_END_MB + config.DIAL_STEP_MB, config.DIAL_STEP_MB):
             if size_mb > 0:
                 nsoi = size_mb // interval + 1
-            perf = profile_reporter_sensitivity(reporter, size_mb, nsoi)
+            perf = profile_reporter_sensitivity(reporter, size_mb * nsoi, nsoi)
             f.write(f"{size_mb},{perf}\n")
 
 def profile_reporter(reporter: rp.Reporter) -> None:

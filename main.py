@@ -100,9 +100,12 @@ def spec_experiment(experiment: experiment.Experiment):
     config.PROFILING_REPETITIONS = experiment.profiling_repetitions
     config.USE_INTERPOLATION = experiment.use_interpolation
 
-    reporter = rp.AveragingReporter(REPORTER_SCRIPT_FILES[experiment.reporter])
+    reporter = None
     if experiment.reporter == "tinymembench":
-        reporter = rp.MembenchReporter(REPORTER_SCRIPT_FILES[experiment.reporter])
+        mbenchpath = "./membench/membench"
+        reporter = rp.MembenchReporter(mbenchpath)
+    else:
+        reporter = rp.AveragingReporter(REPORTER_SCRIPT_FILES[experiment.reporter])
         
     applications = [SpecWorkload(name, config.DATA_SIZE) for name in experiment.benchmarks]
 
@@ -121,6 +124,9 @@ def spec_experiment(experiment: experiment.Experiment):
         f.write(f"Reporter Repetitions: {experiment.reporter_repetitions}\n")
         f.write(f"Data Size: {experiment.data_size}\n")
         f.write(f"Root Priority: {experiment.root}\n")
+        f.write(f"Progressive Profiling: {experiment.progressive_profiling}\n")
+        f.write(f"Interpolation: {experiment.use_interpolation}\n")
+        # f.write(f"")
 
     conduct_experiment(reporter, applications, experiment.deployment == "pairwise")
 

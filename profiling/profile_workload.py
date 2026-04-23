@@ -53,7 +53,7 @@ def _profile_sensitivity(workload: Workload) -> None:
         
         if size_mb in sensitivity:
             continue
-        sensitivity[size_mb] = _profile_sensitivity_dial(workload, size_mb)
+        sensitivity[size_mb] = _profile_sensitivity_dial(workload, size_mb, config.N_BUBBLES)
         time.sleep(WIND_DOWN_TIME)
 
     _save_sensitivity_data(workload.name, sensitivity)
@@ -167,6 +167,6 @@ def _profile_sensitivity_progressive(benchmark: Workload):
         for size_mb in range(config.DIAL_START_MB, config.DIAL_END_MB + config.DIAL_STEP_MB, config.DIAL_STEP_MB):
             if size_mb > 0:
                 nsoi = size_mb // interval + 1
-            perf = _profile_sensitivity_dial(benchmark, size_mb, nsoi)
+            perf = _profile_sensitivity_dial(benchmark, size_mb * nsoi, nsoi)
             f.write(f"{size_mb},{perf}\n")
 
