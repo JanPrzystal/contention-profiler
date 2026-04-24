@@ -100,6 +100,7 @@ def spec_experiment(experiment: experiment.Experiment):
     config.PROFILING_REPETITIONS = experiment.profiling_repetitions
     config.USE_INTERPOLATION = experiment.use_interpolation
     config.PROGRESSIVE_PROFILING = experiment.progressive_profiling
+    config.VALIDATIONS = experiment.validations
 
     reporter = None
     if experiment.reporter == "tinymembench":

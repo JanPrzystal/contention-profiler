@@ -22,8 +22,8 @@ class Experiment:
     profiling_repetitions: int
     use_interpolation: bool
     progressive_profiling: bool
+    validations: int
 
-# VALIDATIONS = 8
 
 def parse_config():
     with open("experiments.yaml", "r") as f:
@@ -45,7 +45,8 @@ def parse_config():
             data_size=exp["data_size"],
             profiling_repetitions=exp["profiling_repetitions"],
             use_interpolation=exp["use_interpolation"],
-            progressive_profiling=exp["progressive_profiling"]
+            progressive_profiling=exp["progressive_profiling"],
+            validations=exp["validations"]
         )
         experiments.append(experiment)
         print(exp)
