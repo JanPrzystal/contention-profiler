@@ -16,6 +16,7 @@ from experiment_setup.contention_synthesis import Bubble, BUILD_DIR
 import config
 import experiment_setup.reporter as rp
 from experiment_setup.cpu_freq import CpuFreqPolicy, Governor
+import perf
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +25,10 @@ if __name__ == "__main__":
 
     logging.basicConfig()
     logger.setLevel(logging.INFO)
+
+    stats = perf.profile("../membench/membench")
+
+    print (stats)
 
     # CpuFreqPolicy.set_governor(Governor.PERFORMANCE)
 
@@ -43,9 +48,9 @@ if __name__ == "__main__":
     # spec.run_background_benchmark("628.pop2_s", "5", "train")
     # spec.run_background_benchmark("607.cactuBSSN_s", "6", "train")
 
-    bench = [spec.SpecWorkload("600.perlbench_s", "train"), spec.SpecWorkload("602.gcc_s", "train"), spec.SpecWorkload("631.deepsjeng_s", "train")]
+    # bench = [spec.SpecWorkload("600.perlbench_s", "train"), spec.SpecWorkload("602.gcc_s", "train"), spec.SpecWorkload("631.deepsjeng_s", "train")]
 
-    reporter = rp.AveragingReporter("build/altern_reporter.out")
+    # reporter = rp.AveragingReporter("build/altern_reporter.out")
     # reporter = rp.MembenchReporter("../membench/membench")
     
     # profile_reporter_progressive(reporter)
@@ -57,27 +62,27 @@ if __name__ == "__main__":
 
     # print(f"Reporter base performance: {base}")
 
-    for i in range(6):
-        rcnt = profile_reporter_contentiousness(reporter)
+    # for i in range(6):
+    #     rcnt = profile_reporter_contentiousness(reporter)
 
-        print(f"Reporter contentiousness: {rcnt}")
+    #     print(f"Reporter contentiousness: {rcnt}")
 
-        procs = []
-        for b in bench:
-            cores = list(range(int(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[0]), int(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[1])))
-            proc = spec.run_background_benchmark(b.name, cores.pop(0), b.size)
-            procs.append(proc)
+    #     procs = []
+    #     for b in bench:
+    #         cores = list(range(int(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[0]), int(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[1])))
+    #         proc = spec.run_background_benchmark(b.name, cores.pop(0), b.size)
+    #         procs.append(proc)
 
-        sleep(5)
+    #     sleep(5)
 
-        score = reporter.run(config.REPORTER_CORES, config.REPORTER_REPETITIONS)
+    #     score = reporter.run(config.REPORTER_CORES, config.REPORTER_REPETITIONS)
 
-        for proc in procs:
-            os.kill(proc.pid, signal.SIGKILL)
+    #     for proc in procs:
+    #         os.kill(proc.pid, signal.SIGKILL)
 
-        cnt = contentiousness.contentiousness_lookup(score)
+    #     cnt = contentiousness.contentiousness_lookup(score)
 
-        print(f"Workloads contentiousness: {cnt}")
+    #     print(f"Workloads contentiousness: {cnt}")
 
 
     # base = bench.profile(config.WORKLOAD_UNDER_PROFILING_CORES)

@@ -15,8 +15,7 @@ data = {
     "c6 16MB interpolation": [168.553, 727.699, 4868.333], #99th 16.4
 }
 
-if __name__ == "__main__":
-
+def draw_times(data, validation: bool = True):
     labels = list(data.keys())
     values = np.array(list(data.values()))  # shape (n_groups, 3)
 
@@ -25,8 +24,9 @@ if __name__ == "__main__":
 
     plt.figure(figsize=(10, 6))
 
-    # legend = ['Reporter', 'Contentiousness', 'Sensitivity', 'Validation']
-    legend = ['Reporter', 'Contentiousness', 'Sensitivity']
+    legend = ['Reporter', 'Contentiousness', 'Sensitivity', 'Validation']
+    if validation:
+        legend = ['Reporter', 'Contentiousness', 'Sensitivity']
 
     bottom = np.zeros(len(labels))
 
@@ -43,3 +43,6 @@ if __name__ == "__main__":
 
     image_output_path = f"{config.RESULTS_DIR}/times.png"
     plt.savefig(image_output_path, dpi=300)
+
+if __name__ == "__main__":
+    draw_times(data)

@@ -22,11 +22,12 @@ legend_labels = [
     # "No interpolation better", 
     # "Equal"
     "Max Absolute Error", 
-    "Absolute Mean Error", 
+    # "Absolute Mean Error", 
+    "Mean Absolute Error", 
     "Range [pp]"
     ]
 
-if __name__ == "__main__":
+def draw_errors(data):
     labels = list(data.keys())
     values = np.array(list(data.values()))  # shape (n_groups, 3)
 
@@ -47,3 +48,6 @@ if __name__ == "__main__":
 
     image_output_path = f"{config.RESULTS_DIR}/errors.png"
     plt.savefig(image_output_path, dpi=300)
+
+if __name__ == "__main__":
+    draw_errors(data)

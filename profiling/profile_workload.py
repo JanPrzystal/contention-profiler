@@ -154,7 +154,8 @@ def profile_added_contentiousness(workload: Workload, reporter: rp.Reporter) -> 
 
     
 def _profile_sensitivity_progressive(benchmark: Workload):
-    path = SENSITIVITY_DIR / f"{benchmark.name}_data.csv"
+    name = benchmark.name.replace(".", "_")
+    path = SENSITIVITY_DIR / f"{name}_data.csv"
     with open(path, "w+") as f:
         f.write(f"footprint_mb,perf\n")
 
