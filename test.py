@@ -31,7 +31,7 @@ def test_combined_contentiousness():
 
     base = profile_workload.profile_sensitivity([app])
 
-    # _maxc = profile_workload.profile_contentiousness(bench, reporter)
+    _maxc = profile_workload.profile_contentiousness(bench, reporter)
 
     sensitivity = prediction.get_sensitivity(app.name)
     predicion = prediction.predict_app_performance(app, bench, sensitivity)
@@ -64,14 +64,19 @@ def test_combined_contentiousness():
 
     validated_cnt = contentiousness.contentiousness_lookup(sensitivity(0) * validated)
 
+    print(f"Validated contentiousness {validated_cnt}")
+
+
 
 def test_soi_additiveness():
 
     reporter = rp.AveragingReporter("alternating")
 
+    base = 8
+
     for i in range(1, 6):
-        soi1 = Bubble(4*i, 1)
-        soi2 = Bubble(4, i)
+        soi1 = Bubble(base*i, 1)
+        soi2 = Bubble(base, i)
 
         soi1.run_in_background(config.WORKLOAD_IN_BACKGROUND_CORES)
 
@@ -81,7 +86,7 @@ def test_soi_additiveness():
 
         soi1.stop()
 
-        print(f"1x{4*i}MB: {score}")
+        print(f"1x{base*i}MB: {score}")
 
         soi2.run_in_background(config.WORKLOAD_IN_BACKGROUND_CORES)
 
@@ -91,7 +96,7 @@ def test_soi_additiveness():
 
         soi2.stop()
 
-        print(f"{i}x4MB: {score}")
+        print(f"{i}x{base}MB: {score}")
 
 
 
@@ -101,16 +106,16 @@ if __name__ == "__main__":
     logging.basicConfig()
     logger.setLevel(logging.INFO)
 
-    config.USE_ROOT_PRIORITY = False
+    # config.USE_ROOT_PRIORITY = False
 
     CpuFreqPolicy.set_governor(Governor.PERFORMANCE)
 
 
-    config.DIAL_END_MB = 128
+    config.DIAL_END_MB = 80
 
-    test_soi_additiveness()
+    # test_soi_additiveness()
 
-    # test_combined_contentiousness()
+    test_combined_contentiousness()
 
     # stats = perf.profile("./membench/membench")
 
