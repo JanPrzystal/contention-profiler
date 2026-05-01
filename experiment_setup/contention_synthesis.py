@@ -109,15 +109,16 @@ class Bubble(Workload):
             logger.info(f"Running {bubble_type}")
 
             if cores is None:
+                raise NotImplementedError(f"Rinning on specified cores not implemented")
+                #TODO
+    
+            else:
                 cmd = [
                     "taskset",
                     "-c",
                     f"{i+2}",
                     f"./{BUILD_DIR}/{bubble_type}",
-                ]       
-            else:
-                raise NotImplementedError(f"Rinning on specified cores not implemented")
-                #TODO
+                ]   
 
             if config.USE_ROOT_PRIORITY:
                 cmd = config.ROOT_TASK_CMD + cmd
