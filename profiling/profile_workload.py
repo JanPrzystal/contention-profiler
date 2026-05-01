@@ -16,8 +16,6 @@ import profiling.contentiousness as cnt
 
 SENSITIVITY_DIR = Path(config.RESULTS_DIR) / 'sensitivity'
 
-WARMUP_TIME = 4
-WIND_DOWN_TIME = 1
 
 def _get_sensitivity_data(workload_name: str) -> dict[int, float]:
     res = {}
@@ -54,7 +52,7 @@ def _profile_sensitivity(workload: Workload) -> None:
         if size_mb in sensitivity:
             continue
         sensitivity[size_mb] = _profile_sensitivity_dial(workload, size_mb, config.N_BUBBLES)
-        time.sleep(WIND_DOWN_TIME)
+        time.sleep(config.WIND_DOWN_TIME)
 
     _save_sensitivity_data(workload.name, sensitivity)
 
@@ -63,9 +61,9 @@ def _profile_sensitivity_dial(workload: Workload, size_mb: int, nproc: int) -> f
         logger.info("Profiling in isolation")
         return workload.profile(config.WORKLOAD_UNDER_PROFILING_CORES)
     bubble = Bubble(size_mb, nproc)
-    bubble.run()
+    bubble.run_in_background()
 
-    time.sleep(WARMUP_TIME)
+    time.sleep(config.WARMUP_TIME)
     
     try:
         return workload.profile(config.WORKLOAD_UNDER_PROFILING_CORES)
@@ -76,7 +74,7 @@ def _profile_contentiousness(workload: Workload, reporter: rp.Reporter) -> float
         core = config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[0]
         workload.run_in_background(core)
         try:
-            time.sleep(WARMUP_TIME)
+            time.sleep(config.WARMUP_TIME)
             score = reporter.run(config.REPORTER_CORES, config.REPORTER_REPETITIONS)
             return cnt.contentiousness_lookup(score)
         finally:
@@ -134,7 +132,7 @@ def profile_added_contentiousness(workload: Workload, reporter: rp.Reporter) -> 
             logger.info("Profiling in isolation")
             result = _profile_contentiousness(workload, reporter)
         bubble = Bubble(size_mb, config.N_BUBBLES)
-        bubble.run()
+        bubble.run_in_background()
         try:
             result = _profile_contentiousness(workload, reporter) - size_mb
         finally:

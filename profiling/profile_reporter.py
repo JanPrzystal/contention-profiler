@@ -18,8 +18,8 @@ def profile_reporter_sensitivity(reporter: rp.Reporter, size_mb: int, nsoi: int 
 
 
     bubble = Bubble(size_mb, nsoi)
-    bubble.run()
-    time.sleep(5)
+    bubble.run_in_background()
+    time.sleep(config.WORKLOAD_WARMUP_TIME)
     try:
         return reporter.run(config.REPORTER_CORES, config.REPORTER_REPETITIONS)
     finally:
@@ -69,7 +69,7 @@ def profile_reporter_contentiousness(reporter: rp.Reporter) -> float:
         bcore = config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[0]
         background = reporter.run_background(bcore)
         
-        time.sleep(2)
+        time.sleep(config.WORKLOAD_WARMUP_TIME)
 
         score = reporter.run(config.REPORTER_CORES, config.REPORTER_REPETITIONS)
 

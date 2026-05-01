@@ -57,14 +57,14 @@ def validate_prediction(prediction: Prediction, workload_map: dict[str, Workload
         background_processes.append(run_background_benchmark(competitor.name, str(core), competitor.size))
         # competitor.run_in_background(str(core))
 
-    time.sleep(10)
+    time.sleep(config.WORKLOAD_WARMUP_TIME)
     try:
         perf = primary.profile(config.WORKLOAD_UNDER_PROFILING_CORES)
         return ValidatedPrediction(actual_perf=(isolated_perf / perf), *prediction)
     finally:
         for process in background_processes:
             stop_benchmark(process)
-        time.sleep(1)
+        time.sleep(config.WORKLOAD_WIND_DOWN_TIME)
 
 def read_snapshot() -> dict[str, ValidatedPrediction]:
     if not os.path.exists(VALIDATION_FILE):

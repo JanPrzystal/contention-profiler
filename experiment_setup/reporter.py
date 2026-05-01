@@ -6,10 +6,19 @@ import config
 
 logger = logging.getLogger(__name__)
 
+REPORTER_SCRIPT_FILES = {
+    "alternating":"build/altern_reporter.out",
+    "hybrid":"build/hybrid_reporter.out",
+    "random":"build/rand_reporter.out",
+    "streaming":"build/stream_reporter.out",
+    "tinymembench": "membench/membench"
+}
 
 class Reporter(ABC):
     def __init__(self, script_file: str):
-        self.script_file = script_file
+        self.script_file = REPORTER_SCRIPT_FILES[script_file]
+        if self.script_file is None:
+            raise ValueError(f"Invalid script file")
 
     @abstractmethod
     def run(self, cores: str, repetitions: int = 25) -> float:
@@ -61,7 +70,7 @@ class AveragingReporter(Reporter):
                 output[line[0]] = float(line[1])
         return self.process_output(output)
     
-    def run_background(self, cores: str):
+    def run_background(self, cores: str) -> subprocess.Popen:
         logger.info("Running reporter in the background")
 
         cmd = [

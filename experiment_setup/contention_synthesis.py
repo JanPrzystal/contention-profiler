@@ -3,6 +3,7 @@ import os
 import logging
 
 import config
+from experiment_setup.workload import Workload
 
 logger = logging.getLogger(__name__)
 
@@ -52,8 +53,8 @@ class Sledge():
             return
         os.kill(self.proc.pid, 9)
 
-class Bubble():
-    ELEM_SIZE = 8
+class Bubble(Workload):
+    ELEM_SIZE = 8 # The size of the elements used in the SoI application in bytes (int64 = 8)
 
     def __init__(self, size_mb: int, n_proc = 1):
         self.n_proc = n_proc
@@ -94,7 +95,10 @@ class Bubble():
         )
         self.procs = []
 
-    def run(self) -> None:
+    def profile(self, cores: str) -> float:
+        raise NotImplementedError("\"profile\" not implemented for Bubble")
+
+    def run_in_background(self, cores: str|None = None) -> None:
         for i in range(self.n_proc):
             if config.BUBBLE_TYPE == "stream":
                 bubble_type = "bubble_stream.out"
@@ -104,13 +108,17 @@ class Bubble():
                 bubble_type = "bubble_stream.out" if i % 2 == 0 else "bubble_rand.out"
             logger.info(f"Running {bubble_type}")
 
-            cmd = [
-                "taskset",
-                "-c",
-                f"{i+2}",
-                f"./{BUILD_DIR}/{bubble_type}",
-            ]
-            
+            if cores is None:
+                cmd = [
+                    "taskset",
+                    "-c",
+                    f"{i+2}",
+                    f"./{BUILD_DIR}/{bubble_type}",
+                ]       
+            else:
+                raise NotImplementedError(f"Rinning on specified cores not implemented")
+                #TODO
+
             if config.USE_ROOT_PRIORITY:
                 cmd = config.ROOT_TASK_CMD + cmd
 

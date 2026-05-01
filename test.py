@@ -20,120 +20,90 @@ import perf
 
 logger = logging.getLogger(__name__)
 
+def test_combined_contentiousness():
+    bench = [spec.SpecWorkload("619.lbm_s", "train"), spec.SpecWorkload("600.perlbench_s", "train"), spec.SpecWorkload("649.fotonik3d_s", "train"), spec.SpecWorkload("654.roms_s", "train")]
+
+    app = spec.SpecWorkload("657.xz_s", "train")
+
+    reporter = rp.AveragingReporter("build/altern_reporter.out")
+        
+    # profile_reporter(reporter)
+
+    # base = profile_workload.profile_sensitivity([app])
+
+    # _maxc = profile_workload.profile_contentiousness(bench, reporter)
+
+    sensitivity = prediction.get_sensitivity(app.name)
+    predicion = prediction.predict_app_performance(app, bench, sensitivity)
+    pn = predicion._asdict()["perf"]
+    print(f"Predicted performance: {pn}")
+    
+    procs = []
+    for i, b in enumerate(bench):
+        print(f"{b.name}")
+        # cores = list(range(int(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[0]), int(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[1])))
+        proc = spec.run_background_benchmark(b.name, str(i+2), b.size)
+        procs.append(proc)
+
+    sleep(5)
+
+    score = reporter.run(config.REPORTER_CORES, config.REPORTER_REPETITIONS)
+
+    for proc in procs:
+        os.kill(proc.pid, signal.SIGKILL)
+
+    cnt = contentiousness.contentiousness_lookup(score)
+
+    print(f"Actual performance would be {sensitivity(0)/sensitivity(cnt)}")
+
+    print(f"Workloads contentiousness: {cnt}")
+
+    validated = validation.validate_prediction(predicion, {w.name: w for w in bench}) 
+
+    print(f"Validated {validated}")
+
+    validated_cnt = contentiousness.contentiousness_lookup(sensitivity(0) * validated)
 
 if __name__ == "__main__":
 
     logging.basicConfig()
     logger.setLevel(logging.INFO)
 
-    stats = perf.profile("../membench/membench")
+    CpuFreqPolicy.set_governor(Governor.PERFORMANCE)
 
-    print (stats)
 
-    # CpuFreqPolicy.set_governor(Governor.PERFORMANCE)
+    config.DIAL_END_MB = 128
 
-    # bubble = Bubble(32, 2)
-    # sleep(1)
-    # bubble.run()
-    # sleep(1)
-    # print("Running bubble for 500 seconds")
-    # sleep(500)
-    # bubble.stop()
+    test_combined_contentiousness()
+
+    # stats = perf.profile("./membench/membench")
+
+    # print (stats)
 
 
     # spec.run_background_benchmark("600.perlbench_s", "1", "train")
     # spec.run_background_benchmark("602.gcc_s", "2", "train")
     # spec.run_background_benchmark("631.deepsjeng_s", "3", "train")
-    # spec.run_background_benchmark("649.fotonik3d_s", "4", "train")
+    # proc1 = spec.run_background_benchmark("649.fotonik3d_s", "4", "train")
+    # proc2 = spec.run_background_benchmark("619.lbm_s", "5", "train")
     # spec.run_background_benchmark("628.pop2_s", "5", "train")
     # spec.run_background_benchmark("607.cactuBSSN_s", "6", "train")
 
-    # bench = [spec.SpecWorkload("600.perlbench_s", "train"), spec.SpecWorkload("602.gcc_s", "train"), spec.SpecWorkload("631.deepsjeng_s", "train")]
+    # stats = perf.profile("./membench/membench")
+
+    # print (stats)
+
+    # spec.stop_benchmark(proc1)
+    # spec.stop_benchmark(proc2)
+# 600.perlbench_s + 619.lbm_s + 649.fotonik3d_s + 654.roms_s
+    # bench = [spec.SpecWorkload("619.lbm_s", "train"), spec.SpecWorkload("600.perlbench_s", "train"), spec.SpecWorkload("649.fotonik3d_s", "train"), spec.SpecWorkload("654.roms_s", "train")]
+
+    # app = spec.SpecWorkload("657.xz_s", "train")
 
     # reporter = rp.AveragingReporter("build/altern_reporter.out")
     # reporter = rp.MembenchReporter("../membench/membench")
     
-    # profile_reporter_progressive(reporter)
-    # profile_reporter(reporter)
+ 
 
-    # base = profile_sensitivity(reporter, 0)
-
-    # _maxc = profile_workload.profile_contentiousness(bench, reporter)
-
-    # print(f"Reporter base performance: {base}")
-
-    # for i in range(6):
-    #     rcnt = profile_reporter_contentiousness(reporter)
-
-    #     print(f"Reporter contentiousness: {rcnt}")
-
-    #     procs = []
-    #     for b in bench:
-    #         cores = list(range(int(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[0]), int(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[1])))
-    #         proc = spec.run_background_benchmark(b.name, cores.pop(0), b.size)
-    #         procs.append(proc)
-
-    #     sleep(5)
-
-    #     score = reporter.run(config.REPORTER_CORES, config.REPORTER_REPETITIONS)
-
-    #     for proc in procs:
-    #         os.kill(proc.pid, signal.SIGKILL)
-
-    #     cnt = contentiousness.contentiousness_lookup(score)
-
-    #     print(f"Workloads contentiousness: {cnt}")
-
-
-    # base = bench.profile(config.WORKLOAD_UNDER_PROFILING_CORES)
-
-    # print(f"Workload base performance: {base}")
-
-    # background = reporter.run_background(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[0])
-
-    # sleep(5)
-
-    # score = bench.profile(config.WORKLOAD_UNDER_PROFILING_CORES)
-
-    # os.kill(background.pid, signal.SIGKILL)
-
-    # print(f"Workload performance with reporter in background: {score}")
-
-    # os.makedirs(f"{config.RESULTS_DIR}/contentiousness", exist_ok=True)
-
-    # for b in bench:
-    #     profile_workload.profile_added_contentiousness(b, reporter)
-
-    # # process = spec.run_background_benchmark("605.mcf_s", "1", "train")
-    # for i in range(6):
-    #     result = bench.profile("0")
-    #     sleep(2)
-
-    #     logger.info(f"Cactu alone: {result}")
-        
-        # proc = spec.run_background_benchmark("619.lbm_s", "1", "train")
-        # sleep(2)
-        # result = bench.profile("0")
-        # spec.stop_benchmark(proc)
-        # sleep(2)
-
-        # logger.info(f"Cactu with lbm: {result}")
-
-        # proc = spec.run_background_benchmark("631.deepsjeng_s", "2", "train")
-        # sleep(2)
-        # result = bench.profile("0")
-        # spec.stop_benchmark(proc)
-        # sleep(2)
-
-        # logger.info(f"Cactu with deepsjeng: {result}")
-
-        # proc = spec.run_background_benchmark("628.pop2_s", "3", "train")
-        # sleep(2)
-        # result = bench.profile("0")
-        # spec.stop_benchmark(proc)
-        # sleep(2)
-
-        # logger.info(f"Cactu with pop2: {result}")
-
-    # CpuFreqPolicy.reset_governor()
+    CpuFreqPolicy.reset_governor()
 

@@ -10,10 +10,11 @@ from experiment_setup.workload import Workload
 logger = logging.getLogger(__name__)
 
 class SpecWorkload(Workload):
-    def __init__(self, name, size="train"):
+    def __init__(self, name: str, size="train"):
+        self.name = name
         self.size = size
         self.proc = None
-        super().__init__(name)
+        # super().__init__()
 
     def profile(self, cores: str, iterations: int = 1) -> float:
         # return run_benchmark(self, self.name, cores, self.size)
