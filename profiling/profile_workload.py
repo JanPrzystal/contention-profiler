@@ -52,7 +52,7 @@ def _profile_sensitivity(workload: Workload) -> None:
         if size_mb in sensitivity:
             continue
         sensitivity[size_mb] = _profile_sensitivity_dial(workload, size_mb, config.N_BUBBLES)
-        time.sleep(config.WIND_DOWN_TIME)
+        time.sleep(config.WORKLOAD_WIND_DOWN_TIME)
 
     _save_sensitivity_data(workload.name, sensitivity)
 
@@ -63,7 +63,7 @@ def _profile_sensitivity_dial(workload: Workload, size_mb: int, nproc: int) -> f
     bubble = Bubble(size_mb, nproc)
     bubble.run_in_background()
 
-    time.sleep(config.WARMUP_TIME)
+    time.sleep(config.WORKLOAD_WARMUP_TIME)
     
     try:
         return workload.profile(config.WORKLOAD_UNDER_PROFILING_CORES)
@@ -74,7 +74,7 @@ def _profile_contentiousness(workload: Workload, reporter: rp.Reporter) -> float
         core = config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[0]
         workload.run_in_background(core)
         try:
-            time.sleep(config.WARMUP_TIME)
+            time.sleep(config.WORKLOAD_WARMUP_TIME)
             score = reporter.run(config.REPORTER_CORES, config.REPORTER_REPETITIONS)
             return cnt.contentiousness_lookup(score)
         finally:
@@ -104,7 +104,7 @@ def profile_contentiousness(workloads: list[Workload], reporter: rp.Reporter) ->
         if not workload.name:
             logger.warning(f"Workload {workload} has no name, skipping contentiousness profiling")
             continue
-        time.sleep(WIND_DOWN_TIME)
+        time.sleep(config.WORKLOAD_WIND_DOWN_TIME)
 
         contentiousness[workload.name] = _profile_contentiousness(workload, reporter)
         logger.info(f"{workload.name} contentiousness: {contentiousness[workload.name]}")

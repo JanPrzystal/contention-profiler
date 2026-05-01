@@ -25,11 +25,11 @@ def test_combined_contentiousness():
 
     app = spec.SpecWorkload("657.xz_s", "train")
 
-    reporter = rp.AveragingReporter("build/altern_reporter.out")
+    reporter = rp.AveragingReporter("alternating")
         
-    # profile_reporter(reporter)
+    profile_reporter(reporter)
 
-    # base = profile_workload.profile_sensitivity([app])
+    base = profile_workload.profile_sensitivity([app])
 
     # _maxc = profile_workload.profile_contentiousness(bench, reporter)
 
