@@ -132,7 +132,8 @@ def profile_added_contentiousness(workload: Workload, reporter: rp.Reporter) -> 
             logger.info("Profiling in isolation")
             result = _profile_contentiousness(workload, reporter)
         bubble = Bubble(size_mb, config.N_BUBBLES)
-        bubble.run_in_background(config.WORKLOAD_IN_BACKGROUND_CORES)
+        bcores = config.WORKLOAD_IN_BACKGROUND_CORES.replace(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[0], str (int(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[0]) + 1) )
+        bubble.run_in_background(bcores)
         try:
             result = _profile_contentiousness(workload, reporter) - size_mb
         finally:

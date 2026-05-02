@@ -58,7 +58,7 @@ def test_combined_contentiousness():
 
     print(f"Workloads contentiousness: {cnt}")
 
-    validated = validation.validate_prediction(predicion, {w.name: w for w in bench}) 
+    validated = validation.validate_prediction(predicion, {w.name.replace(".","_"): w for w in bench}) 
 
     print(f"Validated {validated}")
 
@@ -99,6 +99,18 @@ def test_soi_additiveness():
         print(f"{i}x{base}MB: {score}")
 
 
+def test_added_contentiousness():
+    config.DIAL_END_MB = 128
+
+    reporter = rp.AveragingReporter("alternating")
+    # reporter = rp.MembenchReporter("../membench/membench")
+
+    bench = [spec.SpecWorkload("619.lbm_s", "train"), spec.SpecWorkload("600.perlbench_s", "train"), spec.SpecWorkload("649.fotonik3d_s", "train"), spec.SpecWorkload("654.roms_s", "train")]
+
+    profile_reporter(reporter)
+
+    for w in bench:
+        profile_workload.profile_added_contentiousness(w, reporter)
 
 
 if __name__ == "__main__":
@@ -111,11 +123,13 @@ if __name__ == "__main__":
     CpuFreqPolicy.set_governor(Governor.PERFORMANCE)
 
 
-    config.DIAL_END_MB = 80
+    config.DIAL_END_MB = 96
 
     # test_soi_additiveness()
 
-    test_combined_contentiousness()
+    # test_combined_contentiousness()
+
+    test_added_contentiousness()
 
     # stats = perf.profile("./membench/membench")
 
@@ -137,12 +151,10 @@ if __name__ == "__main__":
     # spec.stop_benchmark(proc1)
     # spec.stop_benchmark(proc2)
 # 600.perlbench_s + 619.lbm_s + 649.fotonik3d_s + 654.roms_s
-    # bench = [spec.SpecWorkload("619.lbm_s", "train"), spec.SpecWorkload("600.perlbench_s", "train"), spec.SpecWorkload("649.fotonik3d_s", "train"), spec.SpecWorkload("654.roms_s", "train")]
 
     # app = spec.SpecWorkload("657.xz_s", "train")
 
-    # reporter = rp.AveragingReporter("build/altern_reporter.out")
-    # reporter = rp.MembenchReporter("../membench/membench")
+
     
  
 
