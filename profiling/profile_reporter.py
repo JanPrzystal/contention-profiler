@@ -11,7 +11,7 @@ import config
 import profiling.contentiousness as cnt
 
 
-def profile_reporter_sensitivity(reporter: rp.Reporter, size_mb: int, nsoi: int = config.N_BUBBLES) -> float:
+def profile_reporter_sensitivity(reporter: rp.Reporter, size_mb: int, nsoi: int = config.NSOI) -> float:
     if size_mb == 0:
         logger.info("Profiling in isolation")
         return reporter.run(config.REPORTER_CORES, config.REPORTER_REPETITIONS)
@@ -39,7 +39,7 @@ def _profile_reporter_progressive(reporter: rp.Reporter) -> None:
     with open(f"{config.RESULTS_DIR}/reporter_sensitivity.csv", "w+") as f:
         f.write(f"footprint_mb,perf\n")
 
-        max_soi = config.N_BUBBLES
+        max_soi = config.NSOI
         dial_start = config.DIAL_START_MB
         interval = config.DIAL_RANGE_MB // max_soi
 

@@ -134,7 +134,10 @@ def test_soi_additiveness():
 
 
 def test_added_contentiousness():
+    print("testing added contentiousness with progressive profiling")
     config.DIAL_END_MB = 128
+    config.NSOI = 7
+    config.PROGRESSIVE_PROFILING = True
 
     reporter = rp.AveragingReporter("alternating")
     # reporter = rp.MembenchReporter("../membench/membench")
@@ -159,11 +162,11 @@ if __name__ == "__main__":
 
     config.DIAL_END_MB = 96
 
-    test_soi_additiveness()
+    # test_soi_additiveness()
 
     # test_combined_contentiousness()
 
-    # test_added_contentiousness()
+    test_added_contentiousness()
 
     # stats = perf.profile("./membench/membench")
 

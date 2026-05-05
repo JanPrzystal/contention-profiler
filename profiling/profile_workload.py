@@ -51,7 +51,7 @@ def _profile_sensitivity(workload: Workload) -> None:
         
         if size_mb in sensitivity:
             continue
-        sensitivity[size_mb] = _profile_sensitivity_dial(workload, size_mb, config.N_BUBBLES)
+        sensitivity[size_mb] = _profile_sensitivity_dial(workload, size_mb, config.NSOI)
         time.sleep(config.WORKLOAD_WIND_DOWN_TIME)
 
     _save_sensitivity_data(workload.name, sensitivity)
@@ -131,7 +131,11 @@ def profile_added_contentiousness(workload: Workload, reporter: rp.Reporter) -> 
         if size_mb == 0:
             logger.info("Profiling in isolation")
             result = _profile_contentiousness(workload, reporter)
-        bubble = Bubble(size_mb, config.N_BUBBLES)
+
+        nsoi = config.NSOI
+        if config.PROGRESSIVE_PROFILING:
+            nsoi = size_mb // (config.DIAL_RANGE_MB // config.NSOI) + 1
+        bubble = Bubble(size_mb, nsoi)
         bcores = config.WORKLOAD_IN_BACKGROUND_CORES.replace(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[0], str (int(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[0]) + 1) )
         bubble.run_in_background(bcores)
         try:
@@ -158,7 +162,7 @@ def _profile_sensitivity_progressive(benchmark: Workload):
     with open(path, "w+") as f:
         f.write(f"footprint_mb,perf\n")
 
-        max_soi = config.N_BUBBLES
+        max_soi = config.NSOI
         dial_start = config.DIAL_START_MB
         interval = config.DIAL_RANGE_MB // max_soi
 

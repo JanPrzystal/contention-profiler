@@ -27,7 +27,7 @@ REMOTE_NODE_NAME: Final[str] = "mc-b8"
 
 ROOT_TASK_CMD = ["sudo", "nice", "-n", "-20"]
 
-N_BUBBLES: int = 4
+NSOI: int = 4
 BUBBLE_TYPE = "rand"
 
 REPORTER_REPETITIONS: int = 30
