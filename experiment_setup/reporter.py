@@ -40,7 +40,7 @@ class Reporter(ABC):
 
 class AveragingReporter(Reporter):
 
-    def run(self, cores: str, repetitions: int = 25) -> float:
+    def run(self, cores: str, repetitions: int = config.REPORTER_REPETITIONS) -> float:
         logger.info("Profiling with the reporter")
 
         cmd = [

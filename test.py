@@ -74,13 +74,13 @@ def test_soi_additiveness():
 
     reporter = rp.AveragingReporter("alternating")
 
-    reporter.profile()
+    profile_reporter(reporter)
 
     base = 8
 
     print("Test with SoI")
 
-    for i in range(4, 7):
+    for i in range(1, 7):
         soi1 = Bubble(base*i, 1)
         soi2 = Bubble(base, i)
 
@@ -110,7 +110,7 @@ def test_soi_additiveness():
 
     print("Test with benchmarks")
     app1 = spec.SpecWorkload("657.xz_s", "train")
-    app2 = spec.SpecWorkload("649.fotonik3d_s", "train")
+    app2 = spec.SpecWorkload("600.perlbench_s", "train")
 
     _maxc = profile_workload.profile_contentiousness([app1, app2], reporter)
 
@@ -122,6 +122,9 @@ def test_soi_additiveness():
     sleep(5)
 
     score = reporter.run(config.WORKLOAD_UNDER_PROFILING_CORES)
+
+    app1.stop()
+    app2.stop()
 
     cnt = contentiousness.contentiousness_lookup(score)
 
@@ -166,28 +169,6 @@ if __name__ == "__main__":
 
     # print (stats)
 
-
-    # spec.run_background_benchmark("600.perlbench_s", "1", "train")
-    # spec.run_background_benchmark("602.gcc_s", "2", "train")
-    # spec.run_background_benchmark("631.deepsjeng_s", "3", "train")
-    # proc1 = spec.run_background_benchmark("649.fotonik3d_s", "4", "train")
-    # proc2 = spec.run_background_benchmark("619.lbm_s", "5", "train")
-    # spec.run_background_benchmark("628.pop2_s", "5", "train")
-    # spec.run_background_benchmark("607.cactuBSSN_s", "6", "train")
-
-    # stats = perf.profile("./membench/membench")
-
-    # print (stats)
-
-    # spec.stop_benchmark(proc1)
-    # spec.stop_benchmark(proc2)
-# 600.perlbench_s + 619.lbm_s + 649.fotonik3d_s + 654.roms_s
-
-    # app = spec.SpecWorkload("657.xz_s", "train")
-
-
-    
- 
 
     CpuFreqPolicy.reset_governor()
 
