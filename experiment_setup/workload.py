@@ -2,7 +2,8 @@ from abc import ABC, abstractmethod
 
 class Workload(ABC):
 
-    def __init__(self):
+    def __init__(self, name: str):
+        self.name = name
         pass
 
     @abstractmethod

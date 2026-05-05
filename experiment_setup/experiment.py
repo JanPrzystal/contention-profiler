@@ -104,7 +104,7 @@ def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], pair
 
     else:
         predictions = predict_performance(applications)
-        validated_predictions = validation.validate_predictions(predictions, {w.name: w for w in applications})
+        validated_predictions = validation.validate_predictions(predictions, applications)
         validation.save_validated_predictions(validated_predictions)
 
     texperiment = time() - tstart

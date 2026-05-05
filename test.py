@@ -25,6 +25,8 @@ def test_combined_contentiousness():
 
     app = spec.SpecWorkload("657.xz_s", "train")
 
+    apps = [app] + bench
+
     reporter = rp.AveragingReporter("alternating")
         
     profile_reporter(reporter)
@@ -58,7 +60,7 @@ def test_combined_contentiousness():
 
     print(f"Workloads contentiousness: {cnt}")
 
-    validated = validation.validate_prediction(predicion, {w.name.replace(".","_"): w for w in bench}) 
+    validated = validation.validate_prediction(predicion, apps) 
 
     print(f"Validated {validated}")
 
@@ -72,9 +74,13 @@ def test_soi_additiveness():
 
     reporter = rp.AveragingReporter("alternating")
 
+    reporter.profile()
+
     base = 8
 
-    for i in range(1, 6):
+    print("Test with SoI")
+
+    for i in range(4, 7):
         soi1 = Bubble(base*i, 1)
         soi2 = Bubble(base, i)
 
@@ -86,7 +92,9 @@ def test_soi_additiveness():
 
         soi1.stop()
 
-        print(f"1x{base*i}MB: {score}")
+        cnt = contentiousness.contentiousness_lookup(score)
+
+        print(f"1x{base*i}MB: {score}, contentiousness: {cnt}")
 
         soi2.run_in_background(config.WORKLOAD_IN_BACKGROUND_CORES)
 
@@ -96,7 +104,30 @@ def test_soi_additiveness():
 
         soi2.stop()
 
-        print(f"{i}x{base}MB: {score}")
+        cnt = contentiousness.contentiousness_lookup(score)
+
+        print(f"{i}x{base}MB: {score}, contentiousness: {cnt}")
+
+    print("Test with benchmarks")
+    app1 = spec.SpecWorkload("657.xz_s", "train")
+    app2 = spec.SpecWorkload("649.fotonik3d_s", "train")
+
+    _maxc = profile_workload.profile_contentiousness([app1, app2], reporter)
+
+    print("Profiling contentiousness of 2 apps")
+
+    app1.run_in_background(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[0])
+    app2.run_in_background(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[1])
+
+    sleep(5)
+
+    score = reporter.run(config.WORKLOAD_UNDER_PROFILING_CORES)
+
+    cnt = contentiousness.contentiousness_lookup(score)
+
+    for name, cont in contentiousness.read_contentiousness().items():
+        print(f"{name}: {cont}")
+    print(f"Contentiousness of all apps together: {cnt}")
 
 
 def test_added_contentiousness():
@@ -125,11 +156,11 @@ if __name__ == "__main__":
 
     config.DIAL_END_MB = 96
 
-    # test_soi_additiveness()
+    test_soi_additiveness()
 
     # test_combined_contentiousness()
 
-    test_added_contentiousness()
+    # test_added_contentiousness()
 
     # stats = perf.profile("./membench/membench")
 

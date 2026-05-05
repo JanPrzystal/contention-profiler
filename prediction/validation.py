@@ -29,13 +29,15 @@ def read_predictions() -> list[Prediction]:
             for p in data
         ]
 
-def validate_prediction(prediction: Prediction, workload_map: dict[str, Workload]) -> float:
+def validate_prediction(prediction: Prediction, workloads: List[Workload]) -> float:
     # Get the tested app as a Workload object
-    primary = workload_map[prediction.app]
+    primary = next((w for w in workloads if w.name == prediction.app), None)
 
     competitors = []
     for competitor in prediction.competitor.split(" + "):
-        competitors.append(workload_map[competitor])
+        competitor_workload = next((w for w in workloads if w.name == competitor), None)
+        if competitor_workload:
+            competitors.append(competitor_workload)
 
     logging.info(f"Starting profiling for ({primary.name} with {', '.join(c.name for c in competitors)})")
     
@@ -88,7 +90,7 @@ def writerow_and_sync(f, writer, row):
 def validate_pair_predictions(applications: List[Workload], competitors: List[Workload]):
     snapshot = read_snapshot()
     predictions = read_predictions()
-    workload_map = {w.name: w for w in applications + competitors}
+
     with open(VALIDATION_FILE, "a+") as f:
         f.seek(0)
         is_empty = f.read(1) == ""
@@ -103,7 +105,7 @@ def validate_pair_predictions(applications: List[Workload], competitors: List[Wo
             key = get_key(p)
             if key in snapshot:
                 continue
-            row = validate_prediction(p, workload_map)
+            row = validate_prediction(p, applications + competitors)
             logging.info(str(row))
             writerow_and_sync(f, writer, row)
 
@@ -111,13 +113,13 @@ def choose_predictions(predictions: List[Prediction]) -> List[Prediction]:
     sample_size = min(config.VALIDATIONS, len(predictions))
     return random.sample(predictions, sample_size)
 
-def validate_predictions(predictions: List[Prediction], workload_map: dict[str, Workload]) -> List[ValidatedPrediction]:
+def validate_predictions(predictions: List[Prediction], competitors: List[Workload]) -> List[ValidatedPrediction]:
     validated_predictions = []
 
     sampled_predictions = choose_predictions(predictions)
 
     for pred in sampled_predictions:
-        validated_predictions.append(validate_prediction(pred, workload_map))
+        validated_predictions.append(validate_prediction(pred, competitors))
 
     return validated_predictions
 
@@ -128,21 +130,3 @@ def save_validated_predictions(validated_predictions: List[ValidatedPrediction])
         for pred in validated_predictions:
             row = [str(c) for c in list(pred._asdict().values())]
             writer.writerow(row)
-
-# def validate_predictions(predictions: List[Prediction], workload_map: dict[str, Workload]):
-#     # snapshot = read_snapshot()
-#     with open(VALIDATION_FILE, "a+") as f:
-#         f.seek(0)
-
-#         writer = csv.writer(f, delimiter=",")
-#         writer.writerow(ValidatedPrediction._fields)
-
-#         # f.seek(0, os.SEEK_END)
-
-#         for p in predictions:
-#             key = get_key(p)
-#             # if key in snapshot:
-#             #     continue
-#             row = validate_prediction(p, workload_map)
-#             logging.info(str(row))
-#             writerow_and_sync(f, writer, row)
