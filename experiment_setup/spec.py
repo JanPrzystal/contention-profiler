@@ -6,6 +6,7 @@ import logging
 import config
 
 from experiment_setup.workload import Workload
+from experiment_setup.log import log
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +18,7 @@ class SpecWorkload(Workload):
 
     def profile(self, cores: str, iterations: int = 1) -> float:
         # return run_benchmark(self, self.name, cores, self.size)
-        logger.info(f"Running benchmark {self.name}, size = {self.size}")
+        log(f"Running benchmark {self.name}, size = {self.size}")
         threads = 1
         
         cmd = [
@@ -43,7 +44,7 @@ class SpecWorkload(Workload):
             stderr=subprocess.PIPE,
             preexec_fn=os.setpgrp
         )
-        logger.info("Started process")
+        log("Started process")
 
         stdout_data, stderr_data = self.proc.communicate()
 
@@ -71,7 +72,7 @@ class SpecWorkload(Workload):
         
 
 def run_background_benchmark(name: str, cores: str, size: str) -> subprocess.Popen:
-    logger.info(f"Running {name} in background on core {cores}, size = {size}")
+    log(f"Running {name} in background on core {cores}, size = {size}")
 
     cmd = [
         config.SPEC_PATH + "/bin/runcpu",
@@ -100,7 +101,7 @@ def run_background_benchmark(name: str, cores: str, size: str) -> subprocess.Pop
 
     
 def stop_benchmark(proc: subprocess.Popen):
-    logger.info(f"Stopping background process with PID {proc.pid}")
+    log(f"Stopping background process with PID {proc.pid}")
     os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
     
 def _get_output_filename(runcpu_output: str) -> str:

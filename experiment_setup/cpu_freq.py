@@ -3,7 +3,7 @@ import subprocess
 import logging
 import config
 
-logger = logging.getLogger()
+from experiment_setup.log import log
 
 class Governor(Enum):
     PERFORMANCE = "performance"
@@ -25,7 +25,7 @@ class CpuFreqPolicy:
     def set_governor(governor: Governor):
         if not config.USE_ROOT_PRIORITY:
             return
-        logger.info(f"Setting cpu frequency governor to {governor}")
+        log(f"Setting cpu frequency governor to {governor}")
         cmd = CpuFreqPolicy.SET_COMMAND.format(governor=governor).split(" ")
         subprocess.call(cmd, stdout=subprocess.DEVNULL)
 

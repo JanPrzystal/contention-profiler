@@ -5,7 +5,7 @@ import signal
 
 import experiment_setup.reporter as rp
 
-logger = logging.getLogger(__name__)
+from experiment_setup.log import log
 from experiment_setup.contention_synthesis import Bubble
 import config
 import profiling.contentiousness as cnt
@@ -13,7 +13,7 @@ import profiling.contentiousness as cnt
 
 def profile_reporter_sensitivity(reporter: rp.Reporter, size_mb: int, nsoi: int = config.NSOI) -> float:
     if size_mb == 0:
-        logger.info("Profiling in isolation")
+        log("Profiling in isolation")
         return reporter.run(config.REPORTER_CORES, config.REPORTER_REPETITIONS)
 
 
@@ -28,7 +28,7 @@ def profile_reporter_sensitivity(reporter: rp.Reporter, size_mb: int, nsoi: int 
 
 def _profile_reporter(reporter: rp.Reporter) -> None:
     with open(f"{config.RESULTS_DIR}/reporter_sensitivity.csv", "w+") as f:
-        f.write(f"footprint_mb,perf\n")
+        f.write(f"footlog_mb,perf\n")
         
         for size_mb in range(config.DIAL_START_MB, config.DIAL_END_MB + config.DIAL_STEP_MB, config.DIAL_STEP_MB):
             perf = profile_reporter_sensitivity(reporter, size_mb)
@@ -37,7 +37,7 @@ def _profile_reporter(reporter: rp.Reporter) -> None:
 
 def _profile_reporter_progressive(reporter: rp.Reporter) -> None:
     with open(f"{config.RESULTS_DIR}/reporter_sensitivity.csv", "w+") as f:
-        f.write(f"footprint_mb,perf\n")
+        f.write(f"footlog_mb,perf\n")
 
         max_soi = config.NSOI
         dial_start = config.DIAL_START_MB
@@ -47,7 +47,7 @@ def _profile_reporter_progressive(reporter: rp.Reporter) -> None:
 
         for size_mb in range(config.DIAL_START_MB, config.DIAL_END_MB + config.DIAL_STEP_MB, config.DIAL_STEP_MB):
             if size_mb > 0:
-                nsoi = size_mb // interval + 1
+                nsoi = size_mb // (config.DIAL_RANGE_MB // (config.NSOI - 1)) + 1
             perf = profile_reporter_sensitivity(reporter, size_mb * nsoi, nsoi)
             f.write(f"{size_mb},{perf}\n")
 
@@ -62,7 +62,7 @@ def profile_reporter_contentiousness(reporter: rp.Reporter) -> float:
     result = 0.0
 
     with open(f"{config.RESULTS_DIR}/reporter_contentiousness.csv", "a+") as f:
-        f.write(f"footprint_mb,contentiousness\n")
+        f.write(f"footlog_mb,contentiousness\n")
         
         # base = reporter.run(config.REPORTER_CORES, config.REPORTER_REPETITIONS)
 
@@ -73,7 +73,7 @@ def profile_reporter_contentiousness(reporter: rp.Reporter) -> float:
 
         score = reporter.run(config.REPORTER_CORES, config.REPORTER_REPETITIONS)
 
-        logger.info(f"Reporter score: {score}")
+        log(f"Reporter score: {score}")
         
         contentiousness = cnt.contentiousness_lookup(score)
 

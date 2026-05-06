@@ -43,7 +43,7 @@ def test_combined_contentiousness():
     for i, b in enumerate(bench):
         log(f"{b.name}")
         # cores = list(range(int(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[0]), int(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[1])))
-        proc = spec.run_background_benchmark(b.name, str(i+2), b.size)
+        proc = spec.run_background_benchmark(b.name, str(i+1), b.size)
         procs.append(proc)
 
     sleep(5)
@@ -136,8 +136,8 @@ def test_soi_additiveness():
 
 def test_added_contentiousness():
     log("testing added contentiousness with progressive profiling")
-    config.DIAL_END_MB = 128
-    config.NSOI = 7
+    config.DIAL_END_MB = 80
+    config.NSOI = 5
     config.PROGRESSIVE_PROFILING = True
 
     reporter = rp.AveragingReporter("alternating")
@@ -155,9 +155,6 @@ if __name__ == "__main__":
 
     setup_logging()
 
-    log("Starting test")
-
-    exit(0)
 
     config.USE_ROOT_PRIORITY = False
     config.DATA_SIZE = "test"
@@ -169,13 +166,13 @@ if __name__ == "__main__":
 
     # test_soi_additiveness()
 
-    test_combined_contentiousness()
+    # test_combined_contentiousness()
 
-    # test_added_contentiousness()
+    test_added_contentiousness()
 
     # stats = perf.profile("./membench/membench")
 
-    # print (stats)
+    # log (stats)
 
 
     CpuFreqPolicy.reset_governor()

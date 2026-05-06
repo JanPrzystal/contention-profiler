@@ -43,7 +43,7 @@ class KubeWorkload(Workload):
             self.name, self.yaml_path, target_node
         )
         self.deployed_on = target_node
-        logger.info(f"Deployed workload {self.name} on {target_node}")
+        log(f"Deployed workload {self.name} on {target_node}")
 
     def profile(self, cores: str) -> float:
         if not self.metric_name:

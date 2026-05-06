@@ -33,7 +33,7 @@ def draw_contentiousness():
 
     for ax, df, label in zip(axes, dfs, labels):
         # Normalize the series
-        x = df["footprint_mb"].to_numpy()
+        x = df["footlog_mb"].to_numpy()
         y = df["contentiousness"].to_numpy()
 
         # Interpolate
@@ -48,7 +48,7 @@ def draw_contentiousness():
         ax.plot(x_smooth, y_smooth, "-", linewidth=1.5, label="spline")
         
         ax.set_title(label)
-        ax.set_xlabel("MemBW footprint (MB)")
+        ax.set_xlabel("MemBW footlog (MB)")
         ax.set_ylabel("Contentiousness (MB)")
         xticks = np.arange(0, 128, 16)
         ax.set_xticks(xticks)

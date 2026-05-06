@@ -33,13 +33,13 @@ def interpolated_to_base_contentiousness(cont):
     base_cont = contentiousness.find_dial(interp_perf, reporter_sensitivity_lookup)
     return base_cont
 
-def print_description():
+def log_description():
     with open(f"{config.RESULTS_DIR}/description.txt", "r") as f:
         description = f.read()
-    print(description)
+    log(description)
 
 if __name__ == '__main__':
-    print_description()
+    log_description()
     contentiousnesses = get_contentiousness()
     validated = get_validated_df()
 
@@ -55,7 +55,7 @@ if __name__ == '__main__':
         # Get the sensitivity of the main app
         sensitivity = prediction.get_sensitivity(benchmark)
 
-        # print(f"For benchmark {benchmark}, reporter sensitivity lookup gives {base_cont} for contentiousness {cont}")
+        # log(f"For benchmark {benchmark}, reporter sensitivity lookup gives {base_cont} for contentiousness {cont}")
 
         # construct predictions for all competing benchmarks
 
@@ -66,14 +66,14 @@ if __name__ == '__main__':
                 competitor = row['competitor']
                 competitor_cont = float(interpolated_to_base_contentiousness(row['contentiousness']))
 
-                # print(f"Benchmark: {benchmark}, Competitor: {competitor}, Actual Performance: {validated_perf}, InterpolatedContentiousness: {row['contentiousness']}, BaseContentiousness: {competitor_cont}")
+                # log(f"Benchmark: {benchmark}, Competitor: {competitor}, Actual Performance: {validated_perf}, InterpolatedContentiousness: {row['contentiousness']}, BaseContentiousness: {competitor_cont}")
 
                 pred_norm = sensitivity(0) / sensitivity(competitor_cont)
                 interp_pred = row['perf']
                 interp_error = abs(interp_pred - validated_perf) / validated_perf * 100
                 base_error = abs(pred_norm - validated_perf) / validated_perf * 100
-                # print(f"  Validated prediction: {validated_perf}, interpolation prediction {interp_pred}, base prediction {pred_norm}")
-                # print(f"  Interpolation error: {interp_error:.2f}%, Base error: {base_error:.2f}%")
+                # log(f"  Validated prediction: {validated_perf}, interpolation prediction {interp_pred}, base prediction {pred_norm}")
+                # log(f"  Interpolation error: {interp_error:.2f}%, Base error: {base_error:.2f}%")
 
                 interp_avg_error += interp_error
                 base_avg_error += base_error
@@ -90,9 +90,9 @@ if __name__ == '__main__':
     interp_avg_error /= total_predictions
     base_avg_error /= total_predictions
 
-    print(f"Interpolation had lower error in {iterp_counter} cases, base had lower error in {base_counter} cases, and they were equal in {equal_counter} cases.")
-    print(f"Average interpolation error: {interp_avg_error:.2f}%")
-    print(f"Average base error: {base_avg_error:.2f}%")
+    log(f"Interpolation had lower error in {iterp_counter} cases, base had lower error in {base_counter} cases, and they were equal in {equal_counter} cases.")
+    log(f"Average interpolation error: {interp_avg_error:.2f}%")
+    log(f"Average base error: {base_avg_error:.2f}%")
 
 
     

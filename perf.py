@@ -1,10 +1,9 @@
-
-# perf stat -e cycles,instructions,L1-dcache-loads,L1-dcache-load-misses,LLC-loads,LLC-load-misses,branches,branch-misses,stalled-cycles-frontend,stalled-cycles-backend -M CPI ./membench/membench
-
 import subprocess
 import os
 from typing import List
 import sys
+
+from experiment_setup.log import log
 
 def profile(workload: List[str], cores: str = None) -> str:
 
@@ -36,4 +35,4 @@ def profile(workload: List[str], cores: str = None) -> str:
 if __name__ == "__main__":
 
     workload = sys.argv[1:]
-    print(profile(workload, "1"))
+    log(profile(workload, "1"))

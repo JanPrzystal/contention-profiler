@@ -1,6 +1,6 @@
 import logging
 
-LOGGER_NAME = "experiment_logger"
+LOGGER_NAME = __name__ #"experiment_logger"
 logger = logging.getLogger(LOGGER_NAME)
 
 def setup_logging():

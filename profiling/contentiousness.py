@@ -105,7 +105,7 @@ def save_contentiousness_chart():
     for bench, perf in cont.items():
         data[bench] = perf
 
-    logger.info(str(data))
+    log(str(data))
 
     # Extract keys and values
     labels = list(data.keys())
@@ -131,7 +131,7 @@ def save_contentiousness_chart():
 
     # Labels and title
     plt.xlabel('SPEC CPU 2017 workload')
-    plt.ylabel('Approximate MemBW benchmark footprint (MB)')
+    plt.ylabel('Approximate MemBW benchmark footlog (MB)')
 
     # Display the chart
     plt.tight_layout()

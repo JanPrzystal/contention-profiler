@@ -3,8 +3,7 @@ import logging
 import subprocess
 import config
 
-
-logger = logging.getLogger(__name__)
+from experiment_setup.log import log
 
 REPORTER_SCRIPT_FILES = {
     "alternating":"build/altern_reporter.out",
@@ -41,7 +40,7 @@ class Reporter(ABC):
 class AveragingReporter(Reporter):
 
     def run(self, cores: str, repetitions: int = config.REPORTER_REPETITIONS) -> float:
-        logger.info("Profiling with the reporter")
+        log("Profiling with the reporter")
 
         cmd = [
             "taskset",
@@ -65,13 +64,13 @@ class AveragingReporter(Reporter):
         output = {}
         for line in raw_output.splitlines():
             if "median" in line:
-                logger.info(line.strip())
+                log(line.strip())
                 line = line.split()
                 output[line[0]] = float(line[1])
         return self.process_output(output)
     
     def run_background(self, cores: str) -> subprocess.Popen:
-        logger.info("Running reporter in the background")
+        log("Running reporter in the background")
 
         cmd = [
             "taskset",

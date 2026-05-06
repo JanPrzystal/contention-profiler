@@ -81,7 +81,7 @@ def draw_single_validation_chart(df):
         fig.savefig(output_path, dpi=300)
         plt.close()
     
-    # logger.info(f"Generated combined chart with {n} entries at {output_path}")
+    # log(f"Generated combined chart with {n} entries at {output_path}")
 
 def draw_validation():
     try:
@@ -90,8 +90,8 @@ def draw_validation():
         # Log global stats
         max_err = df['diff_pct'].abs().max()
         avg_err = df['diff_pct'].abs().mean()
-        logger.info(f"Global Max Error: {max_err:.2f}%")
-        logger.info(f"Global Avg Error: {avg_err:.2f}%")
+        log(f"Global Max Error: {max_err:.2f}%")
+        log(f"Global Avg Error: {avg_err:.2f}%")
 
         draw_single_validation_chart(df)
         

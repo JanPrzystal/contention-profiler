@@ -5,7 +5,7 @@ import logging
 import config
 from experiment_setup.workload import Workload
 
-logger = logging.getLogger(__name__)
+from experiment_setup.log import log
 
 BUILD_DIR = "build"
 
@@ -30,7 +30,7 @@ class Sledge():
         self.proc = None
 
     def run(self, cores: str) -> None:
-        logger.info(f"Running sledge with footprint size {self.size}")
+        log(f"Running sledge with footlog size {self.size}")
 
         cmd = [
             "taskset",
@@ -60,7 +60,7 @@ class Bubble(Workload):
         self.n_proc = n_proc
         self.size = size_mb * 1_000_000 
         end_size = round(self.size / n_proc / Bubble.ELEM_SIZE)
-        logger.info(f"Building bubble with total footprint size {self.size} and per-process size {end_size} ({self.ELEM_SIZE} bytes)")
+        log(f"Building bubble with total footlog size {self.size} and per-process size {end_size} ({self.ELEM_SIZE} bytes)")
 
         os.makedirs(BUILD_DIR, exist_ok=True)
         subprocess.run(
@@ -106,7 +106,7 @@ class Bubble(Workload):
                 bubble_type = "bubble_rand.out"
             else:
                 bubble_type = "bubble_stream.out" if i % 2 == 0 else "bubble_rand.out"
-            logger.info(f"Running {bubble_type}")
+            log(f"Running {bubble_type}")
 
             if cores is None:
                 raise NotImplementedError(f"Rinning on specified cores not implemented")

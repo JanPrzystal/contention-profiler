@@ -16,9 +16,9 @@ from experiment_setup.spec import SpecWorkload
 from time import time
 from datetime import datetime
 from experiment_setup.cpu_freq import CpuFreqPolicy
-import logging
 
-from main import logger
+from experiment_setup.log import log
+
 
 @dataclass
 class SoIConfig:
@@ -32,7 +32,7 @@ class Experiment:
     benchmarks: List[str]
     reporter: str
     soi: SoIConfig
-    max_mem_footprint: int
+    max_mem_footlog: int
     mem_interval: int
     reporter_repetitions: int
     deployment: str
@@ -56,7 +56,7 @@ def parse_config():
             benchmarks=exp["benchmarks"],
             reporter=exp["reporter"],
             soi=soi,
-            max_mem_footprint=exp["max_mem_footprint"],
+            max_mem_footlog=exp["max_mem_footlog"],
             mem_interval=exp["mem_interval"],
             reporter_repetitions=exp["reporter_repetitions"],
             deployment=exp["deployment"],
@@ -68,7 +68,7 @@ def parse_config():
             validations=exp["validations"]
         )
         experiments.append(experiment)
-        print(exp)
+        log(exp)
 
     return experiments
 
@@ -98,7 +98,7 @@ def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], pair
     ttotal = time() - tstart
 
     if pairwise:
-        logger.info("Starting pairwise prediction and validation")
+        log("Starting pairwise prediction and validation")
         prediction.predict_pair_performance(applications, applications)
         validation.validate_pair_predictions(applications, applications)
 
@@ -108,7 +108,7 @@ def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], pair
         validation.save_validated_predictions(validated_predictions)
 
     texperiment = time() - tstart
-    logger.info(f"Experiment timings: \nreporter={treporter:.3f}s, \ncontentiousness={tcontentiousness:.3f}s, \nsensitivity={tsensitivity:.3f}s, \nprofiling total={ttotal:.3f}s, \nexperiment total={texperiment:.3f}s")
+    log(f"Experiment timings: \nreporter={treporter:.3f}s, \ncontentiousness={tcontentiousness:.3f}s, \nsensitivity={tsensitivity:.3f}s, \nprofiling total={ttotal:.3f}s, \nexperiment total={texperiment:.3f}s")
 
     # Write the times to a file
     with open(f"{config.RESULTS_DIR}/timings.txt", "w") as f:
@@ -121,7 +121,7 @@ def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], pair
 
 def setup_config(experiment: Experiment) -> None:
     config.DIAL_STEP_MB = experiment.mem_interval
-    config.DIAL_END_MB = experiment.max_mem_footprint
+    config.DIAL_END_MB = experiment.max_mem_footlog
     config.DIAL_RANGE_MB = config.DIAL_END_MB
     config.NSOI = experiment.soi.number
     config.BUBBLE_TYPE = experiment.soi.type
@@ -151,7 +151,7 @@ def write_description_file(experiment: Experiment) -> None:
         f.write(f"Benchmarks: {', '.join(experiment.benchmarks)}\n")
         f.write(f"Reporter: {experiment.reporter}\n")
         f.write(f"SOI: {experiment.soi.type} ({experiment.soi.number})\n")
-        f.write(f"Max Memory Footprint: {experiment.max_mem_footprint} MB\n")
+        f.write(f"Max Memory Footlog: {experiment.max_mem_footlog} MB\n")
         f.write(f"Memory Interval: {experiment.mem_interval} MB\n")
         f.write(f"Reporter Repetitions: {experiment.reporter_repetitions}\n")
         f.write(f"Data Size: {experiment.data_size}\n")

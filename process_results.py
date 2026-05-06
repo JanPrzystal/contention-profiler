@@ -1,7 +1,11 @@
+import sys
 import zipfile
 import pandas as pd
 from analysis.error_results_plot import draw_errors
 from analysis.time_chart import draw_times
+
+from experiment_setup.log import log
+
 
 zip_paths = ["results_2rand_alternating_pair.zip", "results_2rand_alternating_pair_nointerpolation.zip"]
 
@@ -9,7 +13,7 @@ results = []
 
 def handle_validation_csv(file):
     df = pd.read_csv(file)
-    # print(df.head())
+    # log(df.head())
 
     # remove cactu
     df = df[~df["app"].str.contains("607.cactuBSSN_s", na=False)]
@@ -64,7 +68,7 @@ def process_zip_files(zip_paths):
 
         results.append(result)
 
-    print(results)
+    log(results)
 
     errors_data = {}
     time_data = {}
@@ -85,4 +89,5 @@ def process_zip_files(zip_paths):
     draw_times(time_data, False)
 
 if __name__ == "__main__":
+    zip_paths = sys.argv[1:] if len(sys.argv) > 1 else zip_paths
     process_zip_files(zip_paths)

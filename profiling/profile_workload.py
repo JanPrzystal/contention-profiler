@@ -14,6 +14,8 @@ from experiment_setup.workload import Workload
 
 import profiling.contentiousness as cnt
 
+from experiment_setup.log import log
+
 SENSITIVITY_DIR = Path(config.RESULTS_DIR) / 'sensitivity'
 
 
@@ -35,7 +37,7 @@ def _save_sensitivity_data(workload_name: str, sensitivity: dict[int, float]) ->
     benchmark_file = workload_name.replace(".", "_")
     path = SENSITIVITY_DIR / f"{benchmark_file}_data.csv"
     with open(path, "w+") as f:
-        f.write("footprint_mb,perf\n")
+        f.write("footlog_mb,perf\n")
         for k, v in sensitivity.items():
             f.write(f"{k},{v}\n")
 
@@ -44,10 +46,10 @@ def _profile_sensitivity(workload: Workload) -> None:
     sensitivity = _get_sensitivity_data(workload.name)
 
     sizes = range(config.DIAL_START_MB, config.DIAL_END_MB + config.DIAL_STEP_MB, config.DIAL_STEP_MB)
-    logger.info(f"profiling sizes {sizes}")
+    log(f"profiling sizes {sizes}")
 
     for size_mb in sizes:
-        logger.info(f"profiling size {size_mb}MB")
+        log(f"profiling size {size_mb}MB")
         
         if size_mb in sensitivity:
             continue
@@ -58,7 +60,7 @@ def _profile_sensitivity(workload: Workload) -> None:
 
 def _profile_sensitivity_dial(workload: Workload, size_mb: int, nproc: int) -> float:
     if size_mb == 0:
-        logger.info("Profiling in isolation")
+        log("Profiling in isolation")
         return workload.profile(config.WORKLOAD_UNDER_PROFILING_CORES)
     bubble = Bubble(size_mb, nproc)
     bubble.run_in_background(config.WORKLOAD_IN_BACKGROUND_CORES)
@@ -107,17 +109,17 @@ def profile_contentiousness(workloads: list[Workload], reporter: rp.Reporter) ->
         time.sleep(config.WORKLOAD_WIND_DOWN_TIME)
 
         contentiousness[workload.name] = _profile_contentiousness(workload, reporter)
-        logger.info(f"{workload.name} contentiousness: {contentiousness[workload.name]}")
+        log(f"{workload.name} contentiousness: {contentiousness[workload.name]}")
         # Find biggest contentiousness score
         if contentiousness[workload.name] > max_contentiousness:
             max_contentiousness = contentiousness[workload.name]
     
     _save_contentiousness_data(contentiousness)
 
-    logger.info(f"MaxContentiousness: {max_contentiousness}")
+    log(f"MaxContentiousness: {max_contentiousness}")
     return max_contentiousness
 
-def profile_added_contentiousness(workload: Workload, reporter: rp.Reporter) -> float:
+def profile_added_contentiousness(workload: Workload, reporter: rp.Reporter) -> None:
 
     sizes = range(config.DIAL_START_MB, config.DIAL_END_MB + config.DIAL_STEP_MB, config.DIAL_STEP_MB)
 
@@ -126,15 +128,16 @@ def profile_added_contentiousness(workload: Workload, reporter: rp.Reporter) -> 
     for size_mb in sizes:
         result = 0.0
 
-        logger.info(f"Profiling {workload.name} with SoI size {size_mb}MB")
-
         if size_mb == 0:
-            logger.info("Profiling in isolation")
+            log("Profiling in isolation")
             result = _profile_contentiousness(workload, reporter)
 
         nsoi = config.NSOI
         if config.PROGRESSIVE_PROFILING:
-            nsoi = size_mb // (config.DIAL_RANGE_MB // config.NSOI) + 1
+            nsoi = size_mb // (config.DIAL_RANGE_MB // (config.NSOI - 1)) + 1
+
+        log(f"Profiling {workload.name} with {nsoi} SoI size {size_mb}MB")
+        
         bubble = Bubble(size_mb, nsoi)
         bcores = config.WORKLOAD_IN_BACKGROUND_CORES.replace(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[0], str (int(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[0]) + 1) )
         bubble.run_in_background(bcores)
@@ -145,13 +148,13 @@ def profile_added_contentiousness(workload: Workload, reporter: rp.Reporter) -> 
 
         contentiousness[size_mb] = result
 
-    logger.info(f"Saving contentiousness data for {workload.name}")
+    log(f"Saving contentiousness data for {workload.name}")
     # Save the contentiousness data 
     benchmark_file = workload.name.replace(".", "_")
     path = f"{config.RESULTS_DIR}/contentiousness/{benchmark_file}_contentiousness.csv"
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w+") as f:
-        f.write("footprint_mb,contentiousness\n")
+        f.write("footlog_mb,contentiousness\n")
         for k, v in contentiousness.items():
             f.write(f"{k},{v}\n")
 
@@ -160,7 +163,7 @@ def _profile_sensitivity_progressive(benchmark: Workload):
     name = benchmark.name.replace(".", "_")
     path = SENSITIVITY_DIR / f"{name}_data.csv"
     with open(path, "w+") as f:
-        f.write(f"footprint_mb,perf\n")
+        f.write(f"footlog_mb,perf\n")
 
         max_soi = config.NSOI
         dial_start = config.DIAL_START_MB

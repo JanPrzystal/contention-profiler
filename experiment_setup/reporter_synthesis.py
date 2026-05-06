@@ -91,12 +91,12 @@ if __name__ == '__main__':
                 cont = contentiousness.loc[compname]["value"]
 
                 perf_normal = spline(spline.x[0])
-                # print(f"looking up cont for perf {perf_normal * perf} (normal is {perf_normal})")
+                # log(f"looking up cont for perf {perf_normal * perf} (normal is {perf_normal})")
                 needed = contentiousness_lookup(spline, perf_normal / perf)
 
                 error = (row['perf'] - perf) / perf * 100
                 writer.writerow([appname, compname, cont, needed, error])
-                # print(f"For {appname}, {compname} should have contentiousness {needed}, actually has {cont}")
+                # log(f"For {appname}, {compname} should have contentiousness {needed}, actually has {cont}")
 
 
 
