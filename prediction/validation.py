@@ -29,7 +29,7 @@ def read_predictions() -> list[Prediction]:
             for p in data
         ]
 
-def validate_prediction(prediction: Prediction, workloads: List[Workload]) -> float:
+def validate_prediction(prediction: Prediction, workloads: List[Workload]) -> ValidatedPrediction:
     # Get the tested app as a Workload object
     primary = next((w for w in workloads if w.name == prediction.app), None)
 

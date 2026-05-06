@@ -17,8 +17,7 @@ import config
 import experiment_setup.reporter as rp
 from experiment_setup.cpu_freq import CpuFreqPolicy, Governor
 import perf
-
-logger = logging.getLogger(__name__)
+from experiment_setup.log import setup_logging, log
 
 def test_combined_contentiousness():
     bench = [spec.SpecWorkload("619.lbm_s", "train"), spec.SpecWorkload("600.perlbench_s", "train"), spec.SpecWorkload("649.fotonik3d_s", "train"), spec.SpecWorkload("654.roms_s", "train")]
@@ -38,11 +37,11 @@ def test_combined_contentiousness():
     sensitivity = prediction.get_sensitivity(app.name)
     predicion = prediction.predict_app_performance(app, bench, sensitivity)
     pn = predicion._asdict()["perf"]
-    print(f"Predicted performance: {pn}")
+    log(f"Predicted performance: {pn}")
     
     procs = []
     for i, b in enumerate(bench):
-        print(f"{b.name}")
+        log(f"{b.name}")
         # cores = list(range(int(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[0]), int(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[1])))
         proc = spec.run_background_benchmark(b.name, str(i+2), b.size)
         procs.append(proc)
@@ -56,17 +55,19 @@ def test_combined_contentiousness():
 
     cnt = contentiousness.contentiousness_lookup(score)
 
-    print(f"Actual performance would be {sensitivity(0)/sensitivity(cnt)}")
+    log(f"Actual performance would be {sensitivity(0)/sensitivity(cnt)}")
 
-    print(f"Workloads contentiousness: {cnt}")
+    log(f"Workloads contentiousness: {cnt}")
 
     validated = validation.validate_prediction(predicion, apps) 
 
-    print(f"Validated {validated}")
+    validated_score = validated._asdict()["actual_perf"]
 
-    validated_cnt = contentiousness.contentiousness_lookup(sensitivity(0) * validated)
+    log(f"Validated {validated_score}")
 
-    print(f"Validated contentiousness {validated_cnt}")
+    validated_cnt = contentiousness.contentiousness_lookup(sensitivity(0) / validated_score)
+
+    log(f"Validated contentiousness {validated_cnt}")
 
 
 
@@ -78,7 +79,7 @@ def test_soi_additiveness():
 
     base = 8
 
-    print("Test with SoI")
+    log("Test with SoI")
 
     for i in range(1, 7):
         soi1 = Bubble(base*i, 1)
@@ -94,7 +95,7 @@ def test_soi_additiveness():
 
         cnt = contentiousness.contentiousness_lookup(score)
 
-        print(f"1x{base*i}MB: {score}, contentiousness: {cnt}")
+        log(f"1x{base*i}MB: {score}, contentiousness: {cnt}")
 
         soi2.run_in_background(config.WORKLOAD_IN_BACKGROUND_CORES)
 
@@ -106,15 +107,15 @@ def test_soi_additiveness():
 
         cnt = contentiousness.contentiousness_lookup(score)
 
-        print(f"{i}x{base}MB: {score}, contentiousness: {cnt}")
+        log(f"{i}x{base}MB: {score}, contentiousness: {cnt}")
 
-    print("Test with benchmarks")
+    log("Test with benchmarks")
     app1 = spec.SpecWorkload("657.xz_s", "train")
     app2 = spec.SpecWorkload("600.perlbench_s", "train")
 
     _maxc = profile_workload.profile_contentiousness([app1, app2], reporter)
 
-    print("Profiling contentiousness of 2 apps")
+    log("Profiling contentiousness of 2 apps")
 
     app1.run_in_background(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[0])
     app2.run_in_background(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[1])
@@ -129,12 +130,12 @@ def test_soi_additiveness():
     cnt = contentiousness.contentiousness_lookup(score)
 
     for name, cont in contentiousness.read_contentiousness().items():
-        print(f"{name}: {cont}")
-    print(f"Contentiousness of all apps together: {cnt}")
+        log(f"{name}: {cont}")
+    log(f"Contentiousness of all apps together: {cnt}")
 
 
 def test_added_contentiousness():
-    print("testing added contentiousness with progressive profiling")
+    log("testing added contentiousness with progressive profiling")
     config.DIAL_END_MB = 128
     config.NSOI = 7
     config.PROGRESSIVE_PROFILING = True
@@ -152,21 +153,25 @@ def test_added_contentiousness():
 
 if __name__ == "__main__":
 
-    logging.basicConfig()
-    logger.setLevel(logging.INFO)
+    setup_logging()
 
-    # config.USE_ROOT_PRIORITY = False
+    log("Starting test")
+
+    exit(0)
+
+    config.USE_ROOT_PRIORITY = False
+    config.DATA_SIZE = "test"
 
     CpuFreqPolicy.set_governor(Governor.PERFORMANCE)
 
 
-    config.DIAL_END_MB = 96
+    config.DIAL_END_MB = 32
 
     # test_soi_additiveness()
 
-    # test_combined_contentiousness()
+    test_combined_contentiousness()
 
-    test_added_contentiousness()
+    # test_added_contentiousness()
 
     # stats = perf.profile("./membench/membench")
 

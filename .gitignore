@@ -10,3 +10,4 @@ target/
 experiment_results/
 *.zip
 *.csv
+log.log
