@@ -32,7 +32,7 @@ class Experiment:
     benchmarks: List[str]
     reporter: str
     soi: SoIConfig
-    max_mem_footlog: int
+    max_mem_footprint: int
     mem_interval: int
     reporter_repetitions: int
     deployment: str
@@ -56,7 +56,7 @@ def parse_config():
             benchmarks=exp["benchmarks"],
             reporter=exp["reporter"],
             soi=soi,
-            max_mem_footlog=exp["max_mem_footlog"],
+            max_mem_footprint=exp["max_mem_footprint"],
             mem_interval=exp["mem_interval"],
             reporter_repetitions=exp["reporter_repetitions"],
             deployment=exp["deployment"],
@@ -121,7 +121,7 @@ def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], pair
 
 def setup_config(experiment: Experiment) -> None:
     config.DIAL_STEP_MB = experiment.mem_interval
-    config.DIAL_END_MB = experiment.max_mem_footlog
+    config.DIAL_END_MB = experiment.max_mem_footprint
     config.DIAL_RANGE_MB = config.DIAL_END_MB
     config.NSOI = experiment.soi.number
     config.BUBBLE_TYPE = experiment.soi.type
@@ -151,7 +151,7 @@ def write_description_file(experiment: Experiment) -> None:
         f.write(f"Benchmarks: {', '.join(experiment.benchmarks)}\n")
         f.write(f"Reporter: {experiment.reporter}\n")
         f.write(f"SOI: {experiment.soi.type} ({experiment.soi.number})\n")
-        f.write(f"Max Memory Footlog: {experiment.max_mem_footlog} MB\n")
+        f.write(f"Max Memory Footlog: {experiment.max_mem_footprint} MB\n")
         f.write(f"Memory Interval: {experiment.mem_interval} MB\n")
         f.write(f"Reporter Repetitions: {experiment.reporter_repetitions}\n")
         f.write(f"Data Size: {experiment.data_size}\n")

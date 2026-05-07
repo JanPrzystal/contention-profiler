@@ -1,13 +1,11 @@
 import os
 import pandas as pd
 import time
-import logging
 from pathlib import Path
 
 import experiment_setup.reporter as rp
 import experiment_setup.workload as workload
 
-logger = logging.getLogger(__name__)
 from experiment_setup.contention_synthesis import Bubble
 import config
 from experiment_setup.workload import Workload
@@ -37,7 +35,7 @@ def _save_sensitivity_data(workload_name: str, sensitivity: dict[int, float]) ->
     benchmark_file = workload_name.replace(".", "_")
     path = SENSITIVITY_DIR / f"{benchmark_file}_data.csv"
     with open(path, "w+") as f:
-        f.write("footlog_mb,perf\n")
+        f.write("footprint_mb,perf\n")
         for k, v in sensitivity.items():
             f.write(f"{k},{v}\n")
 
@@ -154,7 +152,7 @@ def profile_added_contentiousness(workload: Workload, reporter: rp.Reporter) -> 
     path = f"{config.RESULTS_DIR}/contentiousness/{benchmark_file}_contentiousness.csv"
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w+") as f:
-        f.write("footlog_mb,contentiousness\n")
+        f.write("footprint_mb,contentiousness\n")
         for k, v in contentiousness.items():
             f.write(f"{k},{v}\n")
 
@@ -163,7 +161,7 @@ def _profile_sensitivity_progressive(benchmark: Workload):
     name = benchmark.name.replace(".", "_")
     path = SENSITIVITY_DIR / f"{name}_data.csv"
     with open(path, "w+") as f:
-        f.write(f"footlog_mb,perf\n")
+        f.write(f"footprint_mb,perf\n")
 
         max_soi = config.NSOI
         dial_start = config.DIAL_START_MB

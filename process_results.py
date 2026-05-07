@@ -4,7 +4,7 @@ import pandas as pd
 from analysis.error_results_plot import draw_errors
 from analysis.time_chart import draw_times
 
-from experiment_setup.log import log
+from experiment_setup.log import log, setup_logging
 
 
 zip_paths = ["results_2rand_alternating_pair.zip", "results_2rand_alternating_pair_nointerpolation.zip"]
@@ -67,8 +67,7 @@ def process_zip_files(zip_paths):
                         result["timings"] = handle_timing(f)
 
         results.append(result)
-
-    log(results)
+        log(result)
 
     errors_data = {}
     time_data = {}
@@ -89,5 +88,6 @@ def process_zip_files(zip_paths):
     draw_times(time_data, False)
 
 if __name__ == "__main__":
+    setup_logging()
     zip_paths = sys.argv[1:] if len(sys.argv) > 1 else zip_paths
     process_zip_files(zip_paths)

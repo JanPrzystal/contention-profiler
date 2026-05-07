@@ -1,6 +1,5 @@
 import subprocess
 import os
-import logging
 
 import config
 from experiment_setup.workload import Workload
@@ -30,7 +29,7 @@ class Sledge():
         self.proc = None
 
     def run(self, cores: str) -> None:
-        log(f"Running sledge with footlog size {self.size}")
+        log(f"Running sledge with footprint size {self.size}")
 
         cmd = [
             "taskset",
@@ -60,7 +59,7 @@ class Bubble(Workload):
         self.n_proc = n_proc
         self.size = size_mb * 1_000_000 
         end_size = round(self.size / n_proc / Bubble.ELEM_SIZE)
-        log(f"Building bubble with total footlog size {self.size} and per-process size {end_size} ({self.ELEM_SIZE} bytes)")
+        log(f"Building bubble with total footprint size {self.size} and per-process size {end_size} ({self.ELEM_SIZE} bytes)")
 
         os.makedirs(BUILD_DIR, exist_ok=True)
         subprocess.run(

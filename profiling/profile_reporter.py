@@ -1,6 +1,5 @@
 import os
 import time
-import logging
 import signal
 
 import experiment_setup.reporter as rp
@@ -28,7 +27,7 @@ def profile_reporter_sensitivity(reporter: rp.Reporter, size_mb: int, nsoi: int 
 
 def _profile_reporter(reporter: rp.Reporter) -> None:
     with open(f"{config.RESULTS_DIR}/reporter_sensitivity.csv", "w+") as f:
-        f.write(f"footlog_mb,perf\n")
+        f.write(f"footprint_mb,perf\n")
         
         for size_mb in range(config.DIAL_START_MB, config.DIAL_END_MB + config.DIAL_STEP_MB, config.DIAL_STEP_MB):
             perf = profile_reporter_sensitivity(reporter, size_mb)
@@ -37,7 +36,7 @@ def _profile_reporter(reporter: rp.Reporter) -> None:
 
 def _profile_reporter_progressive(reporter: rp.Reporter) -> None:
     with open(f"{config.RESULTS_DIR}/reporter_sensitivity.csv", "w+") as f:
-        f.write(f"footlog_mb,perf\n")
+        f.write(f"footprint_mb,perf\n")
 
         max_soi = config.NSOI
         dial_start = config.DIAL_START_MB
@@ -62,7 +61,7 @@ def profile_reporter_contentiousness(reporter: rp.Reporter) -> float:
     result = 0.0
 
     with open(f"{config.RESULTS_DIR}/reporter_contentiousness.csv", "a+") as f:
-        f.write(f"footlog_mb,contentiousness\n")
+        f.write(f"footprint_mb,contentiousness\n")
         
         # base = reporter.run(config.REPORTER_CORES, config.REPORTER_REPETITIONS)
 

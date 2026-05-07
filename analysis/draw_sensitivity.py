@@ -35,7 +35,7 @@ def draw_sensitivity():
         # Normalize the series
         df["perf"] = df["perf"][0] / df["perf"]
 
-        x = df["footlog_mb"].to_numpy()
+        x = df["footprint_mb"].to_numpy()
         y = df["perf"].to_numpy()
 
         xlim = x.max() + xpad
@@ -51,7 +51,7 @@ def draw_sensitivity():
             ax.plot(x_smooth, y_smooth, "-", linewidth=1.5, label="spline")
         
         ax.set_title(label)
-        ax.set_xlabel("MemBW footlog (MB)")
+        ax.set_xlabel("MemBW footprint (MB)")
         ax.set_ylabel("Performance (norm.)")
         xticks = np.arange(0, 128, 16)
         ax.set_xticks(xticks)

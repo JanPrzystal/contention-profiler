@@ -1,4 +1,3 @@
-import logging
 import matplotlib.pyplot as plt
 import math
 import csv
@@ -8,7 +7,7 @@ from scipy.interpolate import PchipInterpolator
 from scipy.optimize import brentq
 import numpy as np
 
-logger = logging.getLogger(__name__)
+from experiment_setup.log import log
 
 
 def get_reporter_sensitivity_spline() -> PchipInterpolator:
@@ -131,7 +130,7 @@ def save_contentiousness_chart():
 
     # Labels and title
     plt.xlabel('SPEC CPU 2017 workload')
-    plt.ylabel('Approximate MemBW benchmark footlog (MB)')
+    plt.ylabel('Approximate MemBW benchmark footprint (MB)')
 
     # Display the chart
     plt.tight_layout()

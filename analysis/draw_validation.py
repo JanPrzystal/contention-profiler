@@ -7,8 +7,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import config
 
 # Setup basic logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from experiment_setup.log import log
 
 def get_validated_df():
     path = f'{config.RESULTS_DIR}/validated.csv'
@@ -96,7 +95,7 @@ def draw_validation():
         draw_single_validation_chart(df)
         
     except Exception as e:
-        logger.error(f"Failed to generate chart: {e}")
+        log(f"Failed to generate chart: {e}", level=logging.ERROR)
 
 if __name__ == '__main__':
     draw_validation()
