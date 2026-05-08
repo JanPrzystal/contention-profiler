@@ -10,7 +10,7 @@ def setup_logging():
     fmt = logging.Formatter("[%(levelname)s] %(message)s")
 
     # log to file
-    fh = logging.FileHandler("log.log")
+    fh = logging.FileHandler("experiment_results/log.log")
     fh.setLevel(logging.DEBUG)
     fh.setFormatter(fmt)
 

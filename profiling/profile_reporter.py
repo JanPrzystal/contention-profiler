@@ -30,7 +30,7 @@ def _profile_reporter(reporter: rp.Reporter) -> None:
         f.write(f"footprint_mb,perf\n")
         
         for size_mb in range(config.DIAL_START_MB, config.DIAL_END_MB + config.DIAL_STEP_MB, config.DIAL_STEP_MB):
-            perf = profile_reporter_sensitivity(reporter, size_mb)
+            perf = profile_reporter_sensitivity(reporter, size_mb, config.NSOI)
             f.write(f"{size_mb},{perf}\n")
             
 
