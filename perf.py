@@ -3,20 +3,23 @@ import os
 from typing import List
 import sys
 
-from experiment_setup.log import log
+from experiment_setup.log import log, setup_logging
+
+HPC_METRICS = "-e cycles,instructions,L1-dcache-loads,L1-dcache-load-misses,LLC-loads,LLC-load-misses,branches,branch-misses,stalled-cycles-frontend,stalled-cycles-backend",
 
 def profile(workload: List[str], cores: str = None) -> str:
 
     cmd = [
         "perf",
         "stat",
-        "-e cycles,instructions,L1-dcache-loads,L1-dcache-load-misses,LLC-loads,LLC-load-misses,branches,branch-misses,stalled-cycles-frontend,stalled-cycles-backend",
-        # "-M CPI,cache-misses",
+        HPC_METRICS,
     ] + workload
 
     # todo taskset
     if cores is not None:
         cmd = ["taskset", "-c", f"{cores}"] + cmd
+
+    log(f"Running command: {' '.join(cmd)}")
 
     proc = subprocess.Popen(
         cmd,
@@ -33,6 +36,7 @@ def profile(workload: List[str], cores: str = None) -> str:
 
 
 if __name__ == "__main__":
-
+    setup_logging()
     workload = sys.argv[1:]
+    log(f"Profiling workload: {' '.join(workload)}")
     log(profile(workload, "1"))

@@ -88,7 +88,7 @@ def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], pair
     max_contentiousness = profile_workload.profile_contentiousness(applications, reporter)
     tcontentiousness = time() - tstart - treporter
 
-    config.DIAL_END_MB = min(int(max_contentiousness * 2.0 + 1.0), config.DIAL_END_MB)
+    config.DIAL_END_MB = min(int(max_contentiousness * 3.0 + 1.0), config.DIAL_END_MB)
 
     profile_workload.profile_sensitivity(applications)
     tsensitivity = time() - tstart - treporter - tcontentiousness

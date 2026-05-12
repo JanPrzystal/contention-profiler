@@ -2,6 +2,7 @@ import signal
 import subprocess
 import os
 import logging
+from typing import List
 
 import config
 
@@ -16,23 +17,25 @@ class SpecWorkload(Workload):
         self.size = size
         self.proc = None
 
-    def profile(self, cores: str, iterations: int = 1) -> float:
-        # return run_benchmark(self, self.name, cores, self.size)
-        log(f"Running benchmark {self.name}, size = {self.size}")
-        threads = 1
-        
+    def get_command(self, iterations: int = 1) -> List[str]:
         cmd = [
-            "taskset",
-            "-c",
-            f"{cores}",
             config.SPEC_PATH + "/bin/runcpu",
-            f"--threads={threads}",
+            f"--threads=1",
             "--config=try1",
             "--tuning=base",
             f"--iterations={iterations}",
             f"--size={self.size}",
             self.name,
         ]
+
+        return cmd
+
+    def profile(self, cores: str, iterations: int = 1) -> float:
+        # return run_benchmark(self, self.name, cores, self.size)
+        log(f"Running benchmark {self.name}, size = {self.size}")
+        threads = 1
+        
+        cmd = self.get_command(self, iterations)
         
         if config.USE_ROOT_PRIORITY:
             cmd = config.ROOT_TASK_CMD + cmd

@@ -171,7 +171,7 @@ def _profile_sensitivity_progressive(benchmark: Workload):
         
         for size_mb in range(config.DIAL_START_MB, config.DIAL_END_MB + config.DIAL_STEP_MB, config.DIAL_STEP_MB):
             if size_mb > 0:
-                nsoi = size_mb // interval + 1
+                nsoi = max(size_mb // interval, 1)
             perf = _profile_sensitivity_dial(benchmark, size_mb * nsoi, nsoi)
             f.write(f"{size_mb},{perf}\n")
 

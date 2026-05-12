@@ -150,6 +150,12 @@ def test_added_contentiousness():
     for w in bench:
         profile_workload.profile_added_contentiousness(w, reporter)
 
+def test_hpc_spec():
+    app = spec.SpecWorkload("657.xz_s", "train")
+
+    reporter = rp.AveragingReporter("alternating")
+
+    log(perf.profile(app.get_command(), "1"))
 
 if __name__ == "__main__":
 
@@ -164,11 +170,13 @@ if __name__ == "__main__":
 
     config.DIAL_END_MB = 128
 
-    test_soi_additiveness()
+    # test_soi_additiveness()
 
-    test_combined_contentiousness()
+    # test_combined_contentiousness()
 
-    test_added_contentiousness()
+    # test_added_contentiousness()
+
+    test_hpc_spec()
 
     # stats = perf.profile("./membench/membench")
 
