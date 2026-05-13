@@ -1,11 +1,15 @@
 import logging
 
 LOGGER_NAME = __name__ #"experiment_logger"
+DEBUG = logging.DEBUG
+INFO = logging.INFO
+WARNING = logging.WARNING
+
 logger = logging.getLogger(LOGGER_NAME)
 
-def setup_logging():
+def setup_logging(level=logging.INFO):
     global logger
-    logger.setLevel(logging.INFO)
+    logger.setLevel(level)
 
     fmt = logging.Formatter("[%(levelname)s] %(message)s")
 
@@ -16,7 +20,7 @@ def setup_logging():
 
     # log to console
     ch = logging.StreamHandler()
-    ch.setLevel(logging.INFO) 
+    ch.setLevel(level) 
     ch.setFormatter(fmt)
 
     logger.addHandler(fh)

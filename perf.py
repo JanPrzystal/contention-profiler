@@ -4,7 +4,7 @@ from typing import List
 import sys
 import re
 
-from experiment_setup.log import log, setup_logging
+from experiment_setup.log import log, setup_logging, DEBUG
 
 HPC_METRICS = [
     "cycles",
@@ -71,7 +71,7 @@ def profile(workload: List[str], cores: str = None) -> dict:
     if cores is not None:
         cmd = ["taskset", "-c", f"{cores}"] + cmd
 
-    log(f"Running command: {' '.join(cmd)}")
+    log(f"Running command: {' '.join(cmd)}", DEBUG)
 
     proc = subprocess.Popen(
         cmd,
@@ -88,7 +88,7 @@ def profile(workload: List[str], cores: str = None) -> dict:
 
     results = parse_perf_output(metric_output)
 
-    log(results)
+    log(stdout_data.decode("utf-8") + "\n\n" + metric_output, DEBUG)
 
     return results
 
