@@ -2,17 +2,69 @@ import subprocess
 import os
 from typing import List
 import sys
+import re
 
 from experiment_setup.log import log, setup_logging
 
-HPC_METRICS = "-e cycles,instructions,L1-dcache-loads,L1-dcache-load-misses,LLC-loads,LLC-load-misses,branches,branch-misses,stalled-cycles-frontend,stalled-cycles-backend",
+HPC_METRICS = [
+    "cycles",
+    "instructions",
+    "L1-dcache-loads",
+    "L1-dcache-load-misses",
+    "LLC-loads",
+    "LLC-load-misses",
+    # "branches",
+    # "branch-misses",
+    # "stalled-cycles-frontend",
+    # "stalled-cycles-backend",
+]
 
-def profile(workload: List[str], cores: str = None) -> str:
+def parse_perf_output(output: str) -> dict:
+    results = {}
+
+    # Parse metrics
+    for metric in HPC_METRICS:
+        pattern = rf"([\d,]+|<not supported>)\s+{re.escape(metric)}"
+        match = re.search(pattern, output)
+
+        if match:
+            value = match.group(1)
+
+            if value == "<not supported>":
+                results[metric] = None
+            else:
+                results[metric] = int(value.replace(",", ""))
+        else:
+            results[metric] = None
+
+    # Parse timing info
+    time_patterns = {
+        "time_elapsed": r"([\d.]+)\s+seconds time elapsed",
+        "user_time": r"([\d.]+)\s+seconds user",
+        "sys_time": r"([\d.]+)\s+seconds sys",
+    }
+
+    for key, pattern in time_patterns.items():
+        match = re.search(pattern, output)
+
+        if match:
+            results[key] = float(match.group(1))
+        else:
+            results[key] = None
+
+    # Calculate derived metrics
+    results["cpi"] = results["cycles"] / results["instructions"] if results["cycles"] is not None and results["instructions"] is not None else None
+    results["l1_miss_rate"] = results["L1-dcache-load-misses"] / results["L1-dcache-loads"] if results["L1-dcache-load-misses"] is not None and results["L1-dcache-loads"] is not None else None
+    results["llc_miss_rate"] = results["LLC-load-misses"] / results["LLC-loads"] if results["LLC-load-misses"] is not None and results["LLC-loads"] is not None else None
+
+    return results
+
+def profile(workload: List[str], cores: str = None) -> dict:
 
     cmd = [
         "perf",
         "stat",
-        HPC_METRICS,
+        "-e " + ",".join(HPC_METRICS),
     ] + workload
 
     # todo taskset
@@ -32,7 +84,15 @@ def profile(workload: List[str], cores: str = None) -> str:
 
     stdout_data, stderr_data = proc.communicate()
 
-    return stdout_data.decode("utf-8") + "\n\n" + stderr_data.decode("utf-8")
+    metric_output = stderr_data.decode("utf-8")
+
+    results = parse_perf_output(metric_output)
+
+    log(results)
+
+    return results
+
+    # return stdout_data.decode("utf-8") + "\n\n" + metric_output
 
 
 if __name__ == "__main__":

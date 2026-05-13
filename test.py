@@ -155,7 +155,29 @@ def test_hpc_spec():
 
     reporter = rp.AveragingReporter("alternating")
 
-    log(perf.profile(app.get_command(), "1"))
+    log("profiling alone")
+    log(perf.profile(app.get_command(), "0"))
+
+    app1 = spec.SpecWorkload("619.lbm_s", "train")
+    app2 = spec.SpecWorkload("600.perlbench_s", "train")
+
+    log("profiling with competitors")
+
+    app1.run_in_background("1")
+    app2.run_in_background("2")
+
+    sleep(3)
+
+    log(perf.profile(app.get_command(), "0"))
+
+    app1.stop()
+    app2.stop()
+
+    sleep(3)
+
+    log("profiling alone again")
+    log(perf.profile(app.get_command(), "0"))
+
 
 if __name__ == "__main__":
 

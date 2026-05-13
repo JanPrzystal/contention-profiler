@@ -35,7 +35,7 @@ class SpecWorkload(Workload):
         log(f"Running benchmark {self.name}, size = {self.size}")
         threads = 1
         
-        cmd = self.get_command(self, iterations)
+        cmd = self.get_command(iterations)
         
         if config.USE_ROOT_PRIORITY:
             cmd = config.ROOT_TASK_CMD + cmd
