@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from asyncio import subprocess
+import subprocess
 from experiment_setup.core_manager import background_core_dispenser
 import os
 import signal

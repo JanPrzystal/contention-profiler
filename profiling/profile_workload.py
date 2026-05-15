@@ -118,7 +118,7 @@ def profile_contentiousness(workloads: list[Workload], reporter: rp.Reporter) ->
 
 def profile_added_contentiousness(workload: Workload, reporter: rp.Reporter) -> None:
 
-    sizes = range(config.DIAL_START_MB, config.DIAL_END_MB + config.DIAL_STEP_MB, config.DIAL_STEP_MB)
+    sizes = range(config.DIAL_START_MB, config.DIAL_END_MB - 1, config.DIAL_STEP_MB)
 
     contentiousness = {}
 

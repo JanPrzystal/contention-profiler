@@ -68,8 +68,8 @@ class SpecWorkload(Workload):
     def stop(self) -> None:
         if not self.proc:
             raise Exception(f"No instance of SPEC CPU workload {self.name} found")
-        if self.proc.poll() is None:
-            log(f"Stopping background process with PID {self.proc.pid}")
+        if self.proc.proc.poll() is None:
+            log(f"Stopping background process with PID {self.proc.proc.pid}", DEBUG)
             self.proc.stop()
 
 def run_background_benchmark(name: str, size: str) -> Process:
