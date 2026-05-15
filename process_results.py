@@ -77,7 +77,7 @@ def process_zip_files(zip_paths):
         max_error = result['max_error']
         min_error = result['min_error']
         min_error = abs(min_error)
-        errors_data[result['name']] = [max(min_error, max_error), result['abs_median_error'], abs(min_error - max_error)]
+        errors_data[result['name']] = [max(min_error, max_error), result['abs_median_error'], abs(min_error) + abs(max_error)]
 
         # Get time data
         times = result["timings"]

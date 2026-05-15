@@ -4,7 +4,7 @@ import signal
 
 import experiment_setup.reporter as rp
 
-from experiment_setup.log import log
+from experiment_setup.log import log, DEBUG
 from experiment_setup.contention_synthesis import Bubble
 import config
 import profiling.contentiousness as cnt
@@ -46,7 +46,10 @@ def _profile_reporter_progressive(reporter: rp.Reporter) -> None:
 
         for size_mb in range(config.DIAL_START_MB, config.DIAL_END_MB + config.DIAL_STEP_MB, config.DIAL_STEP_MB):
             if size_mb > 0:
-                nsoi = size_mb // (config.DIAL_RANGE_MB // (config.NSOI - 1)) + 1
+                nsoi = max(size_mb // (config.DIAL_RANGE_MB // config.NSOI), 1)
+
+            log(f"Profiling with SoI size {size_mb}MB and {nsoi} SoI ({size_mb}/{config.DIAL_RANGE_MB // config.NSOI})", DEBUG)
+
             perf = profile_reporter_sensitivity(reporter, size_mb * nsoi, nsoi)
             f.write(f"{size_mb},{perf}\n")
 

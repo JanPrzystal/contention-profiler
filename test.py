@@ -17,7 +17,7 @@ import config
 import experiment_setup.reporter as rp
 from experiment_setup.cpu_freq import CpuFreqPolicy, Governor
 import perf
-from experiment_setup.log import setup_logging, log
+from experiment_setup.log import setup_logging, log, DEBUG
 
 def test_combined_contentiousness():
     bench = [spec.SpecWorkload("619.lbm_s", "train"), spec.SpecWorkload("600.perlbench_s", "train"), spec.SpecWorkload("649.fotonik3d_s", "train"), spec.SpecWorkload("654.roms_s", "train")]
@@ -136,7 +136,8 @@ def test_soi_additiveness():
 
 def test_added_contentiousness():
     log("testing added contentiousness with progressive profiling", logging.INFO)
-    config.DIAL_END_MB = 128
+    config.DIAL_END_MB = 112
+    config.DIAL_RANGE_MB = 112
     config.NSOI = 7
     config.PROGRESSIVE_PROFILING = True
 
@@ -181,7 +182,7 @@ def test_hpc_spec():
 
 if __name__ == "__main__":
 
-    setup_logging()
+    setup_logging(DEBUG)
 
 
     config.USE_ROOT_PRIORITY = False
@@ -190,15 +191,17 @@ if __name__ == "__main__":
     CpuFreqPolicy.set_governor(Governor.PERFORMANCE)
 
 
-    config.DIAL_END_MB = 128
+    # config.DIAL_END_MB = 112
+
+    config.PROGRESSIVE_PROFILING = True
 
     # test_soi_additiveness()
 
     # test_combined_contentiousness()
 
-    # test_added_contentiousness()
+    test_added_contentiousness()
 
-    test_hpc_spec()
+    # test_hpc_spec()
 
     # stats = perf.profile("./membench/membench")
 

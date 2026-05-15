@@ -132,7 +132,7 @@ def profile_added_contentiousness(workload: Workload, reporter: rp.Reporter) -> 
 
         nsoi = config.NSOI
         if config.PROGRESSIVE_PROFILING:
-            nsoi = size_mb // (config.DIAL_RANGE_MB // (config.NSOI - 1)) + 1
+            nsoi = max(size_mb // (config.DIAL_RANGE_MB // config.NSOI), 1)
 
         log(f"Profiling {workload.name} with {nsoi} SoI size {size_mb}MB")
         
