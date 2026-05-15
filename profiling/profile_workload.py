@@ -61,7 +61,7 @@ def _profile_sensitivity_dial(workload: Workload, size_mb: int, nproc: int) -> f
         log("Profiling in isolation")
         return workload.profile(config.WORKLOAD_UNDER_PROFILING_CORES)
     bubble = Bubble(size_mb, nproc)
-    bubble.run_in_background(config.WORKLOAD_IN_BACKGROUND_CORES)
+    bubble.run_in_background()
 
     time.sleep(config.WORKLOAD_WARMUP_TIME)
     
@@ -71,8 +71,7 @@ def _profile_sensitivity_dial(workload: Workload, size_mb: int, nproc: int) -> f
         bubble.stop()
 
 def _profile_contentiousness(workload: Workload, reporter: rp.Reporter) -> float:
-        core = config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[0]
-        workload.run_in_background(core)
+        workload.run_in_background()
         try:
             time.sleep(config.WORKLOAD_WARMUP_TIME)
             score = reporter.run(config.REPORTER_CORES, config.REPORTER_REPETITIONS)
@@ -137,8 +136,7 @@ def profile_added_contentiousness(workload: Workload, reporter: rp.Reporter) -> 
         log(f"Profiling {workload.name} with {nsoi} SoI size {size_mb}MB")
         
         bubble = Bubble(size_mb, nsoi)
-        bcores = config.WORKLOAD_IN_BACKGROUND_CORES.replace(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[0], str (int(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[0]) + 1) )
-        bubble.run_in_background(bcores)
+        bubble.run_in_background()
         try:
             result = _profile_contentiousness(workload, reporter) - size_mb
         finally:

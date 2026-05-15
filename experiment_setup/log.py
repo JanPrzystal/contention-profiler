@@ -4,6 +4,7 @@ LOGGER_NAME = __name__ #"experiment_logger"
 DEBUG = logging.DEBUG
 INFO = logging.INFO
 WARNING = logging.WARNING
+ERROR = logging.ERROR
 
 logger = logging.getLogger(LOGGER_NAME)
 

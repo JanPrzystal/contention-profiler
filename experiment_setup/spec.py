@@ -1,15 +1,13 @@
-import signal
 import subprocess
 import os
-import logging
 from typing import List
 
 import config
 
-from experiment_setup.workload import Workload
-from experiment_setup.log import log
+from experiment_setup.workload import Workload, Process
+from experiment_setup.log import log, DEBUG, ERROR
+from experiment_setup.core_manager import background_core_dispenser
 
-logger = logging.getLogger(__name__)
 
 class SpecWorkload(Workload):
     def __init__(self, name: str, size="train"):
@@ -30,12 +28,12 @@ class SpecWorkload(Workload):
 
         return cmd
 
-    def profile(self, cores: str, iterations: int = 1) -> float:
+    def profile(self, iterations: int = 1) -> float:
         # return run_benchmark(self, self.name, cores, self.size)
         log(f"Running benchmark {self.name}, size = {self.size}")
-        threads = 1
         
-        cmd = self.get_command(iterations)
+        core = config.WORKLOAD_UNDER_PROFILING_CORES
+        cmd = ["taskset", "-c", core] + self.get_command(iterations)
         
         if config.USE_ROOT_PRIORITY:
             cmd = config.ROOT_TASK_CMD + cmd
@@ -52,11 +50,11 @@ class SpecWorkload(Workload):
         stdout_data, stderr_data = self.proc.communicate()
 
         output = stdout_data.decode("utf-8")
-        logger.debug(f"Process output:\n{output}")
+        log(f"Process output:\n{output}", DEBUG)
 
         if self.proc.returncode != 0:
             # errors = self.proc.stderr.decode("utf-8")
-            logger.error(stderr_data.decode("utf-8"))
+            log(stderr_data.decode("utf-8"), ERROR)
             raise Exception("SPEC process ended with non-zero exit code")
 
         output_filename = _get_output_filename(output)
@@ -64,18 +62,19 @@ class SpecWorkload(Workload):
         return _get_benchmark_time(output_filename, self.name)
 
 
-    def run_in_background(self, cores: str) -> None:
-        self.proc = run_background_benchmark(self.name, cores, self.size)
+    def run_in_background(self) -> None:
+        self.proc = run_background_benchmark(self.name, self.size)
 
     def stop(self) -> None:
         if not self.proc:
             raise Exception(f"No instance of SPEC CPU workload {self.name} found")
         if self.proc.poll() is None:
-            os.killpg(os.getpgid(self.proc.pid), signal.SIGKILL)
-        
+            log(f"Stopping background process with PID {self.proc.pid}")
+            self.proc.stop()
 
-def run_background_benchmark(name: str, cores: str, size: str) -> subprocess.Popen:
-    log(f"Running {name} in background on core {cores}, size = {size}")
+def run_background_benchmark(name: str, size: str) -> Process:
+    core = background_core_dispenser.acquire()
+    log(f"Running {name} in background on core {core}, size = {size}")
 
     cmd = [
         config.SPEC_PATH + "/bin/runcpu",
@@ -86,15 +85,15 @@ def run_background_benchmark(name: str, cores: str, size: str) -> subprocess.Pop
         name,
     ]
 
-    if cores is not None:
-        cmd = ["taskset", "-c", f"{cores}"] + cmd
+    if core is not None:
+        cmd = ["taskset", "-c", f"{core}"] + cmd
 
     if config.USE_ROOT_PRIORITY:
         cmd = config.ROOT_TASK_CMD + cmd
 
-    logger.debug(f"Running command: {' '.join(cmd)}")
+    log(f"Running command: {' '.join(cmd)}", DEBUG)
     
-    return subprocess.Popen(
+    proc = subprocess.Popen(
         cmd,
         stdin=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
@@ -102,10 +101,13 @@ def run_background_benchmark(name: str, cores: str, size: str) -> subprocess.Pop
         preexec_fn=os.setpgrp
     )
 
+    return Process(proc, core)
+
     
-def stop_benchmark(proc: subprocess.Popen):
-    log(f"Stopping background process with PID {proc.pid}")
-    os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+def stop_benchmark(proc: Process):
+    log(f"Stopping background process with PID {proc.proc.pid}")
+    proc.stop()
+
     
 def _get_output_filename(runcpu_output: str) -> str:
     for line in runcpu_output.splitlines():

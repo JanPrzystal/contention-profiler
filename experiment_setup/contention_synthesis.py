@@ -2,9 +2,11 @@ import subprocess
 import os
 
 import config
-from experiment_setup.workload import Workload
+from experiment_setup.workload import Workload, Process
 
 from experiment_setup.log import log
+from experiment_setup.core_manager import background_core_dispenser
+
 
 BUILD_DIR = "build"
 
@@ -48,7 +50,7 @@ class Sledge():
     
     def stop(self) -> None:
         if not self.proc:
-            logger.warning("An attempt to stop sledge was made but no process was found")
+            log("An attempt to stop sledge was made but no process was found", WARNING)
             return
         os.kill(self.proc.pid, 9)
 
@@ -94,10 +96,10 @@ class Bubble(Workload):
         )
         self.procs = []
 
-    def profile(self, cores: str) -> float:
+    def profile(self) -> float:
         raise NotImplementedError("\"profile\" not implemented for Bubble")
 
-    def run_in_background(self, cores: str|None = None) -> None:
+    def run_in_background(self) -> None:
         for i in range(self.n_proc):
             if config.BUBBLE_TYPE == "stream":
                 bubble_type = "bubble_stream.out"
@@ -107,25 +109,25 @@ class Bubble(Workload):
                 bubble_type = "bubble_stream.out" if i % 2 == 0 else "bubble_rand.out"
             log(f"Running {bubble_type}")
 
-            if cores is None:
-                raise NotImplementedError(f"Rinning on specified cores not implemented")
-                #TODO
+            core = ""
+            try:
+                core = background_core_dispenser.acquire()
+            except Exception as e:
+                log(f"Failed to acquire background core for bubble process {i+1}: {e}")
+                raise Exception("Failed to acquire background core for bubble process")
+        
+            cmd = ["taskset", "-c", f"{core}", f"./{BUILD_DIR}/{bubble_type}"]
     
-            else:
-                cmd = [
-                    "taskset",
-                    "-c",
-                    f"{i+2}",
-                    f"./{BUILD_DIR}/{bubble_type}",
-                ]   
 
             if config.USE_ROOT_PRIORITY:
                 cmd = config.ROOT_TASK_CMD + cmd
 
-            self.procs.append(subprocess.Popen(
+            proc = subprocess.Popen(
                 cmd,
                 stdin=subprocess.DEVNULL,
-            ))
+                preexec_fn=os.setpgrp
+            )
+            self.procs.append(Process(proc, core))
     
 
     
@@ -134,5 +136,5 @@ class Bubble(Workload):
         #     logger.warning("An attempt to stop bubble was made but no process was found")
         #     return
         for proc in self.procs:
-            os.kill(proc.pid, 9)
+            proc.stop()
         self.procs.clear()

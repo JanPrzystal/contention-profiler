@@ -43,7 +43,7 @@ def test_combined_contentiousness():
     for i, b in enumerate(bench):
         log(f"{b.name}", logging.INFO)
         # cores = list(range(int(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[0]), int(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[1])))
-        proc = spec.run_background_benchmark(b.name, str(i+1), b.size)
+        proc = spec.run_background_benchmark(b.name, b.size)
         procs.append(proc)
 
     sleep(5)
@@ -85,7 +85,7 @@ def test_soi_additiveness():
         soi1 = Bubble(base*i, 1)
         soi2 = Bubble(base, i)
 
-        soi1.run_in_background(config.WORKLOAD_IN_BACKGROUND_CORES)
+        soi1.run_in_background()
 
         sleep(5)
 
@@ -97,7 +97,7 @@ def test_soi_additiveness():
 
         log(f"1x{base*i}MB: {score}, contentiousness: {cnt}", logging.INFO)
 
-        soi2.run_in_background(config.WORKLOAD_IN_BACKGROUND_CORES)
+        soi2.run_in_background()
 
         sleep(5)
 
@@ -117,8 +117,8 @@ def test_soi_additiveness():
 
     log("Profiling contentiousness of 2 apps", logging.INFO)
 
-    app1.run_in_background(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[0])
-    app2.run_in_background(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[1])
+    app1.run_in_background()
+    app2.run_in_background()
 
     sleep(5)
 
@@ -164,8 +164,8 @@ def test_hpc_spec():
 
     log("profiling with competitors")
 
-    app1.run_in_background("1")
-    app2.run_in_background("2")
+    app1.run_in_background()
+    app2.run_in_background()
 
     sleep(3)
 
@@ -185,8 +185,8 @@ if __name__ == "__main__":
     setup_logging(DEBUG)
 
 
-    config.USE_ROOT_PRIORITY = False
-    config.DATA_SIZE = "test"
+    # config.USE_ROOT_PRIORITY = False
+    # config.DATA_SIZE = "test"
 
     CpuFreqPolicy.set_governor(Governor.PERFORMANCE)
 

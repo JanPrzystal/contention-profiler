@@ -17,7 +17,7 @@ def profile_reporter_sensitivity(reporter: rp.Reporter, size_mb: int, nsoi: int 
 
 
     bubble = Bubble(size_mb, nsoi)
-    bubble.run_in_background(config.WORKLOAD_IN_BACKGROUND_CORES)
+    bubble.run_in_background()
     time.sleep(config.WORKLOAD_WARMUP_TIME)
     try:
         return reporter.run(config.REPORTER_CORES, config.REPORTER_REPETITIONS)

@@ -1,4 +1,17 @@
 from abc import ABC, abstractmethod
+from asyncio import subprocess
+from experiment_setup.core_manager import background_core_dispenser
+import os
+import signal
+
+class Process:
+    def __init__(self, proc: subprocess.Popen, core: str):
+        self.proc = proc
+        self.core = core
+
+    def stop(self) -> None:
+        os.killpg(os.getpgid(self.proc.pid), signal.SIGKILL)
+        background_core_dispenser.release(self.core)
 
 class Workload(ABC):
 
@@ -7,11 +20,11 @@ class Workload(ABC):
         pass
 
     @abstractmethod
-    def profile(self, cores: str) -> float:
+    def profile(self) -> float:
         pass
 
     @abstractmethod
-    def run_in_background(self, cores: str) -> None:
+    def run_in_background(self) -> None:
         pass
 
     @abstractmethod
