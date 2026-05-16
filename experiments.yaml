@@ -39,22 +39,22 @@ experiments:
   - name: multi_prog7
     benchmarks:
     - 600.perlbench_s
-    # - 602.gcc_s
+    - 602.gcc_s
     - 605.mcf_s
     - 620.omnetpp_s
-    # - 623.xalancbmk_s
-    # - 625.x264_s
+    - 623.xalancbmk_s
+    - 625.x264_s
     - 631.deepsjeng_s
-    # - 641.leela_s
-    # - 648.exchange2_s
-    # - 657.xz_s
+    - 641.leela_s
+    - 648.exchange2_s
+    - 657.xz_s
     - 603.bwaves_s
-    # - 607.cactuBSSN_s
+    - 607.cactuBSSN_s
     - 619.lbm_s
-    # - 627.cam4_s
-    # - 628.pop2_s
-    # - 638.imagick_s
-    # - 644.nab_s
+    - 627.cam4_s
+    - 628.pop2_s
+    - 638.imagick_s
+    - 644.nab_s
     - 649.fotonik3d_s
     - 654.roms_s
     reporter: alternating
@@ -70,34 +70,34 @@ experiments:
     profiling_repetitions: 1
     use_interpolation: true
     progressive_profiling: true
-    validations: 240
+    validations: 380
     
   - name: multi_rand4
     benchmarks:
     - 600.perlbench_s
-    # - 602.gcc_s
+    - 602.gcc_s
     - 605.mcf_s
     - 620.omnetpp_s
-    # - 623.xalancbmk_s
-    # - 625.x264_s
+    - 623.xalancbmk_s
+    - 625.x264_s
     - 631.deepsjeng_s
-    # - 641.leela_s
-    # - 648.exchange2_s
-    # - 657.xz_s
+    - 641.leela_s
+    - 648.exchange2_s
+    - 657.xz_s
     - 603.bwaves_s
-    # - 607.cactuBSSN_s
+    - 607.cactuBSSN_s
     - 619.lbm_s
-    # - 627.cam4_s
-    # - 628.pop2_s
-    # - 638.imagick_s
-    # - 644.nab_s
+    - 627.cam4_s
+    - 628.pop2_s
+    - 638.imagick_s
+    - 644.nab_s
     - 649.fotonik3d_s
     - 654.roms_s
     reporter: alternating
     soi: 
       type: rand
       number: 4
-    max_mem_footprint: 96
+    max_mem_footprint: 112
     mem_interval: 16
     reporter_repetitions: 25
     deployment: multi
@@ -106,79 +106,8 @@ experiments:
     profiling_repetitions: 1
     use_interpolation: true
     progressive_profiling: false
-    validations: 240
+    validations: 380
 
-  - name: multi_rand2
-    benchmarks:
-    - 600.perlbench_s
-    # - 602.gcc_s
-    - 605.mcf_s
-    - 620.omnetpp_s
-    # - 623.xalancbmk_s
-    # - 625.x264_s
-    - 631.deepsjeng_s
-    # - 641.leela_s
-    # - 648.exchange2_s
-    # - 657.xz_s
-    - 603.bwaves_s
-    # - 607.cactuBSSN_s
-    - 619.lbm_s
-    # - 627.cam4_s
-    # - 628.pop2_s
-    # - 638.imagick_s
-    # - 644.nab_s
-    - 649.fotonik3d_s
-    - 654.roms_s
-    reporter: alternating
-    soi: 
-      type: rand
-      number: 2
-    max_mem_footprint: 96
-    mem_interval: 16
-    reporter_repetitions: 25
-    deployment: multi
-    data_size: train
-    root: true
-    profiling_repetitions: 1
-    use_interpolation: true
-    progressive_profiling: false
-    validations: 240
-
-  - name: multi_rand7
-    benchmarks:
-    - 600.perlbench_s
-    # - 602.gcc_s
-    - 605.mcf_s
-    - 620.omnetpp_s
-    # - 623.xalancbmk_s
-    # - 625.x264_s
-    - 631.deepsjeng_s
-    # - 641.leela_s
-    # - 648.exchange2_s
-    # - 657.xz_s
-    - 603.bwaves_s
-    # - 607.cactuBSSN_s
-    - 619.lbm_s
-    # - 627.cam4_s
-    # - 628.pop2_s
-    # - 638.imagick_s
-    # - 644.nab_s
-    - 649.fotonik3d_s
-    - 654.roms_s
-    reporter: alternating
-    soi: 
-      type: rand
-      number: 7
-    max_mem_footprint: 96
-    mem_interval: 16
-    reporter_repetitions: 25
-    deployment: multi
-    data_size: train
-    root: true
-    profiling_repetitions: 1
-    use_interpolation: true
-    progressive_profiling: false
-    validations: 240
 
 # 600.perlbench_s,
 # 602.gcc_s,

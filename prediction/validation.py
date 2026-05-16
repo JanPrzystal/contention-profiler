@@ -110,7 +110,14 @@ def validate_pair_predictions(applications: List[Workload], competitors: List[Wo
 
 def choose_predictions(predictions: List[Prediction]) -> List[Prediction]:
     sample_size = min(config.VALIDATIONS, len(predictions))
-    return random.sample(predictions, sample_size)
+    
+    # Only 7 or less competitors
+    max_competitors = int(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[1])
+    filtered = [
+        prediction for prediction in predictions
+        if len(prediction.competitor.split(" + ")) <= max_competitors
+    ]
+    return random.sample(filtered, sample_size)
 
 def validate_predictions(predictions: List[Prediction], competitors: List[Workload]) -> List[ValidatedPrediction]:
     validated_predictions = []
