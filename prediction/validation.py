@@ -41,26 +41,25 @@ def validate_prediction(prediction: Prediction, workloads: List[Workload]) -> Va
 
     logging.info(f"Starting profiling for ({primary.name} with {', '.join(c.name for c in competitors)})")
     
-    isolated_perf = get_sensitivity(primary.name)(0) 
-        # primary.profile(config.WORKLOAD_UNDER_PROFILING_CORES)
+    isolated_perf = get_sensitivity(primary.name)(0)
 
     # Get cores for background workloads
-    start, end = map(int, config.WORKLOAD_IN_BACKGROUND_CORES.split("-"))
-    ncores = end - start + 1
-    cores = iter(range(start, end + 1))
+    # start, end = map(int, config.WORKLOAD_IN_BACKGROUND_CORES.split("-"))
+    # ncores = end - start + 1
+    # cores = iter(range(start, end + 1))
 
     # Check if there are enough cores for all competitors
-    if len(competitors) > ncores:
-        raise ValueError("Not enough cores for all competitors")
+    # if len(competitors) > ncores:
+    #     raise ValueError("Not enough cores for all competitors")
 
     # Start competitors in the background
     background_processes = []
-    for competitor, core in zip(competitors, cores):
+    for competitor in competitors:
         background_processes.append(run_background_benchmark(competitor.name, competitor.size))
 
     time.sleep(config.WORKLOAD_WARMUP_TIME)
     try:
-        perf = primary.profile(config.WORKLOAD_UNDER_PROFILING_CORES)
+        perf = primary.profile()
         return ValidatedPrediction(actual_perf=(isolated_perf / perf), *prediction)
     finally:
         for process in background_processes:

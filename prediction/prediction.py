@@ -7,12 +7,12 @@ from profiling.contentiousness import read_contentiousness
 from scipy.interpolate import PchipInterpolator
 
 import config
-import logging
 from itertools import combinations
 import csv
 import prediction.prediction as prediction
 
-logger = logging.getLogger(__name__)
+from experiment_setup.log import log, DEBUG
+
 
 Prediction = namedtuple("Prediction", ["app", "competitor", "perf", "contentiousness"])
 
@@ -83,13 +83,13 @@ def predict_performance(applications: List[Workload]) -> List[Prediction]:
     predictions = []
     for app in applications:
         all_competitors = [x for x in applications if x != app]
-        logger.debug(f"Competitors for {app.name}: {', '.join(c.name for c in all_competitors)}")
+        log(f"Forming predictions for {app.name}")
         # Generate predictions for all combinations of competitors
         # Currently just combinations, no multisets
         for k in range(0, len(all_competitors)):
-            for competitors in combinations(all_competitors, k+1):
-                logger.debug(f"Predicting performance for {app.name} with competitors: {', '.join(c.name for c in competitors)}")
-                predictions.append(prediction.predict_app_performance(app, competitors, prediction.get_sensitivity(app.name)))
+            if k <= config.MAX_COMPETITORS:
+                for competitors in combinations(all_competitors, k+1):
+                    predictions.append(prediction.predict_app_performance(app, competitors, prediction.get_sensitivity(app.name)))
 
     # logger.debug(f"Predictions: {'\n'.join(str(p) for p in predictions)}")
     return predictions

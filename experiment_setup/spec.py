@@ -38,27 +38,31 @@ class SpecWorkload(Workload):
         if config.USE_ROOT_PRIORITY:
             cmd = config.ROOT_TASK_CMD + cmd
 
-        self.proc = subprocess.Popen(
+        self.proc = Process(subprocess.Popen(
             cmd,
             stdin=subprocess.DEVNULL,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             preexec_fn=os.setpgrp
-        )
+        ), core)
+
         log("Started process")
 
-        stdout_data, stderr_data = self.proc.communicate()
+        stdout_data, stderr_data = self.proc.proc.communicate()
 
         output = stdout_data.decode("utf-8")
         log(f"Process output:\n{output}", DEBUG)
 
-        if self.proc.returncode != 0:
+        if self.proc.proc.returncode != 0:
             # errors = self.proc.stderr.decode("utf-8")
             log(stderr_data.decode("utf-8"), ERROR)
             raise Exception("SPEC process ended with non-zero exit code")
 
         output_filename = _get_output_filename(output)
-        self.stop()
+        if self.proc.proc.poll() is None:
+            log(f"Stopping process with PID {self.proc.proc.pid}", DEBUG)
+            self.proc.stop()
+
         return _get_benchmark_time(output_filename, self.name)
 
 
@@ -68,9 +72,9 @@ class SpecWorkload(Workload):
     def stop(self) -> None:
         if not self.proc:
             raise Exception(f"No instance of SPEC CPU workload {self.name} found")
-        if self.proc.proc.poll() is None:
-            log(f"Stopping background process with PID {self.proc.proc.pid}", DEBUG)
-            self.proc.stop()
+        
+        log(f"Stopping background process with PID {self.proc.proc.pid}", DEBUG)
+        self.proc.stop()
 
 def run_background_benchmark(name: str, size: str) -> Process:
     core = background_core_dispenser.acquire()
