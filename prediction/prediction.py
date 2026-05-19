@@ -79,25 +79,36 @@ def predict_pair_performance(applications: List[Workload], competitors: List[Wor
     with open(f"{config.RESULTS_DIR}/predictions.json", "w") as f:
         f.write(json_data)
 
-def predict_performance(applications: List[Workload]) -> List[Prediction]:
-    predictions = []
+def predict_performance(applications: List[Workload]) -> dict[int, List[Prediction]]:
+    predictions = {}
     for app in applications:
         all_competitors = [x for x in applications if x != app]
         log(f"Forming predictions for {app.name}")
         # Generate predictions for all combinations of competitors
         # Currently just combinations, no multisets
-        for k in range(0, len(all_competitors)):
-            if k <= config.MAX_COMPETITORS:
-                for competitors in combinations(all_competitors, k+1):
-                    predictions.append(prediction.predict_app_performance(app, competitors, prediction.get_sensitivity(app.name)))
+        for k in range(1, len(all_competitors) + 1):
+            if k > config.MAX_COMPETITORS:
+                break
+            if k not in predictions:
+                predictions[k] = _predict_with_competitors(app, all_competitors, k)
+            else:
+                predictions[k].extend(_predict_with_competitors(app, all_competitors, k))
 
     # logger.debug(f"Predictions: {'\n'.join(str(p) for p in predictions)}")
     return predictions
 
-def save_predictions(predictions: List[Prediction]) -> None:
-    with open(f"{config.RESULTS_DIR}/predictions.csv", "w") as f:
-        writer = csv.writer(f, delimiter=",")
-        writer.writerow(prediction.Prediction._fields)
-        for pred in predictions:
-            row = [str(c) for c in list(pred._asdict().values())]
-            writer.writerow(row)
+def _predict_with_competitors(application: Workload, competitors: List[Workload], n_competitors: int) -> List[Prediction]:
+    predictions = []
+    for competitors in combinations(competitors, n_competitors):
+        predictions.append(prediction.predict_app_performance(application, competitors, prediction.get_sensitivity(application.name)))
+    
+    return predictions
+
+def save_predictions(predictions: dict[int, List[Prediction]]) -> None:
+    for k, pred_list in predictions.items():
+        with open(f"{config.RESULTS_DIR}/predictions_{k}comp.csv", "w") as f:
+            writer = csv.writer(f, delimiter=",")
+            writer.writerow(prediction.Prediction._fields)
+            for pred in pred_list:
+                row = [str(c) for c in list(pred._asdict().values())]
+                writer.writerow(row)

@@ -9,9 +9,10 @@ from collections import namedtuple
 import config
 from experiment_setup.workload import Workload
 from prediction.prediction import Prediction
-import logging
 from experiment_setup.spec import run_background_benchmark, stop_benchmark
 from prediction.prediction import get_sensitivity
+
+from experiment_setup.log import log, INFO, WARNING, DEBUG
 
 ValidatedPrediction = namedtuple(
     "ValidatedPrediction", Prediction._fields + ("actual_perf",)
@@ -39,7 +40,7 @@ def validate_prediction(prediction: Prediction, workloads: List[Workload]) -> Va
         if competitor_workload:
             competitors.append(competitor_workload)
 
-    logging.info(f"Starting profiling for ({primary.name} with {', '.join(c.name for c in competitors)})")
+    log(f"Starting profiling for ({primary.name} with {', '.join(c.name for c in competitors)})")
     
     isolated_perf = get_sensitivity(primary.name)(0)
 
@@ -85,9 +86,17 @@ def writerow_and_sync(f, writer, row):
     f.flush()  # flush Python buffers to OS
     os.fsync(f.fileno())  # force OS to write to disk
 
-def validate_pair_predictions(applications: List[Workload], competitors: List[Workload]):
+def validate_pair_predictions(applications: List[Workload], competitors: List[Workload], predictions: List[Prediction]) -> List[ValidatedPrediction]:
     snapshot = read_snapshot()
-    predictions = read_predictions()
+    # predictions = read_predictions()
+
+    validated = []
+
+    for p in predictions:
+        row = validate_prediction(p, applications + competitors)
+        validated.append(row)
+
+    return validated
 
     with open(VALIDATION_FILE, "a+") as f:
         f.seek(0)
@@ -104,27 +113,40 @@ def validate_pair_predictions(applications: List[Workload], competitors: List[Wo
             if key in snapshot:
                 continue
             row = validate_prediction(p, applications + competitors)
-            logging.info(str(row))
+            log(str(row), INFO)
             writerow_and_sync(f, writer, row)
 
-def choose_predictions(predictions: List[Prediction]) -> List[Prediction]:
-    sample_size = min(config.VALIDATIONS, len(predictions))
-    
-    # Only 7 or less competitors
-    max_competitors = int(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[1])
-    filtered = [
-        prediction for prediction in predictions
-        if len(prediction.competitor.split(" + ")) <= max_competitors
-    ]
-    return random.sample(filtered, sample_size)
+def choose_predictions(predictions: dict[int, List[Prediction]], max: int = config.VALIDATIONS) -> List[Prediction]:
+    sample_size = max #min(max, len(predictions))
 
-def validate_predictions(predictions: List[Prediction], competitors: List[Workload]) -> List[ValidatedPrediction]:
+    max_competitors = config.MAX_COMPETITORS
+
+    predictions_list = []
+
+    subsample_size = sample_size // max_competitors
+
+    log(f"Sampling {subsample_size} predictions for each competitor count (1 to {max_competitors})", DEBUG)
+
+    for i in range(1, max_competitors + 1):
+        if i not in predictions:
+            log(f"No predictions found for {i} competitors. Available keys: {list(predictions.keys())}", WARNING)
+        else:
+            # Sample random predictions with i competitors
+            sample = random.sample(predictions[i], subsample_size)
+            log(f"Sampled {len(sample)} predictions with {i} competitors", INFO)
+            predictions_list.extend(sample)
+
+    return predictions_list
+
+def validate_predictions(predictions: dict[int, List[Prediction]], workloads: List[Workload]) -> List[ValidatedPrediction]:
     validated_predictions = []
 
-    sampled_predictions = choose_predictions(predictions)
+    sampled_predictions = choose_predictions(predictions, config.VALIDATIONS)
+
+    log(f"\n".join(str(p) for p in sampled_predictions), DEBUG)
 
     for pred in sampled_predictions:
-        validated_predictions.append(validate_prediction(pred, competitors))
+        validated_predictions.append(validate_prediction(pred, workloads))
 
     return validated_predictions
 

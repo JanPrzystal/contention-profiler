@@ -74,7 +74,7 @@ def parse_config():
 
 
 
-def predict_performance(applications: List[Workload]) -> List[prediction.Prediction]:
+def predict_performance(applications: List[Workload]) -> dict[int, List[prediction.Prediction]]:
     predictions = prediction.predict_performance(applications)
     prediction.save_predictions(predictions)
 
@@ -99,9 +99,9 @@ def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], pair
 
     if pairwise:
         log("Starting pairwise prediction and validation")
-        prediction.predict_pair_performance(applications, applications)
-        validation.validate_pair_predictions(applications, applications)
-
+        predictions = prediction.predict_pair_performance(applications, applications)
+        validated_predictions = validation.validate_pair_predictions(applications, applications, predictions)
+        validation.save_validated_predictions(validated_predictions)
     else:
         predictions = predict_performance(applications)
         validated_predictions = validation.validate_predictions(predictions, applications)

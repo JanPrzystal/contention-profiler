@@ -185,13 +185,13 @@ if __name__ == "__main__":
     setup_logging(INFO)
 
 
-    config.USE_ROOT_PRIORITY = False
-    config.DATA_SIZE = "test"
+    # config.USE_ROOT_PRIORITY = False
+    # config.DATA_SIZE = "test"
 
     CpuFreqPolicy.set_governor(Governor.PERFORMANCE)
 
 
-    # config.DIAL_END_MB = 112
+    config.DIAL_END_MB = 112
 
     config.PROGRESSIVE_PROFILING = True
 
@@ -199,11 +199,11 @@ if __name__ == "__main__":
 
     # test_combined_contentiousness()
 
-    # test_added_contentiousness()
+    test_added_contentiousness()
 
-    # test_hpc_spec()
+    test_hpc_spec()
 
-    profile_workload.profile_sensitivity([spec.SpecWorkload("657.xz_s", "train")])
+    # profile_workload.profile_sensitivity([spec.SpecWorkload("657.xz_s", "train")])
 
     # stats = perf.profile("./membench/membench")
 
