@@ -3,7 +3,11 @@ import logging
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.ticker import MaxNLocator
-from mpl_toolkits.mplot3d import Axes3D
+
+import sys
+from pathlib import Path
+parent_dir = Path(__file__).resolve().parent.parent
+sys.path.append(str(parent_dir))
 import config
 
 # Setup basic logging
@@ -17,6 +21,14 @@ def get_validated_df():
     # Calculate % difference: (Prediction - Actual) / Actual * 100
     df['diff_pct'] = ((df['perf'] - df['actual_perf']) / df['actual_perf']) * 100
     
+    # Shorten the application names
+    df["competitor"] = df["competitor"].apply(
+        lambda s: " + ".join(name.split(".")[1].split("_")[0][:5] for name in s.split(" + "))
+    )
+    df['app'] = df['app'].apply(
+        lambda s: s.split(".")[1].split("_")[0][:5]
+    )
+
     # Create a combined label: "App vs Competitor"
     df['label'] = df['app'] + " vs " + df['competitor']
     df['ncompetitors'] = df['competitor'].apply(lambda x: len(x.split(" + ")))
