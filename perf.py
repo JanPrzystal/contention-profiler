@@ -15,8 +15,8 @@ HPC_METRICS = [
     "LLC-loads",
     "LLC-load-misses",
     "LLC-store-misses",
-    "uncore_imc/data_reads/",
-    "uncore_imc/data_writes/",
+    # "uncore_imc/data_reads/",
+    # "uncore_imc/data_writes/",
     # "branches",
     # "branch-misses",
     # "stalled-cycles-frontend",
@@ -68,7 +68,7 @@ def profile(workload: List[str], cores: str = None) -> dict:
     cmd = [
         "perf",
         "stat",
-        "-a",
+        # "-a",
         "-e " + ",".join(HPC_METRICS),
     ] + workload
 

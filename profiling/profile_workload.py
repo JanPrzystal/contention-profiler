@@ -3,6 +3,7 @@ import pandas as pd
 import time
 from pathlib import Path
 
+from experiment_setup import core_manager
 import experiment_setup.reporter as rp
 import experiment_setup.workload as workload
 
@@ -10,6 +11,7 @@ from experiment_setup.contention_synthesis import Bubble
 import config
 from experiment_setup.workload import Workload
 
+import perf
 import profiling.contentiousness as cnt
 
 from experiment_setup.log import log, WARNING
@@ -88,7 +90,9 @@ def profile_sensitivity(workloads: list[Workload]) -> None:
     if not os.path.isdir(SENSITIVITY_DIR):
         os.mkdir(SENSITIVITY_DIR)
     for workload in workloads:
-        if config.PROGRESSIVE_PROFILING:
+        if config.USE_HPC:
+            profile_sensitivity_hpc(workload)
+        elif config.PROGRESSIVE_PROFILING:
             _profile_sensitivity_progressive(workload)
         else:
             _profile_sensitivity(workload)
@@ -162,7 +166,6 @@ def _profile_sensitivity_progressive(benchmark: Workload):
         f.write(f"footprint_mb,perf\n")
 
         max_soi = config.NSOI
-        dial_start = config.DIAL_START_MB
         interval = config.DIAL_RANGE_MB // max_soi
 
         nsoi = 0
@@ -173,3 +176,31 @@ def _profile_sensitivity_progressive(benchmark: Workload):
             perf = _profile_sensitivity_dial(benchmark, size_mb, nsoi)
             f.write(f"{size_mb},{perf}\n")
 
+def profile_sensitivity_hpc(workload: Workload) -> None:
+    name = workload.name.replace(".", "_")
+    path = SENSITIVITY_DIR / f"{name}_data.csv"
+
+    with open(path, "w+") as f:
+        f.write(f"footprint_mb,time,CPI,LLC-misses,L1-misses,LLC-miss-rate\n")
+
+        max_soi = config.NSOI
+        interval = config.DIAL_RANGE_MB // max_soi
+
+        nsoi = 0
+        
+        for size_mb in range(config.DIAL_START_MB, config.DIAL_END_MB + config.DIAL_STEP_MB, config.DIAL_STEP_MB):
+            bubble = None
+            if size_mb > 0:
+                nsoi = max(size_mb // interval, 1)
+                bubble = Bubble(size_mb, nsoi)
+                bubble.run_in_background()
+                time.sleep(config.WORKLOAD_WARMUP_TIME)
+
+            core = config.WORKLOAD_UNDER_PROFILING_CORES
+            result = perf.profile(workload.get_command(), cores=core)
+
+            if bubble is not None:
+                bubble.stop()
+
+            f.write(f"{size_mb},{result['time_elapsed']},{result['cpi']},{result['LLC-load-misses']},{result['L1-dcache-load-misses']},{result['llc_miss_rate']}\n")
+    

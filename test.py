@@ -152,32 +152,10 @@ def test_added_contentiousness():
         profile_workload.profile_added_contentiousness(w, reporter)
 
 def test_hpc_spec():
+    config.USE_HPC = True
     app = spec.SpecWorkload("657.xz_s", "train")
 
-    reporter = rp.AveragingReporter("alternating")
-
-    log("profiling alone")
-    log(perf.profile(app.get_command(), "0"))
-
-    app1 = spec.SpecWorkload("619.lbm_s", "train")
-    app2 = spec.SpecWorkload("600.perlbench_s", "train")
-
-    log("profiling with competitors")
-
-    app1.run_in_background()
-    app2.run_in_background()
-
-    sleep(3)
-
-    log(perf.profile(app.get_command(), "0"))
-
-    app1.stop()
-    app2.stop()
-
-    sleep(3)
-
-    log("profiling alone again")
-    log(perf.profile(app.get_command(), "0"))
+    profile_workload.profile_sensitivity([app])
 
 def test_hpc_reporter():
     reporter = rp.MembenchReporter("tinymembench")
@@ -194,13 +172,14 @@ if __name__ == "__main__":
     setup_logging(DEBUG)
 
 
-    # config.USE_ROOT_PRIORITY = False
-    # config.DATA_SIZE = "test"
+    config.USE_ROOT_PRIORITY = False
+    config.DATA_SIZE = "test"
 
     CpuFreqPolicy.set_governor(Governor.PERFORMANCE)
 
 
-    config.DIAL_END_MB = 112
+    config.DIAL_END_MB = 80
+    config.DIAL_RANGE_MB = 80
 
     config.PROGRESSIVE_PROFILING = True
 
@@ -210,9 +189,9 @@ if __name__ == "__main__":
 
     # test_added_contentiousness()
 
-    test_hpc_reporter()
+    # test_hpc_reporter()
 
-    # test_hpc_spec()
+    test_hpc_spec()
 
     # profile_workload.profile_sensitivity([spec.SpecWorkload("657.xz_s", "train")])
 

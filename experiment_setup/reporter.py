@@ -110,9 +110,6 @@ class MembenchReporter(Reporter):
             "--num-threads=1",
             "--iterations=3",
         ]
-
-        if config.USE_HPC:
-            return perf.profile(cmd, cores=core)["LLC-load-misses"]
         
         cmd = ["taskset", "-c", f"{core}"] + cmd
 
