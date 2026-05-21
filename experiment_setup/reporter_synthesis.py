@@ -9,9 +9,6 @@ import csv
 from profiling.contentiousness import inverse_leftmost_exact
 from scipy.interpolate import PchipInterpolator
 
-# Setup basic logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 def get_validated():
     path = f'{config.RESULTS_DIR}/validated.csv'

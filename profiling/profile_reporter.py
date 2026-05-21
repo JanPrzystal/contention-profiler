@@ -50,7 +50,7 @@ def _profile_reporter_progressive(reporter: rp.Reporter) -> None:
 
             log(f"Profiling with SoI size {size_mb}MB and {nsoi} SoI ({size_mb}/{config.DIAL_RANGE_MB // config.NSOI})", DEBUG)
 
-            perf = profile_reporter_sensitivity(reporter, size_mb * nsoi, nsoi)
+            perf = profile_reporter_sensitivity(reporter, size_mb, nsoi)
             f.write(f"{size_mb},{perf}\n")
 
 def profile_reporter(reporter: rp.Reporter) -> None:

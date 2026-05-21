@@ -12,7 +12,7 @@ from experiment_setup.workload import Workload
 
 import profiling.contentiousness as cnt
 
-from experiment_setup.log import log
+from experiment_setup.log import log, WARNING
 
 SENSITIVITY_DIR = Path(config.RESULTS_DIR) / 'sensitivity'
 
@@ -101,7 +101,7 @@ def profile_contentiousness(workloads: list[Workload], reporter: rp.Reporter) ->
 
     for workload in workloads:
         if not workload.name:
-            logger.warning(f"Workload {workload} has no name, skipping contentiousness profiling")
+            log(f"Workload {workload} has no name, skipping contentiousness profiling", WARNING)
             continue
         time.sleep(config.WORKLOAD_WIND_DOWN_TIME)
 
@@ -170,6 +170,6 @@ def _profile_sensitivity_progressive(benchmark: Workload):
         for size_mb in range(config.DIAL_START_MB, config.DIAL_END_MB + config.DIAL_STEP_MB, config.DIAL_STEP_MB):
             if size_mb > 0:
                 nsoi = max(size_mb // interval, 1)
-            perf = _profile_sensitivity_dial(benchmark, size_mb * nsoi, nsoi)
+            perf = _profile_sensitivity_dial(benchmark, size_mb, nsoi)
             f.write(f"{size_mb},{perf}\n")
 

@@ -132,9 +132,6 @@ class Bubble(Workload):
 
     
     def stop(self) -> None:
-        # if not self.proc1 and not self.proc2:
-        #     logger.warning("An attempt to stop bubble was made but no process was found")
-        #     return
         for proc in self.procs:
             proc.stop()
         self.procs.clear()

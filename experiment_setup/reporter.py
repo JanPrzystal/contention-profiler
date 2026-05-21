@@ -3,7 +3,7 @@ import logging
 import subprocess
 import config
 
-from experiment_setup.log import log
+from experiment_setup.log import WARNING, log, DEBUG
 
 REPORTER_SCRIPT_FILES = {
     "alternating":"build/altern_reporter.out",
@@ -91,7 +91,7 @@ class AveragingReporter(Reporter):
         try:
             return sum(output.values()) / len(output) / 1_000_000.0
         except ZeroDivisionError:
-            logger.warning(f"Division by zero: {output}")
+            log(f"Division by zero: {output}", WARNING)
             return 0.0
         
 class MembenchReporter(Reporter):
@@ -119,7 +119,7 @@ class MembenchReporter(Reporter):
                 line_split = line.split(":")
                 number_text = line_split[1].split("MB/s")[0].strip()
                 number = float(number_text)
-                logger.debug(f"reporter raw score: {number}")
+                log(f"reporter raw score: {number}", DEBUG)
 
                 # bigger number is better, but bigger score is worse, so invert the number
                 score = 1/number * 100000
@@ -148,5 +148,5 @@ class MembenchReporter(Reporter):
         try:
             return sum(output.values()) / len(output)
         except ZeroDivisionError:
-            logger.warning(f"Division by zero: {output}")
+            log(f"Division by zero: {output}", WARNING)
             return 0.0

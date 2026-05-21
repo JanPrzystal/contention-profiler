@@ -94,7 +94,6 @@ def predict_performance(applications: List[Workload]) -> dict[int, List[Predicti
             else:
                 predictions[k].extend(_predict_with_competitors(app, all_competitors, k))
 
-    # logger.debug(f"Predictions: {'\n'.join(str(p) for p in predictions)}")
     return predictions
 
 def _predict_with_competitors(application: Workload, competitors: List[Workload], n_competitors: int) -> List[Prediction]:

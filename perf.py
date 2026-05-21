@@ -3,6 +3,7 @@ import os
 from typing import List
 import sys
 import re
+import config
 
 from experiment_setup.log import log, setup_logging, DEBUG
 
@@ -13,6 +14,9 @@ HPC_METRICS = [
     "L1-dcache-load-misses",
     "LLC-loads",
     "LLC-load-misses",
+    "LLC-store-misses",
+    "uncore_imc/data_reads/",
+    "uncore_imc/data_writes/",
     # "branches",
     # "branch-misses",
     # "stalled-cycles-frontend",
@@ -64,12 +68,16 @@ def profile(workload: List[str], cores: str = None) -> dict:
     cmd = [
         "perf",
         "stat",
+        "-a",
         "-e " + ",".join(HPC_METRICS),
     ] + workload
 
     # todo taskset
     if cores is not None:
         cmd = ["taskset", "-c", f"{cores}"] + cmd
+
+    if config.USE_ROOT_PRIORITY:
+        cmd = config.ROOT_TASK_CMD + cmd
 
     log(f"Running command: {' '.join(cmd)}", DEBUG)
 

@@ -7,8 +7,6 @@ import time
 import logging
 import config
 
-logger = logging.getLogger(__name__)
-
 class KubeWorkload(Workload):
     def __init__(
         self,
