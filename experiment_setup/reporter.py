@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
-import logging
 import subprocess
 import config
 
+# from experiment_setup import core_manager
 from experiment_setup.log import WARNING, log, DEBUG
+import perf
 
 REPORTER_SCRIPT_FILES = {
     "alternating":"build/altern_reporter.out",
@@ -20,12 +21,14 @@ class Reporter(ABC):
             raise ValueError(f"Invalid script file")
 
     @abstractmethod
-    def run(self, cores: str, repetitions: int = 25) -> float:
+    def run(self, repetitions: int = 25) -> float:
         raise NotImplementedError("Run method not implemented for this reporter")
     
-    @abstractmethod
-    def run_background(self, cores: str):
-        raise NotImplementedError("Background profiling not implemented for this reporter")
+    def run_background(self):
+        raise NotImplementedError("Background profiling not implemented for this reporter")    
+    
+    def stop_background(self):
+        raise NotImplementedError("Not implemented for this reporter")
     
     @abstractmethod
     def process_output(self, output: dict[str, float]) -> float:
@@ -39,13 +42,14 @@ class Reporter(ABC):
 
 class AveragingReporter(Reporter):
 
-    def run(self, cores: str, repetitions: int = config.REPORTER_REPETITIONS) -> float:
+    def run(self, repetitions: int = config.REPORTER_REPETITIONS) -> float:
         log("Profiling with the reporter")
-
+        core = config.REPORTER_CORES
+    
         cmd = [
             "taskset",
             "-c",
-            f"{cores}",
+            f"{core}",
             f"{self.script_file}",
             "--benchmark_min_warmup_time=1",
             f"--benchmark_repetitions={repetitions}",
@@ -69,23 +73,24 @@ class AveragingReporter(Reporter):
                 output[line[0]] = float(line[1])
         return self.process_output(output)
     
-    def run_background(self, cores: str) -> subprocess.Popen:
-        log("Running reporter in the background")
+    # def run_background(self) -> subprocess.Popen:
+    #     log("Running reporter in the background")
+    #     core = core_manager.acquire()
 
-        cmd = [
-            "taskset",
-            "-c",
-            f"{cores}",
-            f"{self.script_file}",
-            "--benchmark_min_warmup_time=1",
-            "--benchmark_repetitions=10000",
-            "--benchmark_enable_random_interleaving=true",
-        ]
+    #     cmd = [
+    #         "taskset",
+    #         "-c",
+    #         f"{core}",
+    #         f"{self.script_file}",
+    #         "--benchmark_min_warmup_time=1",
+    #         "--benchmark_repetitions=10000",
+    #         "--benchmark_enable_random_interleaving=true",
+    #     ]
 
-        if config.USE_ROOT_PRIORITY:
-            cmd = config.ROOT_TASK_CMD + cmd
+    #     if config.USE_ROOT_PRIORITY:
+    #         cmd = config.ROOT_TASK_CMD + cmd
 
-        return subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    #     return subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     def process_output(self, output: dict[str, float]) -> float:
         try:
@@ -96,14 +101,21 @@ class AveragingReporter(Reporter):
         
 class MembenchReporter(Reporter):
 
-    def run(self, cores: str, repetitions: int = 25) -> float:
+    def run(self, repetitions: int = 1) -> float:
+        core = config.REPORTER_CORES
+
         cmd = [
             f"{self.script_file}",
             "--max-size=64M", 
             "--num-threads=1",
             "--iterations=3",
         ]
+
+        if config.USE_HPC:
+            return perf.profile(cmd, cores=core)["LLC-load-misses"]
         
+        cmd = ["taskset", "-c", f"{core}"] + cmd
+
         if config.USE_ROOT_PRIORITY:
             cmd = config.ROOT_TASK_CMD + cmd
 
@@ -128,20 +140,20 @@ class MembenchReporter(Reporter):
     
         return self.process_output(output)
 
-    def run_background(self, cores: str):
-        cmd = [
-            f"{self.script_file}",
-            "--max-size=64M", 
-            "--num-threads=1",
-            "--iterations=5",
-        ]
+    # def run_background(self, cores: str):
+    #     cmd = [
+    #         f"{self.script_file}",
+    #         "--max-size=64M", 
+    #         "--num-threads=1",
+    #         "--iterations=5",
+    #     ]
         
-        if config.USE_ROOT_PRIORITY:
-            cmd = config.ROOT_TASK_CMD + cmd
+    #     if config.USE_ROOT_PRIORITY:
+    #         cmd = config.ROOT_TASK_CMD + cmd
 
-        reporter = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    #     reporter = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         
-        return reporter
+    #     return reporter
     
 
     def process_output(self, output: dict[str, float]) -> float:

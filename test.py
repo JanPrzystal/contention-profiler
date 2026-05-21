@@ -179,10 +179,19 @@ def test_hpc_spec():
     log("profiling alone again")
     log(perf.profile(app.get_command(), "0"))
 
+def test_hpc_reporter():
+    reporter = rp.MembenchReporter("tinymembench")
+
+    log("Profiling reporter with HPC", logging.INFO)
+
+    profile_reporter(reporter)
+
+    # log(f"Perf results: {perf_results}", logging.INFO)
+
 
 if __name__ == "__main__":
 
-    setup_logging(INFO)
+    setup_logging(DEBUG)
 
 
     # config.USE_ROOT_PRIORITY = False
@@ -199,9 +208,11 @@ if __name__ == "__main__":
 
     # test_combined_contentiousness()
 
-    test_added_contentiousness()
+    # test_added_contentiousness()
 
-    test_hpc_spec()
+    test_hpc_reporter()
+
+    # test_hpc_spec()
 
     # profile_workload.profile_sensitivity([spec.SpecWorkload("657.xz_s", "train")])
 

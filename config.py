@@ -46,3 +46,5 @@ USE_INTERPOLATION = True
 PROGRESSIVE_PROFILING = False
 
 GOVERNOR = "performance"
+
+USE_HPC = True

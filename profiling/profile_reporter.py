@@ -13,14 +13,14 @@ import profiling.contentiousness as cnt
 def profile_reporter_sensitivity(reporter: rp.Reporter, size_mb: int, nsoi: int = config.NSOI) -> float:
     if size_mb == 0:
         log("Profiling in isolation")
-        return reporter.run(config.REPORTER_CORES, config.REPORTER_REPETITIONS)
+        return reporter.run(config.REPORTER_REPETITIONS)
 
 
     bubble = Bubble(size_mb, nsoi)
     bubble.run_in_background()
     time.sleep(config.WORKLOAD_WARMUP_TIME)
     try:
-        return reporter.run(config.REPORTER_CORES, config.REPORTER_REPETITIONS)
+        return reporter.run(config.REPORTER_REPETITIONS)
     finally:
         bubble.stop()
 
