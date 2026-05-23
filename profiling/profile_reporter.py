@@ -65,15 +65,13 @@ def profile_reporter_contentiousness(reporter: rp.Reporter) -> float:
 
     with open(f"{config.RESULTS_DIR}/reporter_contentiousness.csv", "a+") as f:
         f.write(f"footprint_mb,contentiousness\n")
-        
-        # base = reporter.run(config.REPORTER_CORES, config.REPORTER_REPETITIONS)
 
         bcore = config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[0]
         background = reporter.run_background(bcore)
         
         time.sleep(config.WORKLOAD_WARMUP_TIME)
 
-        score = reporter.run(config.REPORTER_CORES, config.REPORTER_REPETITIONS)
+        score = reporter.run(config.REPORTER_REPETITIONS)
 
         log(f"Reporter score: {score}")
         

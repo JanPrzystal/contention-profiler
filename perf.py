@@ -15,12 +15,18 @@ HPC_METRICS = [
     "LLC-loads",
     "LLC-load-misses",
     "LLC-store-misses",
+    "LLC-stores",
     # "uncore_imc/data_reads/",
     # "uncore_imc/data_writes/",
     # "branches",
     # "branch-misses",
     # "stalled-cycles-frontend",
     # "stalled-cycles-backend",
+    "dTLB-load-misses",
+    "dTLB-loads",
+    "dTLB-store-misses",
+    "dTLB-stores",
+    "cache-misses",
 ]
 
 def parse_perf_output(output: str) -> dict:

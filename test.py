@@ -18,6 +18,7 @@ import experiment_setup.reporter as rp
 from experiment_setup.cpu_freq import CpuFreqPolicy, Governor
 import perf
 from experiment_setup.log import INFO, setup_logging, log, DEBUG
+from analysis.plot_metrics import plot_metrics
 
 def test_combined_contentiousness():
     bench = [spec.SpecWorkload("619.lbm_s", "train"), spec.SpecWorkload("600.perlbench_s", "train"), spec.SpecWorkload("649.fotonik3d_s", "train"), spec.SpecWorkload("654.roms_s", "train")]
@@ -153,9 +154,11 @@ def test_added_contentiousness():
 
 def test_hpc_spec():
     config.USE_HPC = True
-    app = spec.SpecWorkload("657.xz_s", "train")
+    app = spec.SpecWorkload("649.fotonik3d_s", "train")
 
     profile_workload.profile_sensitivity([app])
+
+    plot_metrics("649_fotonik3d_s_data.csv")
 
 def test_hpc_reporter():
     reporter = rp.MembenchReporter("tinymembench")

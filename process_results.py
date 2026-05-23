@@ -2,7 +2,7 @@ import sys
 import zipfile
 import pandas as pd
 from analysis.error_results_plot import draw_errors
-from analysis.time_chart import draw_times
+from analysis.plot_time import draw_times
 
 from experiment_setup.log import log, setup_logging
 

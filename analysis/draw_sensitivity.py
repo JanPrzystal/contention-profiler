@@ -5,7 +5,11 @@ import numpy as np
 import math
 import pathlib
 from scipy.interpolate import PchipInterpolator
+import sys
+from pathlib import Path
 
+parent_dir = Path(__file__).resolve().parent.parent
+sys.path.append(str(parent_dir))
 import config
 
 xpad = 8
@@ -69,8 +73,12 @@ def draw_sensitivity():
 
 def get_data() -> tuple[list[str], list[pd.DataFrame]]:
     parent_dir = pathlib.Path(config.RESULTS_DIR) / "sensitivity"
-    csv_paths = [parent_dir / f for f in os.listdir(parent_dir) if f.endswith(".csv")]
-    labels = [p.parts[2].split('_')[1] for p in csv_paths]
+    csv_paths = []
+    labels = []
+    
+    if parent_dir.is_dir():
+        csv_paths = [parent_dir / f for f in os.listdir(parent_dir) if f.endswith(".csv")]
+        labels = [p.parts[2].split('_')[1] for p in csv_paths]
 
     # Add reporter
     csv_paths += [pathlib.Path(config.RESULTS_DIR) / "reporter_sensitivity.csv"]

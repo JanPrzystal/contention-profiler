@@ -15,11 +15,12 @@ import config
 
 xpad = 8
 
-METRICS = ["time", "CPI", "LLC-misses", "L1-misses", "LLC-miss-rate"]
+METRICS = ["time", "CPI", "LLC-load-misses", "LLC-store-misses", "L1-dcache-load-misses", "LLC-miss-rate"]
 
 
-def plot_metrics():
-    df = get_data()
+def plot_metrics(filename: str = "657_xz_s_data.csv"):
+    csv_path = pathlib.Path(config.RESULTS_DIR) / "sensitivity" / filename
+    df = pd.read_csv(csv_path, delimiter=",")
     df = df.sort_values("footprint_mb")
 
     x = pd.to_numeric(df["footprint_mb"], errors="coerce").to_numpy(dtype=float)
@@ -74,11 +75,6 @@ def plot_metrics():
     image_output_path = pathlib.Path(config.RESULTS_DIR) / "metrics.png"
     plt.savefig(image_output_path, dpi=300)
     plt.close()
-
-
-def get_data() -> pd.DataFrame:
-    csv_path = pathlib.Path(config.RESULTS_DIR) / "sensitivity" / "657_xz_s_data.csv"
-    return pd.read_csv(csv_path, delimiter=",")
 
 
 if __name__ == "__main__":
