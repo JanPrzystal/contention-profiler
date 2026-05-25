@@ -42,11 +42,23 @@ def _predict_pair_performance(
     # Divide isolated performance by predicted performance to normalize
     return Prediction(app=app, competitor=competitor, perf=sensitivity[app](0) / prediction, contentiousness=contention)
 
-def predict_app_performance(app: Workload, competitors: List[Workload], sensitivity: PchipInterpolator) -> Prediction:
-    contentiousness = _get_contentiousness()
 
-    # Combine the sensitivity of all competitors
-    total_contention = sum(contentiousness[comp.name] for comp in competitors)
+def predict_total_contention(competitors: List[Workload]) -> float:
+    if config.USE_SIMPLE_CONTENTIOUSNESS:
+        contentiousness = _get_contentiousness()
+
+        # Sum the sensitivity of all competitors
+        total_contention = sum(contentiousness[comp.name] for comp in competitors)
+        return total_contention
+    
+    else:
+        # TODO calculate the contentiousness equilibrium
+        raise NotImplementedError() 
+
+def predict_app_performance(application: Workload, competitors: List[Workload]) -> Prediction:
+    sensitivity = get_sensitivity(application.name)
+
+    total_contention = predict_total_contention(competitors)
 
     prediction = sensitivity(total_contention)
     y_min = sensitivity(0) 
@@ -61,7 +73,7 @@ def predict_app_performance(app: Workload, competitors: List[Workload], sensitiv
     elif prediction < y_min:
         prediction = y_min
 
-    return Prediction(app=app.name, competitor=" + ".join(comp.name for comp in competitors), perf=sensitivity(0) / prediction, contentiousness=total_contention)
+    return Prediction(app=application.name, competitor=" + ".join(comp.name for comp in competitors), perf=sensitivity(0) / prediction, contentiousness=total_contention)
 
 def predict_pair_performance(applications: List[Workload], competitors: List[Workload]) -> None:
     scores = _get_contentiousness()
@@ -74,10 +86,13 @@ def predict_pair_performance(applications: List[Workload], competitors: List[Wor
             perf = _predict_pair_performance(app.name, competitor.name, scores, sensitivity)
             res.append(perf._asdict())
 
+    # TODO change format to csv
     json_data = json.dumps({"predictions": res})
 
     with open(f"{config.RESULTS_DIR}/predictions.json", "w") as f:
         f.write(json_data)
+
+    return res
 
 def predict_performance(applications: List[Workload]) -> dict[int, List[Prediction]]:
     predictions = {}
@@ -99,7 +114,7 @@ def predict_performance(applications: List[Workload]) -> dict[int, List[Predicti
 def _predict_with_competitors(application: Workload, competitors: List[Workload], n_competitors: int) -> List[Prediction]:
     predictions = []
     for competitors in combinations(competitors, n_competitors):
-        predictions.append(prediction.predict_app_performance(application, competitors, prediction.get_sensitivity(application.name)))
+        predictions.append(prediction.predict_app_performance(application, competitors))
     
     return predictions
 

@@ -4,6 +4,8 @@ RESULTS_DIR: Final[str] = "experiment_results"
 SOI_DIR: Final[str] = "./soi"
 SPEC_PATH: Final[str] = "../cpu2017"
 
+RANDOM_SEED: Final[int] = 42
+
 WORKLOAD_UNDER_PROFILING_CORES: Final[str] = "0"
 WORKLOAD_IN_BACKGROUND_CORES: Final[str] = "1-7"
 MAX_COMPETITORS: Final[int] = 7
@@ -38,6 +40,7 @@ DATA_SIZE = "train"
 USE_ROOT_PRIORITY = True
 
 VALIDATIONS = 120
+TOP_CNT_VAlIDATIONS = 3
 
 PROFILING_REPETITIONS = 1
 
@@ -48,3 +51,5 @@ PROGRESSIVE_PROFILING = False
 GOVERNOR = "performance"
 
 USE_HPC = False
+
+USE_SIMPLE_CONTENTIOUSNESS = True

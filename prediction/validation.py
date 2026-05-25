@@ -116,6 +116,10 @@ def validate_pair_predictions(applications: List[Workload], competitors: List[Wo
             log(str(row), INFO)
             writerow_and_sync(f, writer, row)
 
+rng = random.Random(config.RANDOM_SEED)
+def rng_sample(predictions: List[Prediction], n: int) -> List[Prediction]:
+    return rng.sample(predictions, min(n, len(predictions)))
+
 def choose_predictions(predictions: dict[int, List[Prediction]], max: int = config.VALIDATIONS) -> List[Prediction]:
     sample_size = max #min(max, len(predictions))
 
@@ -132,9 +136,12 @@ def choose_predictions(predictions: dict[int, List[Prediction]], max: int = conf
             log(f"No predictions found for {i} competitors. Available keys: {list(predictions.keys())}", WARNING)
         else:
             # Sample random predictions with i competitors
-            sample = random.sample(predictions[i], subsample_size)
-            log(f"Sampled {len(sample)} predictions with {i} competitors", INFO)
+            sample = rng_sample(predictions[i], subsample_size)
+            top_cnt = sorted(predictions[i], key=lambda x: x.contentiousness, reverse=True)[:config.TOP_CNT_VAlIDATIONS]
+
+            log(f"Sampled {len(sample) + len(top_cnt)} predictions with {i} competitors", INFO)
             predictions_list.extend(sample)
+            predictions_list.extend(top_cnt)
 
     return predictions_list
 

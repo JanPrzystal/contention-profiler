@@ -68,7 +68,7 @@ def draw_single_validation_chart(df):
         ax.set_title(f"Prediction Validation (part {i//max_per_chart + 1})", fontsize=14, fontweight='bold', pad=20)
 
         ax.set_xticks(x)
-        ax.set_xticklabels(chunk['label'], rotation=35, ha='right', fontsize=8)
+        ax.set_xticklabels(chunk['label'], rotation=15, ha='right', fontsize=8)
 
         min_comp = int(chunk['ncompetitors'].min())
         max_comp = int(chunk['ncompetitors'].max())

@@ -9,13 +9,13 @@ from experiment_setup.workload import Workload
 
 import profiling.profile_workload as profile_workload
 import profiling.profile_reporter as profile_reporter
-import profiling.contentiousness as contentiousness
 import prediction.prediction as prediction
 import prediction.validation as validation
 from experiment_setup.spec import SpecWorkload
 from time import time
 from datetime import datetime
 from experiment_setup.cpu_freq import CpuFreqPolicy
+from analysis.draw_contentiousness import draw_contentiousness
 
 from experiment_setup.log import log
 
@@ -85,15 +85,14 @@ def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], pair
     profile_reporter.profile_reporter(reporter)
     treporter = time() - tstart
 
-    max_contentiousness = profile_workload.profile_contentiousness(applications, reporter)
+    profile_workload.profile_contentiousness(applications, reporter)
     tcontentiousness = time() - tstart - treporter
-
-    config.DIAL_END_MB = min(int(max_contentiousness * 3.0 + 1.0), config.DIAL_END_MB)
 
     profile_workload.profile_sensitivity(applications)
     tsensitivity = time() - tstart - treporter - tcontentiousness
 
-    contentiousness.save_contentiousness_chart()
+    # contentiousness.save_contentiousness_chart()
+    # draw_contentiousness()
 
     ttotal = time() - tstart
 

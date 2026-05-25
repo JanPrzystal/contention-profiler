@@ -1,8 +1,10 @@
+from typing import List
 import os
 import pandas as pd
 import time
 from pathlib import Path
 
+from analysis.draw_contentiousness import draw_contentiousness
 from experiment_setup import core_manager
 import experiment_setup.reporter as rp
 import experiment_setup.workload as workload
@@ -86,7 +88,7 @@ def _save_contentiousness_data(data: dict[str,float]) -> None:
     df = pd.DataFrame(csv_data)
     df.to_csv(f"{config.RESULTS_DIR}/contentiousness.csv", sep=",", index=False, header=True)
 
-def profile_sensitivity(workloads: list[Workload]) -> None:
+def profile_sensitivity(workloads: List[Workload]) -> None:
     if not os.path.isdir(SENSITIVITY_DIR):
         os.mkdir(SENSITIVITY_DIR)
     for workload in workloads:
@@ -99,7 +101,7 @@ def profile_sensitivity(workloads: list[Workload]) -> None:
     
 
 # Profiles the contentiousness of each workload and saves the results to a file. Returns the maximum contentiousness score across all workloads.
-def profile_contentiousness(workloads: list[Workload], reporter: rp.Reporter) -> None:
+def _profile_contentiousness_simple(workloads: List[Workload], reporter: rp.Reporter) -> None:
     contentiousness = {}
     max_contentiousness = 0
 
@@ -120,6 +122,14 @@ def profile_contentiousness(workloads: list[Workload], reporter: rp.Reporter) ->
     log(f"MaxContentiousness: {max_contentiousness}")
     return max_contentiousness
 
+def profile_contentiousness(workloads: List[Workload], reporter: rp.Reporter) -> None:
+    if config.USE_SIMPLE_CONTENTIOUSNESS:
+        _profile_contentiousness_simple(workloads, reporter)
+    else:
+        for workload in workloads:
+            profile_added_contentiousness(workload, reporter)
+        draw_contentiousness()
+
 def profile_added_contentiousness(workload: Workload, reporter: rp.Reporter) -> None:
 
     sizes = range(config.DIAL_START_MB, config.DIAL_END_MB - 1, config.DIAL_STEP_MB)
@@ -130,8 +140,8 @@ def profile_added_contentiousness(workload: Workload, reporter: rp.Reporter) -> 
         result = 0.0
 
         if size_mb == 0:
-            log("Profiling in isolation")
-            result = _profile_contentiousness(workload, reporter)
+            log(f"Profiling contentiousness of {workload.name}")
+            result = _profile_contentiousness_simple(workload, reporter)
 
         nsoi = config.NSOI
         if config.PROGRESSIVE_PROFILING:
@@ -142,12 +152,13 @@ def profile_added_contentiousness(workload: Workload, reporter: rp.Reporter) -> 
         bubble = Bubble(size_mb, nsoi)
         bubble.run_in_background()
         try:
-            result = _profile_contentiousness(workload, reporter) - size_mb
+            result = _profile_contentiousness_simple(workload, reporter) - size_mb
         finally:
             bubble.stop()
 
         contentiousness[size_mb] = result
 
+    # Save the results to a csv file
     log(f"Saving contentiousness data for {workload.name}")
     # Save the contentiousness data 
     benchmark_file = workload.name.replace(".", "_")
