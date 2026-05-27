@@ -1,5 +1,5 @@
 import os
-import random
+import sys
 import shutil
 import config
 import analysis.draw_sensitivity as draw_sensitivity
@@ -48,17 +48,20 @@ MDS_SERVICES = ["datatest", "dataforwarding", "datageneration"]
 if __name__ == "__main__":
     setup_logging()
 
+    resume = False if len(sys.argv) < 2 else True if sys.argv[1] == "resume" else False
+    
     experiments = experiment.parse_config()
 
     for exp in experiments:
         log(f"Starting experiment: {exp.name}")
 
+        if not resume:
         # Clear results directory
-        try:
-            shutil.rmtree(config.RESULTS_DIR)
-        except FileNotFoundError:
-            pass
-        os.makedirs(config.RESULTS_DIR, exist_ok=True)
+            try:
+                shutil.rmtree(config.RESULTS_DIR)
+            except FileNotFoundError:
+                pass
+            os.makedirs(config.RESULTS_DIR, exist_ok=True)
 
         experiment.spec_experiment(exp)
 

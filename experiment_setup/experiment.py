@@ -1,3 +1,4 @@
+from pathlib import Path
 import yaml
 from dataclasses import dataclass
 from typing import List
@@ -80,16 +81,26 @@ def predict_performance(applications: List[Workload]) -> dict[int, List[predicti
 
     return predictions
 
+def check_profiling_complete() -> bool:
+    reporter = Path(config.RESULTS_DIR + "/reporter_sensitivity.csv").is_file()
+    contentiousness = Path(config.RESULTS_DIR + "/contentiousness.csv").is_file() or Path(config.RESULTS_DIR + "/contentiounsess").is_dir()
+    sensitivity = Path(config.RESULTS_DIR + "/sensitivity").is_dir()
+
+    log(f"Profiling status check {reporter}, {contentiousness}, {sensitivity}")
+    return reporter and contentiousness and sensitivity
+
 def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], pairwise: bool):
-    tstart = time()
-    profile_reporter.profile_reporter(reporter)
-    treporter = time() - tstart
+    tstart, treporter, tcontentiousness, tsensitivity = 0, 0, 0, 0
+    if not check_profiling_complete():
+        tstart = time()
+        profile_reporter.profile_reporter(reporter)
+        treporter = time() - tstart
 
-    profile_workload.profile_contentiousness(applications, reporter)
-    tcontentiousness = time() - tstart - treporter
+        profile_workload.profile_contentiousness(applications, reporter)
+        tcontentiousness = time() - tstart - treporter
 
-    profile_workload.profile_sensitivity(applications)
-    tsensitivity = time() - tstart - treporter - tcontentiousness
+        profile_workload.profile_sensitivity(applications)
+        tsensitivity = time() - tstart - treporter - tcontentiousness
 
     # contentiousness.save_contentiousness_chart()
     # draw_contentiousness()
