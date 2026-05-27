@@ -72,7 +72,7 @@ class SpecWorkload(Workload):
 
 
     def run_in_background(self) -> None:
-        self.proc = run_background_workload(self.name, self.size, self.get_command(10000))
+        self.proc = run_background_workload(self)
 
     def stop(self) -> None:
         if not self.proc:

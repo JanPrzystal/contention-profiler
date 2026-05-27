@@ -44,7 +44,7 @@ def test_combined_contentiousness():
     for i, b in enumerate(bench):
         log(f"{b.name}", logging.INFO)
         # cores = list(range(int(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[0]), int(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[1])))
-        proc = spec.run_background_workload(b.name, b.size)
+        proc = spec.run_background_workload(b)
         procs.append(proc)
 
     sleep(5)
