@@ -1,4 +1,3 @@
-import json
 from typing import List, Dict
 from experiment_setup.workload import Workload
 from collections import namedtuple
@@ -31,7 +30,7 @@ def get_sensitivity(name: str) -> PchipInterpolator:
 
     return PchipInterpolator(list(res.keys()), list(res.values()))
 
-def _predict_pair_performance(
+def _form_pair_prediction(
     app: str,
     competitor: str,
     scores: Dict[str, float],
@@ -75,7 +74,7 @@ def predict_app_performance(application: Workload, competitors: List[Workload]) 
 
     return Prediction(app=application.name, competitor=" + ".join(comp.name for comp in competitors), perf=sensitivity(0) / prediction, contentiousness=total_contention)
 
-def predict_pair_performance(applications: List[Workload], competitors: List[Workload]) -> None:
+def predict_pair_performance(applications: List[Workload], competitors: List[Workload]) -> List[Prediction]:
     scores = _get_contentiousness()
 
     sensitivity = {app.name: get_sensitivity(app.name) for app in applications}
@@ -83,14 +82,17 @@ def predict_pair_performance(applications: List[Workload], competitors: List[Wor
     res = []
     for app in applications:
         for competitor in competitors:
-            perf = _predict_pair_performance(app.name, competitor.name, scores, sensitivity)
-            res.append(perf._asdict())
+            if competitor.name == app.name:
+                continue
+            prediction = _form_pair_prediction(app.name, competitor.name, scores, sensitivity)
+            res.append(prediction)
 
-    # TODO change format to csv
-    json_data = json.dumps({"predictions": res})
-
-    with open(f"{config.RESULTS_DIR}/predictions.json", "w") as f:
-        f.write(json_data)
+    with open(f"{config.RESULTS_DIR}/predictions_pairs.csv", "w") as f:
+        writer = csv.writer(f, delimiter=",")
+        writer.writerow(Prediction._fields)
+        for pred in res:
+            row = [str(c) for c in list(pred._asdict().values())]
+            writer.writerow(row)
 
     return res
 
