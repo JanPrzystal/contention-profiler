@@ -56,7 +56,7 @@ def validate_prediction(prediction: Prediction, workloads: List[Workload]) -> Va
     # Start competitors in the background
     background_processes = []
     for competitor in competitors:
-        background_processes.append(run_background_workload(competitor.name, competitor.size, competitor.get_command(10000)))
+        background_processes.append(run_background_workload(competitor))
 
     time.sleep(config.WORKLOAD_WARMUP_TIME)
     try:

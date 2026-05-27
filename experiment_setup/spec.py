@@ -19,7 +19,8 @@ class SpecWorkload(Workload):
         self.size = size
         self.proc = None
 
-    def get_command(self, iterations: int = 1) -> List[str]:
+    def get_command(self, background: bool = False) -> List[str]:
+        iterations = 10000 if background else 1
         cmd = [
             config.SPEC_PATH + "/bin/runcpu",
             f"--threads=1",

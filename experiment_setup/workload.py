@@ -24,7 +24,7 @@ class Workload(ABC):
         pass
 
     @abstractmethod
-    def get_command(self) -> List[str]:
+    def get_command(self, background: bool = False) -> List[str]:
         pass
 
     @abstractmethod
@@ -44,7 +44,7 @@ def run_background_workload(workload: Workload) -> Process:
     core = background_core_dispenser.acquire()
     log(f"Running {workload.name} in background on core {core}")
 
-    cmd = workload.get_command()
+    cmd = workload.get_command(True)
 
     if core is not None:
         cmd = ["taskset", "-c", f"{core}"] + cmd
