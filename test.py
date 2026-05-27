@@ -44,7 +44,7 @@ def test_combined_contentiousness():
     for i, b in enumerate(bench):
         log(f"{b.name}", logging.INFO)
         # cores = list(range(int(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[0]), int(config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[1])))
-        proc = spec.run_background_benchmark(b.name, b.size)
+        proc = spec.run_background_workload(b.name, b.size)
         procs.append(proc)
 
     sleep(5)
@@ -194,7 +194,7 @@ if __name__ == "__main__":
 
     # test_hpc_reporter()
 
-    test_hpc_spec()
+    # test_hpc_spec()
 
     # profile_workload.profile_sensitivity([spec.SpecWorkload("657.xz_s", "train")])
 
@@ -202,6 +202,9 @@ if __name__ == "__main__":
 
     # log (stats)
 
+    predictions = prediction.predict_performance(spec.WORKLOADS)
+    prediction_list = list(predictions.values())
+    validated_predictions = spec.spec_validation(prediction_list)
 
     CpuFreqPolicy.reset_governor()
 

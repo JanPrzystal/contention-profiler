@@ -1,8 +1,10 @@
-import os
-import sys
-import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+
+import sys
+from pathlib import Path
+parent_dir = Path(__file__).resolve().parent.parent
+sys.path.append(str(parent_dir))
 
 import config
 

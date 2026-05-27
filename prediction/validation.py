@@ -7,9 +7,9 @@ from tracemalloc import start
 from typing import Union, List
 from collections import namedtuple
 import config
-from experiment_setup.workload import Workload
+from experiment_setup.workload import Workload, run_background_workload, stop_benchmark
 from prediction.prediction import Prediction
-from experiment_setup.spec import run_background_benchmark, stop_benchmark
+
 from prediction.prediction import get_sensitivity
 
 from experiment_setup.log import log, INFO, WARNING, DEBUG
@@ -56,7 +56,7 @@ def validate_prediction(prediction: Prediction, workloads: List[Workload]) -> Va
     # Start competitors in the background
     background_processes = []
     for competitor in competitors:
-        background_processes.append(run_background_benchmark(competitor.name, competitor.size))
+        background_processes.append(run_background_workload(competitor.name, competitor.size, competitor.get_command(10000)))
 
     time.sleep(config.WORKLOAD_WARMUP_TIME)
     try:
@@ -137,7 +137,18 @@ def choose_predictions(predictions: dict[int, List[Prediction]], max: int = conf
         else:
             # Sample random predictions with i competitors
             sample = rng_sample(predictions[i], subsample_size)
-            top_cnt = sorted(predictions[i], key=lambda x: x.contentiousness, reverse=True)[:config.TOP_CNT_VAlIDATIONS]
+            
+            # Get top contentiousness predictions with i competitors
+            top_cnt = []
+            seen = set()
+            for pred in sorted(predictions[i], key=lambda x: x.contentiousness, reverse=True):
+                if pred.contentiousness in seen:
+                    continue
+                seen.add(pred.contentiousness)
+                top_cnt.append(pred)
+                if len(top_cnt) >= config.TOP_CNT_VAlIDATIONS:
+                    break
+
 
             log(f"Sampled {len(sample) + len(top_cnt)} predictions with {i} competitors", INFO)
             predictions_list.extend(sample)

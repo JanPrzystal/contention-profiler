@@ -2,7 +2,6 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-import math
 import pathlib
 from scipy.interpolate import PchipInterpolator
 import sys
@@ -15,10 +14,10 @@ import config
 
 xpad = 8
 
-METRICS = ["time", "CPI", "LLC-load-misses", "LLC-store-misses", "L1-dcache-load-misses", "LLC-miss-rate"]
+METRICS = ["time", "CPI", "LLC-load-misses", "LLC-store-misses", "L1-dcache-load-misses", "LLC-miss-rate", "L1-icache-load-misses", "cache-misses", "dTLB-load-misses"]
 
 
-def plot_metrics(filename: str = "657_xz_s_data.csv"):
+def plot_metrics(filename: str):
     csv_path = pathlib.Path(config.RESULTS_DIR) / "sensitivity" / filename
     df = pd.read_csv(csv_path, delimiter=",")
     df = df.sort_values("footprint_mb")
@@ -33,7 +32,7 @@ def plot_metrics(filename: str = "657_xz_s_data.csv"):
     fig, ax = plt.subplots(figsize=(10, 5))
 
     colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
-    markers = ["o", "s", "v", "^", "D"]
+    markers = ["o", "s", "v", "^", "D", "O", "X", "P", "*"]
 
     for metric, marker, color in zip(METRICS, markers, colors):
         if metric not in df.columns:
@@ -79,4 +78,4 @@ def plot_metrics(filename: str = "657_xz_s_data.csv"):
 
 if __name__ == "__main__":
     config.USE_INTERPOLATION = False
-    plot_metrics()
+    plot_metrics(sys.argv[1])

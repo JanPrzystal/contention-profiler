@@ -11,6 +11,21 @@ zip_paths = ["results_2rand_alternating_pair.zip", "results_2rand_alternating_pa
 
 results = []
 
+def read_worst_errors(file, N=10):
+    with zipfile.ZipFile(file) as z:
+        for name in z.namelist():
+            if name.endswith("validated.csv"):
+                with z.open(name) as f:
+                    df = pd.read_csv(f)
+                    df = df[~df["app"].str.contains("607.cactuBSSN_s", na=False)]
+
+                    df['error'] = ((df['perf'] - df['actual_perf']) / df['actual_perf']) * 100
+                    df['abs_error'] = df['error'].abs()
+                    df['competitors'] = df['competitor'].apply(lambda x: len(x.split(" + ")) if pd.notna(x) else 0)
+
+                    top_n = df.sort_values(by="abs_error", ascending=False).head(N)
+                    return top_n
+
 def handle_validation_csv(file):
     df = pd.read_csv(file)
     # log(df.head())
@@ -83,11 +98,18 @@ def process_zip_files(zip_paths):
         times = result["timings"]
         time_data[result['name']] = [times['reporter'], times['contentiousness'], times['sensitivity']]
 
-    draw_errors(errors_data)
+    return errors_data, time_data
 
-    draw_times(time_data, False)
 
 if __name__ == "__main__":
     setup_logging()
     zip_paths = sys.argv[1:] if len(sys.argv) > 1 else zip_paths
-    process_zip_files(zip_paths)
+    # errors_data, time_data = process_zip_files(zip_paths)
+
+    pd.set_option('display.max_columns', None)
+    pd.set_option('display.max_colwidth', None)
+    pd.set_option('display.width', 1000)
+
+    for file in zip_paths:
+        errors = read_worst_errors(file, 25)
+        log(f"Worst errors for {file}:\n{errors}")

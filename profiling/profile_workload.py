@@ -192,7 +192,7 @@ def profile_sensitivity_hpc(workload: Workload) -> None:
     path = SENSITIVITY_DIR / f"{name}_data.csv"
 
     with open(path, "w+") as f:
-        f.write(f"footprint_mb,time,CPI,LLC-load-misses,LLC-store-misses,L1-dcache-load-misses,LLC-miss-rate\n")
+        f.write(f"footprint_mb,time,LLC-load-misses,LLC-store-misses,L1-dcache-load-misses,L1-icache-load-misses,cache-misses,dTLB-load-misses\n")
 
         max_soi = config.NSOI
         interval = config.DIAL_RANGE_MB // max_soi
@@ -213,5 +213,7 @@ def profile_sensitivity_hpc(workload: Workload) -> None:
             if bubble is not None:
                 bubble.stop()
 
-            f.write(f"{size_mb},{result['time_elapsed']},{result['cpi']},{result['LLC-load-misses']},{result['LLC-store-misses']},{result['L1-dcache-load-misses']},{result['llc_miss_rate']}\n")
+            f.write(f"{size_mb},{result['time_elapsed']},{result['LLC-load-misses']},\
+                    {result['LLC-store-misses']},{result['L1-dcache-load-misses']},{result['L1-icache-load-misses']},\
+                    {result['cache-misses']},{result['dTLB-load-misses']}\n")
     

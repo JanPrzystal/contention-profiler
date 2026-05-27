@@ -12,6 +12,7 @@ HPC_METRICS = [
     "instructions",
     "L1-dcache-loads",
     "L1-dcache-load-misses",
+    "L1-icache-load-misses",
     "LLC-loads",
     "LLC-load-misses",
     "LLC-store-misses",

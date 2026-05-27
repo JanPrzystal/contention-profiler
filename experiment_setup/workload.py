@@ -1,8 +1,12 @@
 from abc import ABC, abstractmethod
+from typing import List
 import subprocess
+import config
 from experiment_setup.core_manager import background_core_dispenser
 import os
 import signal
+
+from experiment_setup.log import DEBUG, log
 
 class Process:
     def __init__(self, proc: subprocess.Popen, core: str):
@@ -20,6 +24,10 @@ class Workload(ABC):
         pass
 
     @abstractmethod
+    def get_command(self) -> List[str]:
+        pass
+
+    @abstractmethod
     def profile(self) -> float:
         pass
 
@@ -30,3 +38,33 @@ class Workload(ABC):
     @abstractmethod
     def stop(self) -> None:
         pass
+
+
+def run_background_workload(workload: Workload) -> Process:
+    core = background_core_dispenser.acquire()
+    log(f"Running {workload.name} in background on core {core}")
+
+    cmd = workload.get_command()
+
+    if core is not None:
+        cmd = ["taskset", "-c", f"{core}"] + cmd
+
+    if config.USE_ROOT_PRIORITY:
+        cmd = config.ROOT_TASK_CMD + cmd
+
+    log(f"Running command: {' '.join(cmd)}", DEBUG)
+    
+    proc = subprocess.Popen(
+        cmd,
+        stdin=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        preexec_fn=os.setpgrp
+    )
+
+    return Process(proc, core)
+
+    
+def stop_benchmark(proc: Process):
+    log(f"Stopping background process with PID {proc.proc.pid}")
+    proc.stop()

@@ -12,6 +12,8 @@ import config
 import profiling.contentiousness as contentiousness
 import prediction.prediction as prediction
 
+from experiment_setup.log import log
+
 reporter_sensitivity_spline = contentiousness.get_reporter_sensitivity_spline()
 
 reporter_sensitivity_lookup = contentiousness.construct_sensitivity_lookup()

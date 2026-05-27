@@ -1,5 +1,6 @@
 import subprocess
 import os
+from typing import List
 
 import config
 from experiment_setup.workload import Workload, Process
@@ -98,6 +99,16 @@ class Bubble(Workload):
 
     def profile(self) -> float:
         raise NotImplementedError("\"profile\" not implemented for Bubble")
+    
+    def get_command(self) -> List[str]:
+        if config.BUBBLE_TYPE == "stream":
+            bubble_type = "bubble_stream.out"
+        elif config.BUBBLE_TYPE == "rand":
+            bubble_type = "bubble_rand.out"
+        else:
+            raise ValueError(f"Invalid BUBBLE_TYPE: {config.BUBBLE_TYPE}")
+    
+        return [f"./{BUILD_DIR}/{bubble_type}"]
 
     def run_in_background(self) -> None:
         for i in range(self.n_proc):

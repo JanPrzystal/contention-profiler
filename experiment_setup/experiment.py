@@ -11,7 +11,7 @@ import profiling.profile_workload as profile_workload
 import profiling.profile_reporter as profile_reporter
 import prediction.prediction as prediction
 import prediction.validation as validation
-from experiment_setup.spec import SpecWorkload
+from experiment_setup.spec import SpecWorkload, spec_validation
 from time import time
 from datetime import datetime
 from experiment_setup.cpu_freq import CpuFreqPolicy
@@ -104,6 +104,7 @@ def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], pair
     else:
         predictions = predict_performance(applications)
         validated_predictions = validation.validate_predictions(predictions, applications)
+        validated_predictions.extend(spec_validation(predictions))
         validation.save_validated_predictions(validated_predictions)
 
     texperiment = time() - tstart
