@@ -72,26 +72,10 @@ class Bubble(Workload):
                 "-fopenmp",
                 "-march=native",
                 f"-DFOOTPRINT_SIZE={end_size}",
-                "-DBUBBLE_TYPE=0",
                 "-DNUM_THREADS=1",
                 f"{config.SOI_DIR}/bubble.c",
                 "-o",
-                f"{BUILD_DIR}/bubble_stream.out",
-            ],
-            stdin=subprocess.DEVNULL,
-        )
-        subprocess.run(
-            [
-                "gcc",
-                "-O2",
-                "-fopenmp",
-                "-march=native",
-                f"-DFOOTPRINT_SIZE={end_size}",
-                "-DBUBBLE_TYPE=1",
-                "-DNUM_THREADS=1",
-                f"{config.SOI_DIR}/bubble.c",
-                "-o",
-                f"{BUILD_DIR}/bubble_rand.out",
+                f"{BUILD_DIR}/bubble",
             ],
             stdin=subprocess.DEVNULL,
         )
@@ -100,25 +84,25 @@ class Bubble(Workload):
     def profile(self) -> float:
         raise NotImplementedError("\"profile\" not implemented for Bubble")
     
-    def get_command(self) -> List[str]:
-        if config.BUBBLE_TYPE == "stream":
-            bubble_type = "bubble_stream.out"
-        elif config.BUBBLE_TYPE == "rand":
-            bubble_type = "bubble_rand.out"
-        else:
-            raise ValueError(f"Invalid BUBBLE_TYPE: {config.BUBBLE_TYPE}")
+    def get_command(self, background: bool = False) -> List[str]:
+        file = "bubble"
     
-        return [f"./{BUILD_DIR}/{bubble_type}"]
+        arg1 = "0" if background else "10000"
+        arg2 = config.BUBBLE_TYPE
+
+        return [f"./{BUILD_DIR}/{file}", arg1, arg2]
 
     def run_in_background(self) -> None:
         for i in range(self.n_proc):
             if config.BUBBLE_TYPE == "stream":
-                bubble_type = "bubble_stream.out"
+                bubble_type = "stream"
             elif config.BUBBLE_TYPE == "rand":
-                bubble_type = "bubble_rand.out"
+                bubble_type = "rand"
             else:
-                bubble_type = "bubble_stream.out" if i % 2 == 0 else "bubble_rand.out"
-            log(f"Running {bubble_type}")
+                bubble_type = "stream" if i % 2 == 0 else "rand"
+            log(f"Running bubble {bubble_type}")
+
+            file = "bubble"
 
             core = ""
             try:
@@ -127,7 +111,7 @@ class Bubble(Workload):
                 log(f"Failed to acquire background core for bubble process {i+1}: {e}")
                 raise Exception("Failed to acquire background core for bubble process")
         
-            cmd = ["taskset", "-c", f"{core}", f"./{BUILD_DIR}/{bubble_type}"]
+            cmd = ["taskset", "-c", f"{core}", f"./{BUILD_DIR}/{file}", "0", bubble_type]
     
 
             if config.USE_ROOT_PRIORITY:

@@ -1,7 +1,7 @@
 #include <stdint.h>
 
 // The state must be initialized to non-zero
-uint32_t xorshift32(uint32_t* state) {
+static inline uint32_t xorshift32(uint32_t* state) {
 	// Algorithm "xor" from p. 4 of Marsaglia, "Xorshift RNGs"
 	uint32_t x = *state;
 	x ^= x << 13;

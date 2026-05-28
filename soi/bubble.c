@@ -1,7 +1,10 @@
+#define _POSIX_C_SOURCE 199309L
 // #include <omp.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <time.h>
 #include "xorshift.h"
 #include <assert.h>
 
@@ -33,8 +36,24 @@ static volatile int64_t dump[200];
 static uint32_t seed = 0xACE1u;
 #define r (xorshift32(&seed) % RAND_SIZE)
 
-void streaming_access() {
-    while(1) {
+static int64_t get_time_ms(void) {
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return ts.tv_sec * 1000LL + ts.tv_nsec / 1000000LL;
+}
+
+static int64_t deadline_ms = -1;
+
+static int infinite_condition(void) {
+    return 1;
+}
+
+static int timed_condition(void) {
+    return get_time_ms() < deadline_ms;
+}
+
+void streaming_access(int (*condition)(void)) {
+    while (condition()) {
         int64_t volatile *mid = bw_data + PADDING_SIZE;
         size_t offset = 0;
         // #pragma omp parallel for
@@ -67,8 +86,8 @@ void streaming_access() {
     }
 }
 
-void random_access() {
-    for (int i = 0; 1; i++) {
+void random_access(int (*condition)(void)) {
+    while (condition()) {
         dump[0]  = data_chunk[r]++;
         dump[1]  = data_chunk[r]++;
         dump[2]  = data_chunk[r]++;
@@ -172,19 +191,49 @@ void random_access() {
     }
 }
 
-int main() {
-    char *bub_type = BUBBLE_TYPE == 0 ? "stream" : "rand";
-    // printf("Bubble type = %s, threads = %d\n", bub_type, NUM_THREADS);
-    if (BUBBLE_TYPE == 0) {
+int main(int argc, char *argv[]) {
+    int64_t duration_ms = 0;
+    int bubble_type = BUBBLE_TYPE;
+
+    if (argc > 1) {
+        char *endptr = NULL;
+        long long parsed = strtoll(argv[1], &endptr, 10);
+        if (endptr != NULL && *endptr == '\0') {
+            duration_ms = parsed;
+        } else if (strcmp(argv[1], "rand") == 0) {
+            bubble_type = 1;
+        } else if (strcmp(argv[1], "stream") == 0) {
+            bubble_type = 0;
+        }
+    }
+
+    if (argc > 2) {
+        if (strcmp(argv[2], "rand") == 0) {
+            bubble_type = 1;
+        } else if (strcmp(argv[2], "stream") == 0) {
+            bubble_type = 0;
+        } else {
+            fprintf(stderr, "Unknown bubble type '%s', using '%s'.\n",
+                    argv[2], bubble_type == 0 ? "stream" : "rand");
+        }
+    }
+
+    if (duration_ms > 0) {
+        deadline_ms = get_time_ms() + duration_ms;
+    }
+
+    int (*condition)(void) = (duration_ms > 0) ? timed_condition : infinite_condition;
+
+    if (bubble_type == 0) {
         size_t bw_data_size = STREAM_SIZE * sizeof(int64_t);
         bw_data = malloc(bw_data_size);
         assert(bw_data != NULL);
-        streaming_access();
+        streaming_access(condition);
     } else {
         size_t rand_data_size = RAND_SIZE * sizeof(int64_t);
         data_chunk = malloc(rand_data_size);
         assert(data_chunk != NULL);
-        random_access();
+        random_access(condition);
     }
 
     return 0;
