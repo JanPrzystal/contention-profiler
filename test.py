@@ -169,6 +169,15 @@ def test_hpc_reporter():
 
     # log(f"Perf results: {perf_results}", logging.INFO)
 
+def test_hpc_soi():
+    soi = Bubble(16, 1)
+    core = config.WORKLOAD_UNDER_PROFILING_CORES
+    result = perf.profile(soi.get_command(), cores=core)
+
+    log(f"{0},{result['time_elapsed']},{result['LLC-load-misses']},\
+        {result['LLC-store-misses']},{result['L1-dcache-load-misses']},{result['L1-icache-load-misses']},\
+        {result['cache-misses']},{result['dTLB-load-misses']}\n")
+
 
 if __name__ == "__main__":
 
@@ -196,15 +205,14 @@ if __name__ == "__main__":
 
     # test_hpc_spec()
 
+    test_hpc_soi()
+
     # profile_workload.profile_sensitivity([spec.SpecWorkload("657.xz_s", "train")])
 
     # stats = perf.profile("./membench/membench")
 
     # log (stats)
 
-    predictions = prediction.predict_performance(spec.WORKLOADS)
-    prediction_list = list(predictions.values())
-    validated_predictions = spec.spec_validation(prediction_list)
 
     CpuFreqPolicy.reset_governor()
 

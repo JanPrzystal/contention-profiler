@@ -38,7 +38,7 @@ class SpecWorkload(Workload):
         log(f"Running benchmark {self.name}, size = {self.size}")
         
         core = config.WORKLOAD_UNDER_PROFILING_CORES
-        cmd = ["taskset", "-c", core] + self.get_command(iterations)
+        cmd = ["taskset", "-c", core] + self.get_command(False)
         
         if config.USE_ROOT_PRIORITY:
             cmd = config.ROOT_TASK_CMD + cmd
@@ -180,6 +180,25 @@ VALIDATION_DEPLOYMENTS = [
     Deployment(lbm, [mcf, omnetpp, bwaves, fotonik3d, roms]),
     Deployment(lbm, [perlbench, mcf, omnetpp, deepsjeng, bwaves, fotonik3d, roms]),
 #---30---
+    Deployment(omnetpp, [perlbench, gcc, deepsjeng, leela, lbm, nab]),
+    Deployment(roms, [gcc, omnetpp, deepsjeng, cam4]),
+    Deployment(deepsjeng, [perlbench, gcc, lbm]),
+
+    Deployment(xz, [perlbench, mcf, omnetpp, cactu]),
+
+    Deployment(gcc, [lbm, cactu]),
+
+    Deployment(xz, [mcf, omnetpp, cactu, lbm, fotonik3d, roms]),
+    Deployment(fotonik3d, [perlbench, mcf, omnetpp, xz, cactu, lbm, roms]),
+
+    Deployment(bwaves, [perlbench, mcf, omnetpp, xalancbmk, lbm, fotonik3d, roms]),
+
+    Deployment(omnetpp, [perlbench, xz, cactu, lbm, fotonik3d, roms]),
+    Deployment(omnetpp, [perlbench, mcf, xz, lbm, fotonik3d, roms]),
+#---40---
+
+    Deployment(perlbench, [xalancbmk, bwaves, lbm, nab]),
+
 ]
 def spec_validation(predictions: List[Prediction]) -> List[ValidatedPrediction]:
 
