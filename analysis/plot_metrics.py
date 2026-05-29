@@ -14,8 +14,16 @@ import config
 
 xpad = 8
 
-METRICS = ["time", "CPI", "LLC-load-misses", "LLC-store-misses", "L1-dcache-load-misses", "LLC-miss-rate", "L1-icache-load-misses", "cache-misses", "dTLB-load-misses"]
-
+METRICS = ["time", 
+    "LLC-loads", 
+    "LLC-load-misses", 
+    # "LLC-store-misses", 
+    "L1-dcache-load-misses", 
+    # "LLC-miss-rate", 
+    # "L1-icache-load-misses", 
+    "cache-misses", 
+    # "dTLB-load-misses",
+    ]
 
 def plot_metrics(filename: str):
     csv_path = pathlib.Path(config.RESULTS_DIR) / "sensitivity" / filename

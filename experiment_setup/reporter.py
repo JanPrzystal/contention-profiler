@@ -4,7 +4,7 @@ import config
 
 # from experiment_setup import core_manager
 from experiment_setup.log import WARNING, log, DEBUG
-import perf
+import profiling.perf as perf
 
 REPORTER_SCRIPT_FILES = {
     "alternating":"build/altern_reporter.out",

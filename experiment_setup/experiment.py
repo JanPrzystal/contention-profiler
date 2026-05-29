@@ -115,6 +115,7 @@ def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], pair
     else:
         predictions = predict_performance(applications)
         validated_predictions = validation.validate_predictions(predictions, applications)
+        prediction_list = list(predictions.values())
         validated_predictions.extend(spec_validation(predictions))
         validation.save_validated_predictions(validated_predictions)
 

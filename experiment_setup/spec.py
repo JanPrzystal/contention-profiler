@@ -196,9 +196,48 @@ VALIDATION_DEPLOYMENTS = [
     Deployment(omnetpp, [perlbench, xz, cactu, lbm, fotonik3d, roms]),
     Deployment(omnetpp, [perlbench, mcf, xz, lbm, fotonik3d, roms]),
 #---40---
-
     Deployment(perlbench, [xalancbmk, bwaves, lbm, nab]),
+    # Make every benchmark be profiled and be the competitor at least once
+    # 7c to look at the case when all cores are utilized
+    # 7c near worst for pearlbench
+    Deployment(perlbench, [mcf, omnetpp, x264, bwaves, lbm, fotonik3d, roms]),
+    # 7c bad for gcc
+    Deployment(gcc, [mcf, leela, bwaves, lbm, pop2, nab, fotonik3d]),
+    
+    Deployment(bwaves, [omnetpp, xalancbmk, deepsjeng, exchange2, xz, lbm, fotonik3d]),
 
+    Deployment(mcf, [gcc, omnetpp, cactu, lbm, cam4, pop2, nab]),
+
+    Deployment(cactu, [mcf, omnetpp, xalancbmk, leela, xz, bwaves, lbm]),
+
+    Deployment(lbm, [mcf, omnetpp, bwaves, cam4, pop2, fotonik3d, roms]),
+
+    Deployment(omnetpp, [perlbench, mcf, deepsjeng, bwaves, lbm, pop2, fotonik3d]),
+
+    Deployment(xalancbmk, [mcf, x264, exchange2, xz, bwaves, cam4, nab]),
+
+    Deployment(x264, [omnetpp, deepsjeng, xz, cactu, lbm, imagick, fotonik3d]),
+
+    Deployment(cam4, [gcc, omnetpp, x264, bwaves, lbm, imagick, fotonik3d]),
+
+    Deployment(pop2, [mcf, omnetpp, leela, exchange2, lbm, nab, roms]),
+
+    Deployment(deepsjeng, [omnetpp, xz, bwaves, lbm, pop2, fotonik3d, roms]),
+
+    Deployment(imagick, [omnetpp, bwaves, lbm, cam4, pop2, fotonik3d, roms]),
+
+    Deployment(leela, [perlbench, gcc, xalancbmk, exchange2, xz, lbm, fotonik3d]),
+
+    Deployment(nab, [gcc, x264, exchange2, xz, cam4, pop2, roms]),
+
+    Deployment(exchange2, [perlbench, gcc, mcf, xalancbmk, cactu, fotonik3d, roms]),
+
+    Deployment(fotonik3d, [gcc, mcf, omnetpp, xz, lbm, pop2, roms]),
+
+    Deployment(xz, [x264, leela, exchange2, bwaves, lbm, pop2, fotonik3d]),
+
+    Deployment(xz, [x264, leela, exchange2, bwaves, lbm, pop2, fotonik3d])
+#---59---
 ]
 def spec_validation(predictions: List[Prediction]) -> List[ValidatedPrediction]:
 

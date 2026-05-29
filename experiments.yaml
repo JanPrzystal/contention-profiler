@@ -1,6 +1,6 @@
 experiments:
 
-  - name: test
+  - name: prog7
     benchmarks:
     - 600.perlbench_s
     - 602.gcc_s
@@ -27,14 +27,14 @@ experiments:
       number: 7
     max_mem_footprint: 112
     mem_interval: 16
-    reporter_repetitions: 10
+    reporter_repetitions: 20
     deployment: multi
     data_size: test
-    root: false
+    root: true
     profiling_repetitions: 1
     use_interpolation: true
     progressive_profiling: true
-    validations: 35
+    validations: 140
 
 
 # 600.perlbench_s,

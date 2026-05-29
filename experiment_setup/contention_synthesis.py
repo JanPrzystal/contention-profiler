@@ -5,7 +5,7 @@ from typing import List
 import config
 from experiment_setup.workload import Workload, Process
 
-from experiment_setup.log import log
+from experiment_setup.log import log, WARNING
 from experiment_setup.core_manager import background_core_dispenser
 
 
@@ -59,6 +59,7 @@ class Bubble(Workload):
     ELEM_SIZE = 8 # The size of the elements used in the SoI application in bytes (int64 = 8)
 
     def __init__(self, size_mb: int, n_proc = 1):
+        self.name = "bubble_"+config.BUBBLE_TYPE
         self.n_proc = n_proc
         self.size = size_mb * 1_000_000 
         end_size = round(self.size / n_proc / Bubble.ELEM_SIZE)

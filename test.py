@@ -16,7 +16,7 @@ from experiment_setup.contention_synthesis import Bubble, BUILD_DIR
 import config
 import experiment_setup.reporter as rp
 from experiment_setup.cpu_freq import CpuFreqPolicy, Governor
-import perf
+import profiling.perf as perf
 from experiment_setup.log import INFO, setup_logging, log, DEBUG
 from analysis.plot_metrics import plot_metrics
 
@@ -171,12 +171,12 @@ def test_hpc_reporter():
 
 def test_hpc_soi():
     soi = Bubble(16, 1)
-    core = config.WORKLOAD_UNDER_PROFILING_CORES
-    result = perf.profile(soi.get_command(), cores=core)
 
-    log(f"{0},{result['time_elapsed']},{result['LLC-load-misses']},\
-        {result['LLC-store-misses']},{result['L1-dcache-load-misses']},{result['L1-icache-load-misses']},\
-        {result['cache-misses']},{result['dTLB-load-misses']}\n")
+    config.USE_HPC = True
+
+    profile_workload.profile_sensitivity([soi])
+
+    plot_metrics("bubble_rand_data.csv")
 
 
 if __name__ == "__main__":
@@ -184,14 +184,14 @@ if __name__ == "__main__":
     setup_logging(DEBUG)
 
 
-    config.USE_ROOT_PRIORITY = False
-    config.DATA_SIZE = "test"
+    config.USE_ROOT_PRIORITY = True
+    config.DATA_SIZE = "train"
 
     CpuFreqPolicy.set_governor(Governor.PERFORMANCE)
 
 
-    config.DIAL_END_MB = 80
-    config.DIAL_RANGE_MB = 80
+    config.DIAL_END_MB = 112
+    config.DIAL_RANGE_MB = 112
 
     config.PROGRESSIVE_PROFILING = True
 
