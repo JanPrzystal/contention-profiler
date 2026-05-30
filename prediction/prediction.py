@@ -10,7 +10,11 @@ from itertools import combinations
 import csv
 import prediction.prediction as prediction
 
-from experiment_setup.log import log, DEBUG
+from experiment_setup.log import log, setup_logging, DEBUG
+
+from concurrent.futures import ProcessPoolExecutor
+from itertools import repeat
+from collections import defaultdict
 
 
 Prediction = namedtuple("Prediction", ["app", "competitor", "perf", "contentiousness"])
@@ -96,22 +100,52 @@ def predict_pair_performance(applications: List[Workload], competitors: List[Wor
 
     return res
 
-def predict_performance(applications: List[Workload]) -> dict[int, List[Prediction]]:
-    predictions = {}
-    for app in applications:
-        all_competitors = [x for x in applications if x != app]
-        log(f"Forming predictions for {app.name}")
-        # Generate predictions for all combinations of competitors
-        # Currently just combinations, no multisets
-        for k in range(1, len(all_competitors) + 1):
-            if k > config.MAX_COMPETITORS:
-                break
-            if k not in predictions:
-                predictions[k] = _predict_with_competitors(app, all_competitors, k)
-            else:
-                predictions[k].extend(_predict_with_competitors(app, all_competitors, k))
+def _predict_app(app, all_apps):
+    setup_logging()
+    log(f"Forming predictions for {app.name}")
+    result = defaultdict(list)
+    all_competitors = [x for x in all_apps if x != app]
 
-    return predictions
+    for k in range(1, len(all_competitors) + 1):
+        if k > config.MAX_COMPETITORS:
+            break
+
+        result[k].extend(
+            _predict_with_competitors(app, all_competitors, k)
+        )
+
+    return result
+
+def predict_performance(applications: List[Workload]) -> dict[int, List[Prediction]]:
+    predictions = defaultdict(list)
+
+    with ProcessPoolExecutor() as executor:
+
+        results = executor.map(
+            _predict_app,
+            applications,
+            repeat(applications)
+        )
+        for result in results:
+            for k, values in result.items():
+                predictions[k].extend(values)
+    
+    return dict(predictions)
+    
+    # for app in applications:
+    #     all_competitors = [x for x in applications if x != app]
+    #     log(f"Forming predictions for {app.name}")
+    #     # Generate predictions for all combinations of competitors
+    #     # Currently just combinations, no multisets
+    #     for k in range(1, len(all_competitors) + 1):
+    #         if k > config.MAX_COMPETITORS:
+    #             break
+    #         if k not in predictions:
+    #             predictions[k] = _predict_with_competitors(app, all_competitors, k)
+    #         else:
+    #             predictions[k].extend(_predict_with_competitors(app, all_competitors, k))
+
+    # return predictions
 
 def _predict_with_competitors(application: Workload, competitors: List[Workload], n_competitors: int) -> List[Prediction]:
     predictions = []

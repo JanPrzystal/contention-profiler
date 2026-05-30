@@ -7,8 +7,13 @@ WARNING = logging.WARNING
 ERROR = logging.ERROR
 
 logger = logging.getLogger(LOGGER_NAME)
+ready = False
 
 def setup_logging(level=logging.INFO):
+    global ready
+    if ready:
+        return
+
     global logger
     logger.setLevel(level)
 
@@ -26,6 +31,8 @@ def setup_logging(level=logging.INFO):
 
     logger.addHandler(fh)
     logger.addHandler(ch)
+
+    ready = True
 
 def log(message: str, level=logging.INFO):
     global logger

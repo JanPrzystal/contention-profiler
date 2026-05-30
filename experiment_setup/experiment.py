@@ -114,9 +114,14 @@ def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], pair
         validation.save_validated_predictions(validated_predictions)
     else:
         predictions = predict_performance(applications)
-        validated_predictions = validation.validate_predictions(predictions, applications)
-        prediction_list = list(predictions.values())
-        validated_predictions.extend(spec_validation(predictions))
+        validated_predictions = []
+        # validated_predictions = validation.validate_predictions(predictions, applications)
+        prediction_list = []
+        for plist in list(predictions.values()):
+            prediction_list.extend(plist)
+
+        log(f"Formed {len(prediction_list)} predictions")
+        validated_predictions.extend(spec_validation(prediction_list))
         validation.save_validated_predictions(validated_predictions)
 
     texperiment = time() - tstart

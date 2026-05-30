@@ -18,11 +18,12 @@ METRICS = ["time",
     "LLC-loads", 
     "LLC-load-misses", 
     # "LLC-store-misses", 
-    "L1-dcache-load-misses", 
-    # "LLC-miss-rate", 
+    # "L1-dcache-load-misses", 
+    "LLC-miss-rate", 
     # "L1-icache-load-misses", 
-    "cache-misses", 
+    # "cache-misses", 
     # "dTLB-load-misses",
+    "CPI"
     ]
 
 def plot_metrics(filename: str):
@@ -40,7 +41,7 @@ def plot_metrics(filename: str):
     fig, ax = plt.subplots(figsize=(10, 5))
 
     colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
-    markers = ["o", "s", "v", "^", "D", "O", "X", "P", "*"]
+    markers = ["o", "s", "v", "^", "D", "X", "P", "*"]
 
     for metric, marker, color in zip(METRICS, markers, colors):
         if metric not in df.columns:
