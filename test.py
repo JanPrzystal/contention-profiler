@@ -49,7 +49,7 @@ def test_combined_contentiousness():
 
     sleep(5)
 
-    score = reporter.run(config.REPORTER_CORES, config.REPORTER_REPETITIONS)
+    score = reporter.profile(config.REPORTER_CORES, config.REPORTER_REPETITIONS)
 
     for proc in procs:
         os.kill(proc.pid, signal.SIGKILL)
@@ -90,7 +90,7 @@ def test_soi_additiveness():
 
         sleep(5)
 
-        score = reporter.run(config.WORKLOAD_UNDER_PROFILING_CORES)
+        score = reporter.profile(config.WORKLOAD_UNDER_PROFILING_CORES)
 
         soi1.stop()
 
@@ -102,7 +102,7 @@ def test_soi_additiveness():
 
         sleep(5)
 
-        score = reporter.run(config.WORKLOAD_UNDER_PROFILING_CORES)
+        score = reporter.profile(config.WORKLOAD_UNDER_PROFILING_CORES)
 
         soi2.stop()
 
@@ -123,7 +123,7 @@ def test_soi_additiveness():
 
     sleep(5)
 
-    score = reporter.run(config.WORKLOAD_UNDER_PROFILING_CORES)
+    score = reporter.profile(config.WORKLOAD_UNDER_PROFILING_CORES)
 
     app1.stop()
     app2.stop()
@@ -161,11 +161,16 @@ def test_hpc_spec():
     plot_metrics("649_fotonik3d_s_data.csv")
 
 def test_hpc_reporter():
-    reporter = rp.MembenchReporter("tinymembench")
+    # reporter = rp.MembenchReporter("tinymembench")
+    reporter = rp.AveragingReporter("alternating")
+
+    config.REPORTER_REPETITIONS = 5
 
     log("Profiling reporter with HPC", logging.INFO)
 
-    profile_reporter(reporter)
+    config.USE_HPC = True
+
+    profile_workload.profile_sensitivity([reporter])
 
     # log(f"Perf results: {perf_results}", logging.INFO)
 
@@ -201,11 +206,11 @@ if __name__ == "__main__":
 
     # test_added_contentiousness()
 
-    # test_hpc_reporter()
+    test_hpc_reporter()
 
     # test_hpc_spec()
 
-    test_hpc_soi()
+    # test_hpc_soi()
 
     # profile_workload.profile_sensitivity([spec.SpecWorkload("657.xz_s", "train")])
 

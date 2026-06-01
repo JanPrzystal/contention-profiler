@@ -29,7 +29,7 @@ experiments:
     mem_interval: 16
     reporter_repetitions: 20
     deployment: multi
-    data_size: test
+    data_size: train
     root: true
     profiling_repetitions: 1
     use_interpolation: true

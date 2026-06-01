@@ -7,7 +7,7 @@ from tracemalloc import start
 from typing import Union, List
 from collections import namedtuple
 import config
-from experiment_setup.workload import Workload, run_background_workload, stop_benchmark
+from experiment_setup.workload import Workload, run_background_workload, stop_process
 from prediction.prediction import Prediction
 
 from prediction.prediction import get_sensitivity
@@ -64,7 +64,7 @@ def validate_prediction(prediction: Prediction, workloads: List[Workload]) -> Va
         return ValidatedPrediction(actual_perf=(isolated_perf / perf), *prediction)
     finally:
         for process in background_processes:
-            stop_benchmark(process)
+            stop_process(process)
         time.sleep(config.WORKLOAD_WIND_DOWN_TIME)
 
 def read_snapshot() -> dict[str, ValidatedPrediction]:

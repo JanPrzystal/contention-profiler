@@ -17,13 +17,13 @@ xpad = 8
 METRICS = ["time", 
     "LLC-loads", 
     "LLC-load-misses", 
-    # "LLC-store-misses", 
-    # "L1-dcache-load-misses", 
-    "LLC-miss-rate", 
+    "LLC-store-misses", 
+    "L1-dcache-load-misses", 
+    # "LLC-miss-rate", 
     # "L1-icache-load-misses", 
-    # "cache-misses", 
+    "cache-misses", 
     # "dTLB-load-misses",
-    "CPI"
+    # "CPI"
     ]
 
 def plot_metrics(filename: str):
@@ -86,5 +86,5 @@ def plot_metrics(filename: str):
 
 
 if __name__ == "__main__":
-    config.USE_INTERPOLATION = False
+    config.USE_INTERPOLATION = True
     plot_metrics(sys.argv[1])

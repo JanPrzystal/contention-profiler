@@ -115,7 +115,7 @@ def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], pair
     else:
         predictions = predict_performance(applications)
         validated_predictions = []
-        # validated_predictions = validation.validate_predictions(predictions, applications)
+        validated_predictions = validation.validate_predictions(predictions, applications)
         prediction_list = []
         for plist in list(predictions.values()):
             prediction_list.extend(plist)

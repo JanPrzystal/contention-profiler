@@ -6,7 +6,7 @@ from experiment_setup.core_manager import background_core_dispenser
 import os
 import signal
 
-from experiment_setup.log import DEBUG, log
+from experiment_setup.log import DEBUG, ERROR, log
 
 class Process:
     def __init__(self, proc: subprocess.Popen, core: str):
@@ -65,6 +65,10 @@ def run_background_workload(workload: Workload) -> Process:
     return Process(proc, core)
 
     
-def stop_benchmark(proc: Process):
+def stop_process(proc: Process):
+    if proc is None:
+        log("Trying to stop a non-existing process!", ERROR)
+        return
+    
     log(f"Stopping background process with PID {proc.proc.pid}")
     proc.stop()

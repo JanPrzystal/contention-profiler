@@ -78,7 +78,7 @@ def _profile_contentiousness(workload: Workload, reporter: rp.Reporter) -> float
         workload.run_in_background()
         try:
             time.sleep(config.WORKLOAD_WARMUP_TIME)
-            score = reporter.run(config.REPORTER_REPETITIONS)
+            score = reporter.profile()
             return cnt.contentiousness_lookup(score)
         finally:
             workload.stop()
@@ -141,7 +141,7 @@ def profile_added_contentiousness(workload: Workload, reporter: rp.Reporter) -> 
 
         if size_mb == 0:
             log(f"Profiling contentiousness of {workload.name}")
-            result = _profile_contentiousness_simple(workload, reporter)
+            result = _profile_contentiousness_simple([workload], reporter)
 
         nsoi = config.NSOI
         if config.PROGRESSIVE_PROFILING:

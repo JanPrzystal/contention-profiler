@@ -1,9 +1,12 @@
 from abc import ABC, abstractmethod
 import subprocess
+from typing import List
 import config
 
 # from experiment_setup import core_manager
+from experiment_setup.core_manager import background_core_dispenser
 from experiment_setup.log import WARNING, log, DEBUG
+from experiment_setup.workload import Process, Workload, stop_process
 import profiling.perf as perf
 
 REPORTER_SCRIPT_FILES = {
@@ -14,25 +17,22 @@ REPORTER_SCRIPT_FILES = {
     "tinymembench": "membench/membench"
 }
 
-class Reporter(ABC):
-    def __init__(self, script_file: str):
-        self.script_file = REPORTER_SCRIPT_FILES[script_file]
-        if self.script_file is None:
-            raise ValueError(f"Invalid script file")
+# class Reporter(ABC):
+#     def __init__(self, script_file: str):
+#         self.script_file = REPORTER_SCRIPT_FILES[script_file]
+#         if self.script_file is None:
+#             raise ValueError(f"Invalid script file")
 
-    @abstractmethod
-    def run(self, repetitions: int = 25) -> float:
-        raise NotImplementedError("Run method not implemented for this reporter")
+#     @abstractmethod
+#     def run(self, repetitions: int = 25) -> float:
+#         raise NotImplementedError("Run method not implemented for this reporter")
     
-    def run_background(self):
-        raise NotImplementedError("Background profiling not implemented for this reporter")    
-    
-    def stop_background(self):
-        raise NotImplementedError("Not implemented for this reporter")
-    
-    @abstractmethod
-    def process_output(self, output: dict[str, float]) -> float:
-        raise NotImplementedError
+#     def run_background(self):
+#         raise NotImplementedError("Background profiling not implemented for this reporter")    
+
+#     @abstractmethod
+#     def process_output(self, output: dict[str, float]) -> float:
+#         raise NotImplementedError
     
 # class SingleValueReporter(Reporter):
 #     def process_output(self, output: dict[str, float]) -> float:
@@ -40,21 +40,34 @@ class Reporter(ABC):
 #             raise ValueError("Single value reporter returned multiple values")
 #         return float(next(iter(output.values()))) / 1_000_000.0
 
-class AveragingReporter(Reporter):
+class AveragingReporter(Workload):
+    def __init__(self, script_file: str):
+        self.name = "AveragingReporter"
 
-    def run(self, repetitions: int = config.REPORTER_REPETITIONS) -> float:
+        self.script_file = REPORTER_SCRIPT_FILES[script_file]
+        if self.script_file is None:
+            raise ValueError(f"Invalid script file")
+        
+    def get_command(self, background: bool = False) -> List[str]:
+        repetitions: int = config.REPORTER_REPETITIONS
+
+        return [
+            f"{self.script_file}",
+            "--benchmark_min_warmup_time=1",
+            f"--benchmark_repetitions={repetitions}",
+            "--benchmark_enable_random_interleaving=true",
+            ]
+
+        
+    def profile(self) -> float:
         log("Profiling with the reporter")
         core = config.REPORTER_CORES
     
         cmd = [
             "taskset",
             "-c",
-            f"{core}",
-            f"{self.script_file}",
-            "--benchmark_min_warmup_time=1",
-            f"--benchmark_repetitions={repetitions}",
-            "--benchmark_enable_random_interleaving=true",
-        ]
+            f"{core}"
+        ] + self.get_command(False)
         
         if config.USE_ROOT_PRIORITY:
             cmd = config.ROOT_TASK_CMD + cmd
@@ -71,37 +84,51 @@ class AveragingReporter(Reporter):
                 log(line.strip())
                 line = line.split()
                 output[line[0]] = float(line[1])
-        return self.process_output(output)
+        return self._process_output(output)
     
-    # def run_background(self) -> subprocess.Popen:
-    #     log("Running reporter in the background")
-    #     core = core_manager.acquire()
+    
+    def run_in_background(self) -> None:
+        log("Running reporter in the background")
+        core = background_core_dispenser.acquire()
 
-    #     cmd = [
-    #         "taskset",
-    #         "-c",
-    #         f"{core}",
-    #         f"{self.script_file}",
-    #         "--benchmark_min_warmup_time=1",
-    #         "--benchmark_repetitions=10000",
-    #         "--benchmark_enable_random_interleaving=true",
-    #     ]
+        cmd = [
+            "taskset",
+            "-c",
+            f"{core}",
+            f"{self.script_file}",
+            "--benchmark_min_warmup_time=1",
+            "--benchmark_repetitions=10000",
+            "--benchmark_enable_random_interleaving=true",
+        ]
 
-    #     if config.USE_ROOT_PRIORITY:
-    #         cmd = config.ROOT_TASK_CMD + cmd
+        if config.USE_ROOT_PRIORITY:
+            cmd = config.ROOT_TASK_CMD + cmd
 
-    #     return subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        subprocess = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-    def process_output(self, output: dict[str, float]) -> float:
+        self.proc = Process(subprocess, core)
+
+    def stop(self) -> None:
+        stop_process(self.proc)
+
+
+    def _process_output(self, output: dict[str, float]) -> float:
         try:
             return sum(output.values()) / len(output) / 1_000_000.0
         except ZeroDivisionError:
             log(f"Division by zero: {output}", WARNING)
             return 0.0
         
-class MembenchReporter(Reporter):
+class MembenchReporter(Workload):
+    def __init__(self, script_file: str):
+        self.name = "MembenchReporter"
 
-    def run(self, repetitions: int = 1) -> float:
+        self.script_file = REPORTER_SCRIPT_FILES[script_file]
+        if self.script_file is None:
+            raise ValueError(f"Invalid script file")
+
+    def profile(self) -> float:
+        repetitions: int = config.REPORTER_REPETITIONS
         core = config.REPORTER_CORES
 
         cmd = [
@@ -135,7 +162,7 @@ class MembenchReporter(Reporter):
 
                 output[line_split[0].strip()] = score
     
-        return self.process_output(output)
+        return self._process_output(output)
 
     # def run_background(self, cores: str):
     #     cmd = [
@@ -153,7 +180,7 @@ class MembenchReporter(Reporter):
     #     return reporter
     
 
-    def process_output(self, output: dict[str, float]) -> float:
+    def _process_output(self, output: dict[str, float]) -> float:
         try:
             return sum(output.values()) / len(output)
         except ZeroDivisionError:
