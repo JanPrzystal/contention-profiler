@@ -89,7 +89,7 @@ def check_profiling_complete() -> bool:
     log(f"Profiling status check {reporter}, {contentiousness}, {sensitivity}")
     return reporter and contentiousness and sensitivity
 
-def conduct_experiment(reporter: rp.Reporter, applications: List[Workload], pairwise: bool):
+def conduct_experiment(reporter: Workload, applications: List[Workload], pairwise: bool):
     tstart, treporter, tcontentiousness, tsensitivity = 0, 0, 0, 0
     if not check_profiling_complete():
         tstart = time()
@@ -150,7 +150,7 @@ def setup_config(experiment: Experiment) -> None:
     config.PROGRESSIVE_PROFILING = experiment.progressive_profiling
     config.VALIDATIONS = experiment.validations
 
-def setup_reporter(experiment: Experiment) -> rp.Reporter:
+def setup_reporter(experiment: Experiment) -> Workload:
     reporter = None
 
     if experiment.reporter == "tinymembench":

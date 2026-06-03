@@ -74,7 +74,7 @@ def _profile_sensitivity_dial(workload: Workload, size_mb: int, nproc: int) -> f
     finally:
         bubble.stop()
 
-def _profile_contentiousness(workload: Workload, reporter: rp.Reporter) -> float:
+def _profile_contentiousness(workload: Workload, reporter: Workload) -> float:
         workload.run_in_background()
         try:
             time.sleep(config.WORKLOAD_WARMUP_TIME)
@@ -101,7 +101,7 @@ def profile_sensitivity(workloads: List[Workload]) -> None:
     
 
 # Profiles the contentiousness of each workload and saves the results to a file. Returns the maximum contentiousness score across all workloads.
-def _profile_contentiousness_simple(workloads: List[Workload], reporter: rp.Reporter) -> None:
+def _profile_contentiousness_simple(workloads: List[Workload], reporter: Workload) -> None:
     contentiousness = {}
     max_contentiousness = 0
 
@@ -122,7 +122,7 @@ def _profile_contentiousness_simple(workloads: List[Workload], reporter: rp.Repo
     log(f"MaxContentiousness: {max_contentiousness}")
     return max_contentiousness
 
-def profile_contentiousness(workloads: List[Workload], reporter: rp.Reporter) -> None:
+def profile_contentiousness(workloads: List[Workload], reporter: Workload) -> None:
     if config.USE_SIMPLE_CONTENTIOUSNESS:
         _profile_contentiousness_simple(workloads, reporter)
     else:
@@ -130,7 +130,7 @@ def profile_contentiousness(workloads: List[Workload], reporter: rp.Reporter) ->
             profile_added_contentiousness(workload, reporter)
         draw_contentiousness()
 
-def profile_added_contentiousness(workload: Workload, reporter: rp.Reporter) -> None:
+def profile_added_contentiousness(workload: Workload, reporter: Workload) -> None:
 
     sizes = range(config.DIAL_START_MB, config.DIAL_END_MB - 1, config.DIAL_STEP_MB)
 
@@ -192,7 +192,7 @@ def profile_sensitivity_hpc(workload: Workload) -> None:
     path = SENSITIVITY_DIR / f"{name}_data.csv"
 
     with open(path, "w+") as f:
-        f.write(f"footprint_mb,time,LLC-loads,LLC-load-misses,LLC-store-misses,L1-dcache-load-misses,L1-icache-load-misses,cache-misses,dTLB-load-misses,LLC-miss-rate,CPI\n")
+        f.write(f"footprint_mb,time,LLC-loads,LLC-load-misses,LLC-stores,LLC-store-misses,L1-dcache-loads,L1-dcache-load-misses,L1-icache-load-misses,L1-dcache-stores,cache-misses,dTLB-load-misses,LLC-miss-rate,CPI\n")
 
         max_soi = config.NSOI
         interval = config.DIAL_RANGE_MB // max_soi
@@ -213,7 +213,9 @@ def profile_sensitivity_hpc(workload: Workload) -> None:
             if bubble is not None:
                 bubble.stop()
 
-            f.write(f"{size_mb},{result['time_elapsed']},{result['LLC-loads']},{result['LLC-load-misses']},\
-                    {result['LLC-store-misses']},{result['L1-dcache-load-misses']},{result['L1-icache-load-misses']},\
-                    {result['cache-misses']},{result['dTLB-load-misses']},{result['llc_miss_rate']},{result['cpi']}\n")
+            f.write(
+                f"{size_mb},{result['time_elapsed']},{result['LLC-loads']},{result['LLC-load-misses']},{result['LLC-stores']},"
+                f"{result['LLC-store-misses']},{result['L1-dcache-loads']},{result['L1-dcache-load-misses']},{result['L1-icache-load-misses']},{result['L1-dcache-stores']},"
+                f"{result['cache-misses']},{result['dTLB-load-misses']},{result['llc_miss_rate']},{result['cpi']}\n"
+            )
     

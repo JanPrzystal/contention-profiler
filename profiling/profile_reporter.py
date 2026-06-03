@@ -2,15 +2,14 @@ import os
 import time
 import signal
 
-import experiment_setup.reporter as rp
-
 from experiment_setup.log import log, DEBUG
 from experiment_setup.contention_synthesis import Bubble
 import config
+from experiment_setup.workload import Workload
 import profiling.contentiousness as cnt
 
 
-def profile_reporter_sensitivity(reporter: rp.Reporter, size_mb: int, nsoi: int = config.NSOI) -> float:
+def profile_reporter_sensitivity(reporter: Workload, size_mb: int, nsoi: int = config.NSOI) -> float:
     if size_mb == 0:
         log("Profiling in isolation")
         return reporter.profile()
@@ -25,7 +24,7 @@ def profile_reporter_sensitivity(reporter: rp.Reporter, size_mb: int, nsoi: int 
         bubble.stop()
 
 
-def _profile_reporter(reporter: rp.Reporter) -> None:
+def _profile_reporter(reporter: Workload) -> None:
     with open(f"{config.RESULTS_DIR}/reporter_sensitivity.csv", "w+") as f:
         f.write(f"footprint_mb,perf\n")
         
@@ -34,7 +33,7 @@ def _profile_reporter(reporter: rp.Reporter) -> None:
             f.write(f"{size_mb},{perf}\n")
             
 
-def _profile_reporter_progressive(reporter: rp.Reporter) -> None:
+def _profile_reporter_progressive(reporter: Workload) -> None:
     with open(f"{config.RESULTS_DIR}/reporter_sensitivity.csv", "w+") as f:
         f.write(f"footprint_mb,perf\n")
 
@@ -53,14 +52,14 @@ def _profile_reporter_progressive(reporter: rp.Reporter) -> None:
             perf = profile_reporter_sensitivity(reporter, size_mb, nsoi)
             f.write(f"{size_mb},{perf}\n")
 
-def profile_reporter(reporter: rp.Reporter) -> None:
+def profile_reporter(reporter: Workload) -> None:
     if config.PROGRESSIVE_PROFILING:
         _profile_reporter_progressive(reporter)
     else:
         _profile_reporter(reporter)
 
 
-def profile_reporter_contentiousness(reporter: rp.Reporter) -> float:
+def profile_reporter_contentiousness(reporter: Workload) -> float:
     result = 0.0
 
     with open(f"{config.RESULTS_DIR}/reporter_contentiousness.csv", "a+") as f:

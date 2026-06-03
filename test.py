@@ -154,9 +154,8 @@ def test_added_contentiousness():
 
 def test_hpc_spec():
     config.USE_HPC = True
-    app = spec.SpecWorkload("649.fotonik3d_s", "train")
 
-    profile_workload.profile_sensitivity([app])
+    profile_workload.profile_sensitivity(spec.WORKLOADS)
 
     plot_metrics("649_fotonik3d_s_data.csv")
 
@@ -199,6 +198,7 @@ if __name__ == "__main__":
     config.DIAL_RANGE_MB = 112
 
     config.PROGRESSIVE_PROFILING = True
+    config.NSOI = 7
 
     # test_soi_additiveness()
 
@@ -206,9 +206,9 @@ if __name__ == "__main__":
 
     # test_added_contentiousness()
 
-    test_hpc_reporter()
+    # test_hpc_reporter()
 
-    # test_hpc_spec()
+    test_hpc_spec()
 
     # test_hpc_soi()
 

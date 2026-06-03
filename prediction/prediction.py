@@ -135,9 +135,9 @@ def predict_performance(applications: List[Workload]) -> dict[int, List[Predicti
     
     for app in applications:
         log(f"Forming predictions for {app.name}")
-        predictions = _predict_app(app, applications)
+        prediction = _predict_app(app, applications)
 
-        for k, values in predictions.items():
+        for k, values in prediction.items():
             predictions[k].extend(values)
 
     return predictions
