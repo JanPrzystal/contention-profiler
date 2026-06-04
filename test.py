@@ -208,7 +208,7 @@ if __name__ == "__main__":
 
     # test_hpc_reporter()
 
-    test_hpc_spec()
+    # test_hpc_spec()
 
     # test_hpc_soi()
 
@@ -218,6 +218,9 @@ if __name__ == "__main__":
 
     # log (stats)
 
+    reporter = rp.AveragingReporter("alternating")
+    cnt = profile_workload.profile_contentiousness([spec.SpecWorkload("657.xz_s", "train")], reporter)
+    log(f"Contentiousness: {cnt}", logging.INFO)
 
     CpuFreqPolicy.reset_governor()
 

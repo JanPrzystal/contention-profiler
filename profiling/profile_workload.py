@@ -101,7 +101,7 @@ def profile_sensitivity(workloads: List[Workload]) -> None:
     
 
 # Profiles the contentiousness of each workload and saves the results to a file. Returns the maximum contentiousness score across all workloads.
-def _profile_contentiousness_simple(workloads: List[Workload], reporter: Workload) -> None:
+def _profile_contentiousness_simple(workloads: List[Workload], reporter: Workload) -> float:
     contentiousness = {}
     max_contentiousness = 0
 
@@ -109,9 +109,13 @@ def _profile_contentiousness_simple(workloads: List[Workload], reporter: Workloa
         if not workload.name:
             log(f"Workload {workload} has no name, skipping contentiousness profiling", WARNING)
             continue
-        time.sleep(config.WORKLOAD_WIND_DOWN_TIME)
 
-        contentiousness[workload.name] = _profile_contentiousness(workload, reporter)
+        avg = 0.0
+        for _ in range(config.PROFILING_REPETITIONS):
+            avg += _profile_contentiousness(workload, reporter)
+            time.sleep(config.WORKLOAD_WIND_DOWN_TIME)
+
+        contentiousness[workload.name] = avg / config.PROFILING_REPETITIONS
         log(f"{workload.name} contentiousness: {contentiousness[workload.name]}")
         # Find biggest contentiousness score
         if contentiousness[workload.name] > max_contentiousness:
@@ -124,7 +128,7 @@ def _profile_contentiousness_simple(workloads: List[Workload], reporter: Workloa
 
 def profile_contentiousness(workloads: List[Workload], reporter: Workload) -> None:
     if config.USE_SIMPLE_CONTENTIOUSNESS:
-        _profile_contentiousness_simple(workloads, reporter)
+        _ = _profile_contentiousness_simple(workloads, reporter)
     else:
         for workload in workloads:
             profile_added_contentiousness(workload, reporter)

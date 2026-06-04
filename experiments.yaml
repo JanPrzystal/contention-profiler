@@ -31,7 +31,7 @@ experiments:
     deployment: multi
     data_size: train
     root: true
-    profiling_repetitions: 1
+    profiling_repetitions: 3
     use_interpolation: true
     progressive_profiling: true
     validations: 140

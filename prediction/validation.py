@@ -161,9 +161,10 @@ def validate_predictions(predictions: dict[int, List[Prediction]], workloads: Li
 
     sampled_predictions = choose_predictions(predictions, config.VALIDATIONS)
 
-    log(f"\n".join(str(p) for p in sampled_predictions), DEBUG)
-
+    counter = 0
     for pred in sampled_predictions:
+        counter += 1
+        log(f"Validating prediction {counter}/{len(sampled_predictions)}")
         validated_predictions.append(validate_prediction(pred, workloads))
 
     return validated_predictions
