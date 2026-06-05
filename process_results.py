@@ -43,13 +43,14 @@ def handle_validation_csv(file):
     median = df["error"].median()
     # df_sorted = df.sort_values(by="abs_error")  
     abs_median = df["abs_error"].median()
-
+    abs_95 = df["abs_error"].quantile(0.95)
 
     return {
         "min_error": {"app": min_row["app"], "competitors": min_row["competitor"], "error": min_row["error"].item()},
         "max_error": {"app": max_row["app"], "competitors": max_row["competitor"], "error": max_row["error"].item()},
         "median": median.item(),
-        "abs_median": abs_median.item()
+        "abs_median": abs_median.item(),
+        "abs_95": abs_95.item()
         }
 
 
@@ -77,6 +78,7 @@ def process_zip_files(zip_paths):
                         result['max_error'] = validation_results["max_error"]["error"]
                         result['median_error'] = validation_results["median"]
                         result['abs_median_error'] = validation_results["abs_median"]
+                        result['abs_95_error'] = validation_results["abs_95"]
                 elif name.endswith("timings.txt"):
                     with z.open(name) as f:
                         result["timings"] = handle_timing(f)
@@ -92,7 +94,12 @@ def process_zip_files(zip_paths):
         max_error = result['max_error']
         min_error = result['min_error']
         min_error = abs(min_error)
-        errors_data[result['name']] = [max(min_error, max_error), result['abs_median_error'], abs(min_error) + abs(max_error)]
+        errors_data[result['name']] = [
+            max(min_error, max_error),
+            result['abs_95_error'],
+            result['abs_median_error'],
+            abs(min_error) + abs(max_error)
+        ]
 
         # Get time data
         times = result["timings"]
@@ -104,7 +111,10 @@ def process_zip_files(zip_paths):
 if __name__ == "__main__":
     setup_logging()
     zip_paths = sys.argv[1:] if len(sys.argv) > 1 else zip_paths
-    # errors_data, time_data = process_zip_files(zip_paths)
+    errors_data, time_data = process_zip_files(zip_paths)
+
+    draw_errors(errors_data)
+    draw_times(time_data)
 
     pd.set_option('display.max_columns', None)
     pd.set_option('display.max_colwidth', None)

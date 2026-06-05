@@ -18,7 +18,7 @@ from datetime import datetime
 from experiment_setup.cpu_freq import CpuFreqPolicy
 from analysis.draw_contentiousness import draw_contentiousness
 
-from experiment_setup.log import log
+from experiment_setup.log import log, DEBUG
 
 
 @dataclass
@@ -176,6 +176,10 @@ def write_description_file(experiment: Experiment) -> None:
         f.write(f"Progressive Profiling: {experiment.progressive_profiling}\n")
         f.write(f"Interpolation: {experiment.use_interpolation}\n")
         # f.write(f"")
+
+        f.flush()
+
+    log(f"Wrote description file for experiment {experiment.name}, DEBUG")
 
 def spec_experiment(experiment: Experiment):
     setup_config(experiment)

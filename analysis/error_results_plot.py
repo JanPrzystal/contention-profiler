@@ -20,29 +20,26 @@ data = {
 }
 
 legend_labels = [
-    # "Interpolation better", 
-    # "No interpolation better", 
-    # "Equal"
     "Max Absolute Error", 
-    # "Absolute Mean Error", 
-    "Mean Absolute Error", 
+    "95th Percentile Absolute Error",
+    "Median Absolute Error", 
     "Range [pp]"
     ]
 
 def draw_errors(data):
     labels = list(data.keys())
-    values = np.array(list(data.values()))  # shape (n_groups, 3)
+    values = np.array(list(data.values()))  # shape (n_groups, n_metrics)
 
     x = np.arange(len(labels))
-    width = 0.25
+    width = 0.18
 
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(12, 6))
 
     for i in range(values.shape[1]):
         plt.bar(x + i * width, values[:, i], width, label=legend_labels[i])
 
     plt.axhline(0, color='black', linewidth=1)
-    plt.xticks(x + width, labels)
+    plt.xticks(x + width * (values.shape[1] - 1) / 2, labels)
     plt.ylabel("Error (%)")
     plt.legend()
     plt.tight_layout()

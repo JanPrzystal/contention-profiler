@@ -46,15 +46,11 @@ MDS_SERVICES = ["datatest", "dataforwarding", "datageneration"]
 #     conduct_experiment(reporter, applications, competitors)
 
 if __name__ == "__main__":
-    setup_logging()
-
     resume = False if len(sys.argv) < 2 else True if sys.argv[1] == "resume" else False
     
     experiments = experiment.parse_config()
 
     for exp in experiments:
-        log(f"Starting experiment: {exp.name}")
-
         if not resume:
         # Clear results directory
             try:
@@ -62,6 +58,10 @@ if __name__ == "__main__":
             except FileNotFoundError:
                 pass
             os.makedirs(config.RESULTS_DIR, exist_ok=True)
+        
+        setup_logging()
+
+        log(f"Starting experiment: {exp.name}")
 
         experiment.spec_experiment(exp)
 
