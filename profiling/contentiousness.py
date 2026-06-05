@@ -100,7 +100,7 @@ def read_contentiousness(force_update=True) -> dict[str, float]:
 
 def read_application_contentiousness(name: str) -> dict[int, float]:
     res = {}
-    path = f"{config.RESULTS_DIR}/contentiousness/{name.replace('.', '_')}_data.csv"
+    path = f"{config.RESULTS_DIR}/contentiousness/{name.replace('.', '_')}_contentiousness.csv"
     with open(path, 'r') as f:
         reader = csv.reader(f, delimiter=",")
         next(reader)

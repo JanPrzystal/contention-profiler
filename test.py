@@ -182,6 +182,22 @@ def test_hpc_soi():
 
     plot_metrics("bubble_rand_data.csv")
 
+def test_equilibrium_prediction():
+    bench = [spec.deepsjeng, spec.leela, spec.bwaves, spec.cam4, spec.nab, spec.fotonik3d]
+    app = spec.lbm
+
+    config.USE_SIMPLE_CONTENTIOUSNESS = True
+
+    pred_simple = prediction.predict_app_performance(app, bench)
+
+    log(f"Prediction with simple contentiousness {pred_simple}")
+
+    config.USE_SIMPLE_CONTENTIOUSNESS = False
+
+    pred_adv = prediction.predict_app_performance(app, bench)
+
+    log(f"Prediction with advanced contentiousness {pred_adv}")
+
 
 if __name__ == "__main__":
 
@@ -199,6 +215,8 @@ if __name__ == "__main__":
 
     config.PROGRESSIVE_PROFILING = True
     config.NSOI = 7
+
+    test_equilibrium_prediction()
 
     # test_soi_additiveness()
 
@@ -218,9 +236,9 @@ if __name__ == "__main__":
 
     # log (stats)
 
-    reporter = rp.AveragingReporter("alternating")
-    cnt = profile_workload.profile_contentiousness([spec.SpecWorkload("657.xz_s", "train")], reporter)
-    log(f"Contentiousness: {cnt}", logging.INFO)
+    # reporter = rp.AveragingReporter("alternating")
+    # cnt = profile_workload.profile_contentiousness([spec.SpecWorkload("657.xz_s", "train")], reporter)
+    # log(f"Contentiousness: {cnt}", logging.INFO)
 
     CpuFreqPolicy.reset_governor()
 

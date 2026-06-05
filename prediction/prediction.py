@@ -1,7 +1,7 @@
 from typing import List, Dict
 from experiment_setup.workload import Workload
 from collections import namedtuple
-from profiling.contentiousness import read_contentiousness
+from profiling.contentiousness import read_application_contentiousness, read_contentiousness
 
 from scipy.interpolate import PchipInterpolator
 
@@ -46,6 +46,20 @@ def _form_pair_prediction(
     return Prediction(app=app, competitor=competitor, perf=sensitivity[app](0) / prediction, contentiousness=contention)
 
 
+def _form_equilibrium(applications: List[str], contention_scores: dict[str, PchipInterpolator]) -> dict[str, float]:
+    # TODO implement equilibrium calculation
+    equilibrium = {}
+    total_contention = 0.0
+    
+    for i in range(config.EQUILIBRIUM_ITERATIONS):
+        for app in applications:
+            equilibrium[app] = contention_scores[app](total_contention)
+        total_contention = sum(equilibrium.values())
+        
+        log(f"Iteration {i}: Equilibrium contention scores: {equilibrium}, total contention: {total_contention}", DEBUG)
+
+    return equilibrium
+
 def predict_total_contention(competitors: List[Workload]) -> float:
     if config.USE_SIMPLE_CONTENTIOUSNESS:
         contentiousness = _get_contentiousness()
@@ -55,8 +69,18 @@ def predict_total_contention(competitors: List[Workload]) -> float:
         return total_contention
     
     else:
-        # TODO calculate the contentiousness equilibrium
-        raise NotImplementedError() 
+        contention_interpolators = {}
+        for comp in competitors:
+            contentiousness_data = read_application_contentiousness(comp.name)
+            interpolator = PchipInterpolator(list(contentiousness_data.keys()), list(contentiousness_data.values()))
+            contention_interpolators[comp.name] = interpolator
+        
+        final_scores = _form_equilibrium([comp.name for comp in competitors], contention_interpolators)
+
+        log(f"Predicted equilibrium contention scores: {final_scores}")
+
+        return sum(final_scores.values())
+
 
 def predict_app_performance(application: Workload, competitors: List[Workload]) -> Prediction:
     sensitivity = get_sensitivity(application.name)
