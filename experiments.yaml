@@ -1,6 +1,6 @@
 experiments:
 
-  - name: prog7
+  - name: prog7_advc
     benchmarks:
     - 600.perlbench_s
     - 602.gcc_s

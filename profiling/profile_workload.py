@@ -156,7 +156,7 @@ def profile_added_contentiousness(workload: Workload, reporter: Workload) -> Non
         bubble = Bubble(size_mb, nsoi)
         bubble.run_in_background()
         try:
-            result = _profile_contentiousness_simple(workload, reporter) - size_mb
+            result = _profile_contentiousness_simple([workload], reporter) - size_mb
         finally:
             bubble.stop()
 

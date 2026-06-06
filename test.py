@@ -194,6 +194,8 @@ def test_equilibrium_prediction():
 
     config.USE_SIMPLE_CONTENTIOUSNESS = False
 
+    prediction.setup_contentiousness_data(bench)
+
     pred_adv = prediction.predict_app_performance(app, bench)
 
     log(f"Prediction with advanced contentiousness {pred_adv}")

@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Iterable
 from experiment_setup.workload import Workload
 from collections import namedtuple
 from profiling.contentiousness import read_application_contentiousness, read_contentiousness
@@ -18,6 +18,9 @@ from collections import defaultdict
 
 
 Prediction = namedtuple("Prediction", ["app", "competitor", "perf", "contentiousness"])
+
+equilibrium_store: dict[tuple[str, ...], dict[str, float]] = {}
+contentiousness_data: dict[str, PchipInterpolator] = {}
 
 def _get_contentiousness() -> dict[str, float]:
     return read_contentiousness(force_update=False)
@@ -46,21 +49,30 @@ def _form_pair_prediction(
     return Prediction(app=app, competitor=competitor, perf=sensitivity[app](0) / prediction, contentiousness=contention)
 
 
-def _form_equilibrium(applications: List[str], contention_scores: dict[str, PchipInterpolator]) -> dict[str, float]:
-    # TODO implement equilibrium calculation
+def _form_equilibrium(applications: Iterable[str], contention_scores: dict[str, PchipInterpolator]) -> dict[str, float]:
+    global equilibrium_store
+    global store_hits
+    key = tuple(applications)
+
+    if key in equilibrium_store:
+        return equilibrium_store[key]
+
     equilibrium = {}
     total_contention = 0.0
     
     for i in range(config.EQUILIBRIUM_ITERATIONS):
         for app in applications:
-            equilibrium[app] = contention_scores[app](total_contention)
+            equilibrium[app] = float(contention_scores[app](total_contention))
         total_contention = sum(equilibrium.values())
         
         log(f"Iteration {i}: Equilibrium contention scores: {equilibrium}, total contention: {total_contention}", DEBUG)
 
+    equilibrium_store[key] = equilibrium
+
     return equilibrium
 
 def predict_total_contention(competitors: List[Workload]) -> float:
+    global contentiousness_data
     if config.USE_SIMPLE_CONTENTIOUSNESS:
         contentiousness = _get_contentiousness()
 
@@ -69,15 +81,15 @@ def predict_total_contention(competitors: List[Workload]) -> float:
         return total_contention
     
     else:
-        contention_interpolators = {}
-        for comp in competitors:
-            contentiousness_data = read_application_contentiousness(comp.name)
-            interpolator = PchipInterpolator(list(contentiousness_data.keys()), list(contentiousness_data.values()))
-            contention_interpolators[comp.name] = interpolator
+        # contention_interpolators = {}
+        competitor_names = [comp.name for comp in competitors]
+        # for comp in competitors:
+        #     interpolator = contentiousness_data.get(comp.name)
+        #     contention_interpolators[comp.name] = interpolator
         
-        final_scores = _form_equilibrium([comp.name for comp in competitors], contention_interpolators)
+        final_scores = _form_equilibrium(competitor_names, contentiousness_data)
 
-        log(f"Predicted equilibrium contention scores: {final_scores}")
+        log(f"Predicted equilibrium contention scores: {final_scores}", DEBUG)
 
         return sum(final_scores.values())
 
@@ -141,7 +153,15 @@ def _predict_app(app, all_apps):
 
     return result
 
+def setup_contentiousness_data(applications: List[Workload]) -> None:
+    global contentiousness_data
+    for app in applications:
+        cnt = read_application_contentiousness(app.name)
+        contentiousness_data[app.name] = PchipInterpolator(list(cnt.keys()), list(cnt.values()))
+
 def predict_performance(applications: List[Workload]) -> dict[int, List[Prediction]]:
+    global equilibrium_store
+    global contentiousness_data
     predictions = defaultdict(list)
 
     # with ProcessPoolExecutor() as executor:
@@ -156,6 +176,8 @@ def predict_performance(applications: List[Workload]) -> dict[int, List[Predicti
     #             predictions[k].extend(values)
     
     # return dict(predictions)
+
+    setup_contentiousness_data(applications)
     
     for app in applications:
         log(f"Forming predictions for {app.name}")
@@ -163,13 +185,20 @@ def predict_performance(applications: List[Workload]) -> dict[int, List[Predicti
 
         for k, values in prediction.items():
             predictions[k].extend(values)
+        
+
+    #clear the stored contentiousness values after predictions are done
+    contentiousness_data.clear()
+    equilibrium_store.clear()
 
     return predictions
 
 def _predict_with_competitors(application: Workload, competitors: List[Workload], n_competitors: int) -> List[Prediction]:
     predictions = []
-    for competitors in combinations(competitors, n_competitors):
-        predictions.append(prediction.predict_app_performance(application, competitors))
+    competitors.sort(key=lambda comp: comp.name)
+
+    for combination in combinations(competitors, n_competitors):
+        predictions.append(prediction.predict_app_performance(application, combination))
     
     return predictions
 
