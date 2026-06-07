@@ -75,13 +75,20 @@ def _profile_sensitivity_dial(workload: Workload, size_mb: int, nproc: int) -> f
         bubble.stop()
 
 def _profile_contentiousness(workload: Workload, reporter: Workload) -> float:
+        avg = 0.0
         workload.run_in_background()
+        time.sleep(config.WORKLOAD_WARMUP_TIME)
+
         try:
-            time.sleep(config.WORKLOAD_WARMUP_TIME)
-            score = reporter.profile()
-            return cnt.contentiousness_lookup(score)
+            for _ in range(config.PROFILING_REPETITIONS):
+                avg += cnt.contentiousness_lookup(reporter.profile())
+                time.sleep(config.WORKLOAD_WIND_DOWN_TIME)
+
         finally:
             workload.stop()
+
+        return avg / config.PROFILING_REPETITIONS
+
 
 def _save_contentiousness_data(data: dict[str,float]) -> None:
     csv_data = {"application": list(data.keys()), "contentiousness": list(data.values())}
@@ -110,13 +117,11 @@ def _profile_contentiousness_simple(workloads: List[Workload], reporter: Workloa
             log(f"Workload {workload} has no name, skipping contentiousness profiling", WARNING)
             continue
 
-        avg = 0.0
-        for _ in range(config.PROFILING_REPETITIONS):
-            avg += _profile_contentiousness(workload, reporter)
-            time.sleep(config.WORKLOAD_WIND_DOWN_TIME)
+        score = _profile_contentiousness(workload, reporter)
 
-        contentiousness[workload.name] = avg / config.PROFILING_REPETITIONS
+        contentiousness[workload.name] = score
         log(f"{workload.name} contentiousness: {contentiousness[workload.name]}")
+
         # Find biggest contentiousness score
         if contentiousness[workload.name] > max_contentiousness:
             max_contentiousness = contentiousness[workload.name]
@@ -145,20 +150,21 @@ def profile_added_contentiousness(workload: Workload, reporter: Workload) -> Non
 
         if size_mb == 0:
             log(f"Profiling contentiousness of {workload.name}")
-            result = _profile_contentiousness_simple([workload], reporter)
+            result = _profile_contentiousness(workload, reporter)
 
-        nsoi = config.NSOI
-        if config.PROGRESSIVE_PROFILING:
-            nsoi = max(size_mb // (config.DIAL_RANGE_MB // config.NSOI), 1)
+        else:
+            nsoi = config.NSOI
+            if config.PROGRESSIVE_PROFILING:
+                nsoi = max(size_mb // (config.DIAL_RANGE_MB // config.NSOI), 1)
 
-        log(f"Profiling {workload.name} with {nsoi} SoI size {size_mb}MB")
-        
-        bubble = Bubble(size_mb, nsoi)
-        bubble.run_in_background()
-        try:
-            result = _profile_contentiousness_simple([workload], reporter) - size_mb
-        finally:
-            bubble.stop()
+            log(f"Profiling {workload.name} with {nsoi} SoI size {size_mb}MB")
+            
+            bubble = Bubble(size_mb, nsoi)
+            bubble.run_in_background()
+            try:
+                result = _profile_contentiousness(workload, reporter) - size_mb
+            finally:
+                bubble.stop()
 
         contentiousness[size_mb] = result
 

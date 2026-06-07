@@ -137,13 +137,10 @@ def test_soi_additiveness():
 
 def test_added_contentiousness():
     log("testing added contentiousness with progressive profiling", logging.INFO)
-    config.DIAL_END_MB = 112
-    config.DIAL_RANGE_MB = 112
-    config.NSOI = 7
     config.PROGRESSIVE_PROFILING = True
 
     reporter = rp.AveragingReporter("alternating")
-    # reporter = rp.MembenchReporter("../membench/membench")
+    # reporter = rp.MembenchReporter("./membench/membench")
 
     bench = [spec.SpecWorkload("619.lbm_s", "train"), spec.SpecWorkload("600.perlbench_s", "train"), spec.SpecWorkload("649.fotonik3d_s", "train"), spec.SpecWorkload("654.roms_s", "train")]
 
@@ -224,7 +221,7 @@ if __name__ == "__main__":
 
     # test_combined_contentiousness()
 
-    # test_added_contentiousness()
+    test_added_contentiousness()
 
     # test_hpc_reporter()
 
