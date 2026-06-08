@@ -1,3 +1,4 @@
+from cmath import isnan
 from typing import List, Dict, Iterable
 from experiment_setup.workload import Workload
 from collections import namedtuple
@@ -10,7 +11,7 @@ from itertools import combinations
 import csv
 import prediction.prediction as prediction
 
-from experiment_setup.log import log, setup_logging, DEBUG
+from experiment_setup.log import WARNING, log, setup_logging, DEBUG
 
 from concurrent.futures import ProcessPoolExecutor
 from itertools import repeat
@@ -35,7 +36,7 @@ def get_sensitivity(name: str) -> PchipInterpolator:
             dial, perf = line.split(",")
             res[float(dial)] = float(perf)
 
-    return PchipInterpolator(list(res.keys()), list(res.values()))
+    return PchipInterpolator(list(res.keys()), list(res.values()), extrapolate=True)
 
 def _form_pair_prediction(
     app: str,
@@ -65,6 +66,10 @@ def _form_equilibrium(applications: Iterable[str], contention_scores: dict[str, 
             equilibrium[app] = float(contention_scores[app](total_contention))
         total_contention = sum(equilibrium.values())
         
+        if isnan(total_contention):
+            log(f"NaN encountered in equilibrium calculation for {applications} with equilibrium {equilibrium}", WARNING)
+            break
+
         log(f"Iteration {i}: Equilibrium contention scores: {equilibrium}, total contention: {total_contention}", DEBUG)
 
     equilibrium_store[key] = equilibrium

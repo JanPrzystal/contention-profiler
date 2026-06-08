@@ -109,11 +109,13 @@ class AveragingReporter(Workload):
         self.proc = Process(subprocess, core)
 
     def stop(self) -> None:
-        stop_process(self.proc)
+        if self.proc is not None:
+            stop_process(self.proc)
 
 
     def _process_output(self, output: dict[str, float]) -> float:
         try:
+            log(f"Range of reporter output: {(max(output.values()) -min(output.values())) / 1_000_000.0}", DEBUG)
             return sum(output.values()) / len(output) / 1_000_000.0
         except ZeroDivisionError:
             log(f"Division by zero: {output}", WARNING)
@@ -127,16 +129,20 @@ class MembenchReporter(Workload):
         if self.script_file is None:
             raise ValueError(f"Invalid script file")
 
-    def profile(self) -> float:
-        repetitions: int = config.REPORTER_REPETITIONS
-        core = config.REPORTER_CORES
+    def get_command(self, background: bool = False) -> List[str]:
+        repetitions: int = config.REPORTER_REPETITIONS if not background else 1000
 
-        cmd = [
+        return [
             f"{self.script_file}",
             "--max-size=64M", 
             "--num-threads=1",
-            "--iterations=3",
-        ]
+            f"--iterations={repetitions}",
+            ]
+    
+    def profile(self) -> float:
+        core = config.REPORTER_CORES
+
+        cmd = self.get_command(False)
         
         cmd = ["taskset", "-c", f"{core}"] + cmd
 
@@ -164,20 +170,21 @@ class MembenchReporter(Workload):
     
         return self._process_output(output)
 
-    # def run_background(self, cores: str):
-    #     cmd = [
-    #         f"{self.script_file}",
-    #         "--max-size=64M", 
-    #         "--num-threads=1",
-    #         "--iterations=5",
-    #     ]
-        
-    #     if config.USE_ROOT_PRIORITY:
-    #         cmd = config.ROOT_TASK_CMD + cmd
+    def run_in_background(self):
+        core = background_core_dispenser.acquire()
 
-    #     reporter = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        cmd = self.get_command(True)
         
-    #     return reporter
+        if config.USE_ROOT_PRIORITY:
+            cmd = config.ROOT_TASK_CMD + cmd
+
+        reporter = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        
+        self.proc = Process(reporter, core)
+    
+    def stop(self) -> None:
+        if self.proc is not None:
+            stop_process(self.proc)
     
 
     def _process_output(self, output: dict[str, float]) -> float:

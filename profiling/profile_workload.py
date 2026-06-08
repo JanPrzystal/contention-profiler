@@ -16,7 +16,7 @@ from experiment_setup.workload import Workload
 import profiling.perf as perf
 import profiling.contentiousness as cnt
 
-from experiment_setup.log import log, WARNING
+from experiment_setup.log import DEBUG, log, WARNING
 
 SENSITIVITY_DIR = Path(config.RESULTS_DIR) / 'sensitivity'
 
@@ -79,13 +79,22 @@ def _profile_contentiousness(workload: Workload, reporter: Workload) -> float:
         workload.run_in_background()
         time.sleep(config.WORKLOAD_WARMUP_TIME)
 
+        max = 0.0
+        min = 0.0
         try:
             for _ in range(config.PROFILING_REPETITIONS):
-                avg += cnt.contentiousness_lookup(reporter.profile())
+                score = cnt.contentiousness_lookup(reporter.profile())
+                avg += score
+                if score > max:
+                    max = score
+                if score < min or min == 0.0:
+                    min = score
                 time.sleep(config.WORKLOAD_WIND_DOWN_TIME)
 
         finally:
             workload.stop()
+
+        log(f"Range of contentiousness scores for {workload.name}: {max - min}", DEBUG)
 
         return avg / config.PROFILING_REPETITIONS
 
