@@ -8,15 +8,8 @@ sys.path.append(str(parent_dir))
 
 import config
 
-data = {    
-    #c6
-    # "4MB interval (no cactu)": [18.27, 2.13, 18.27 + 15.54],
-    # "8MB interval (no cactu)": [23.94, 2.11, 23.94 + 13.79],
-    # "16MB interval": [18.46, 1.95, 18.46 + 13.47],
-    "b8 4MB interval": [16.4, 1.5, 16.4 + 15.8],
-    "b8 16MB interpolation": [23.0, 3.1, 23.0 + 21.4],
-    "c6 4MB interval": [23.9, 2.0, 23.9 + 13.4],
-    "c6 16MB interpolation": [21.8, 2.3, 21.8 + 12.2], #99th 16.4
+global_data = {    
+    "Bruno baseline": [16.2, 7.17, 0.98, 16.2 + 10.4],
 }
 
 legend_labels = [
@@ -26,17 +19,33 @@ legend_labels = [
     "Range [pp]"
     ]
 
-def draw_errors(data):
+def draw_errors(data: dict[str, list[float]]) -> None:
+    for key, values in global_data.items():
+        data[key] = values
+    
     labels = list(data.keys())
     values = np.array(list(data.values()))  # shape (n_groups, n_metrics)
 
     x = np.arange(len(labels))
     width = 0.18
 
-    plt.figure(figsize=(12, 6))
+    plt.figure(figsize=(4 + 3*len(data), 6))
 
     for i in range(values.shape[1]):
-        plt.bar(x + i * width, values[:, i], width, label=legend_labels[i])
+        rects = plt.bar(x + i * width, values[:, i], width, label=legend_labels[i])
+
+        # Add numeric labels on top of each bar
+        for rect in rects:
+            height = rect.get_height()
+            plt.annotate(
+                f"{height:.2f}%",
+                xy=(rect.get_x() + rect.get_width() / 2, height),
+                xytext=(0, 3),  # 3 points vertical offset
+                textcoords="offset points",
+                ha="center",
+                va="bottom",
+                fontsize=8,
+            )
 
     plt.axhline(0, color='black', linewidth=1)
     plt.xticks(x + width * (values.shape[1] - 1) / 2, labels)

@@ -11,10 +11,10 @@
 #include <benchmark/benchmark.h>
 #include "../soi/xorshift.h"
 
-#define FOOTPRINT_SIZE 8388608 // 64MiB
+#define FOOTPRINT_SIZE 8388608 // 64MiB (8MiB*8)
 #define STREAM_SIZE (FOOTPRINT_SIZE / 2)
 #define RAND_SIZE (FOOTPRINT_SIZE / 2)
-#define PADDING_SIZE 32768 * 4 // 128KiB
+#define PADDING_SIZE 32768 // 256KiB (32KiB*8)
 
 #define STRIDE 4096
 
@@ -26,7 +26,6 @@ static uint32_t seed = 0xACE1u;
 #define r (xorshift32(&seed) % RAND_SIZE)
 
 void streaming_access(benchmark::State& state) {
-    //std::cout << "STREAM thread: " << state.thread_index() << " executed on CPU: " << sched_getcpu() << std::endl;
     for (auto _ : state) {
         volatile uint64_t *mid = bw_data + PADDING_SIZE;
         benchmark::DoNotOptimize(mid);
@@ -49,7 +48,6 @@ void streaming_access(benchmark::State& state) {
 }
 
 void random_access(benchmark::State& state) {
-    //std::cout << "RAND thread: " << state.thread_index() << " executed on CPU: " << sched_getcpu() << std::endl;
     for (auto _ : state) {
         for (int i = 0; i < RAND_SIZE; i++) {
             dump[0] += data_chunk[r]++;

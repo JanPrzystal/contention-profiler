@@ -43,6 +43,7 @@ class Experiment:
     use_interpolation: bool
     progressive_profiling: bool
     validations: int
+    simple_contentiousness: bool
 
 
 def parse_config():
@@ -66,7 +67,8 @@ def parse_config():
             profiling_repetitions=exp["profiling_repetitions"],
             use_interpolation=exp["use_interpolation"],
             progressive_profiling=exp["progressive_profiling"],
-            validations=exp["validations"]
+            validations=exp["validations"],
+            simple_contentiousness=exp["simple_contentiousness"],
         )
         experiments.append(experiment)
         log(exp)
@@ -96,8 +98,11 @@ def conduct_experiment(reporter: Workload, applications: List[Workload], pairwis
         profile_reporter.profile_reporter(reporter)
         treporter = time() - tstart
 
-        profile_workload.profile_contentiousness(applications, reporter)
+        max_contentiousness = profile_workload.profile_contentiousness(applications, reporter)
         tcontentiousness = time() - tstart - treporter
+        if max_contentiousness is not None:
+            log(f"Max contentiousness across all workloads: {max_contentiousness}")
+            config.DIAL_END_MB = int(max_contentiousness) + 1
 
         profile_workload.profile_sensitivity(applications)
         tsensitivity = time() - tstart - treporter - tcontentiousness
@@ -149,6 +154,7 @@ def setup_config(experiment: Experiment) -> None:
     config.USE_INTERPOLATION = experiment.use_interpolation
     config.PROGRESSIVE_PROFILING = experiment.progressive_profiling
     config.VALIDATIONS = experiment.validations
+    config.USE_SIMPLE_CONTENTIOUSNESS = experiment.simple_contentiousness
 
 def setup_reporter(experiment: Experiment) -> Workload:
     reporter = None
@@ -175,7 +181,7 @@ def write_description_file(experiment: Experiment) -> None:
         f.write(f"Root Priority: {experiment.root}\n")
         f.write(f"Progressive Profiling: {experiment.progressive_profiling}\n")
         f.write(f"Interpolation: {experiment.use_interpolation}\n")
-        # f.write(f"")
+        f.write(f"Simple Contentiousness: {experiment.simple_contentiousness}\n")
 
         f.flush()
 

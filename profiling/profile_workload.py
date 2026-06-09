@@ -94,7 +94,7 @@ def _profile_contentiousness(workload: Workload, reporter: Workload) -> float:
         finally:
             workload.stop()
 
-        log(f"Range of contentiousness scores for {workload.name}: {max - min}", DEBUG)
+        log(f"Range of contentiousness scores for {workload.name}: {max - min}, min: {min}, max: {max}", DEBUG)
 
         return avg / config.PROFILING_REPETITIONS
 
@@ -140,13 +140,14 @@ def _profile_contentiousness_simple(workloads: List[Workload], reporter: Workloa
     log(f"MaxContentiousness: {max_contentiousness}")
     return max_contentiousness
 
-def profile_contentiousness(workloads: List[Workload], reporter: Workload) -> None:
+def profile_contentiousness(workloads: List[Workload], reporter: Workload) -> float | None:
     if config.USE_SIMPLE_CONTENTIOUSNESS:
-        _ = _profile_contentiousness_simple(workloads, reporter)
+        return _profile_contentiousness_simple(workloads, reporter)
     else:
         for workload in workloads:
             profile_added_contentiousness(workload, reporter)
         draw_contentiousness()
+        return None
 
 def profile_added_contentiousness(workload: Workload, reporter: Workload) -> None:
 

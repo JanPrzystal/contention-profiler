@@ -4,7 +4,7 @@ import shutil
 import config
 import analysis.draw_sensitivity as draw_sensitivity
 import analysis.draw_validation as draw_validation
-from experiment_setup.log import log, setup_logging
+from experiment_setup.log import DEBUG, log, setup_logging
 
 import subprocess
 from py_containters.mds import MdsFactory
@@ -59,7 +59,7 @@ if __name__ == "__main__":
                 pass
             os.makedirs(config.RESULTS_DIR, exist_ok=True)
         
-        setup_logging()
+        setup_logging(DEBUG)
 
         log(f"Starting experiment: {exp.name}")
 
@@ -71,6 +71,9 @@ if __name__ == "__main__":
         subprocess.run(["zip", "-r", f"results_{exp.name}.zip", config.RESULTS_DIR], check=True)
 
         log(f"Experiment {exp.name} completed\n\n")
+
+        # if config.USE_ROOT_PRIORITY:
+            # subprocess.run(["sudo", "./clean_spec.sh"], check=False)
 
     CpuFreqPolicy.reset_governor()
     

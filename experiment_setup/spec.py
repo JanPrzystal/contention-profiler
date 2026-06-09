@@ -33,7 +33,7 @@ class SpecWorkload(Workload):
 
         return cmd
 
-    def profile(self, iterations: int = 1) -> float:
+    def profile(self) -> float:
         # return run_benchmark(self, self.name, cores, self.size)
         log(f"Running benchmark {self.name}, size = {self.size}")
         
@@ -42,6 +42,8 @@ class SpecWorkload(Workload):
         
         if config.USE_ROOT_PRIORITY:
             cmd = config.ROOT_TASK_CMD + cmd
+
+        log(f"Running command: {' '.join(cmd)}", DEBUG)
 
         self.proc = Process(subprocess.Popen(
             cmd,
@@ -56,7 +58,7 @@ class SpecWorkload(Workload):
         stdout_data, stderr_data = self.proc.proc.communicate()
 
         output = stdout_data.decode("utf-8")
-        log(f"Process output:\n{output}", DEBUG)
+        # log(f"Process output:\n{output}", DEBUG)
 
         if self.proc.proc.returncode != 0:
             # errors = self.proc.stderr.decode("utf-8")

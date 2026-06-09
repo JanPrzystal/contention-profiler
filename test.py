@@ -197,6 +197,20 @@ def test_equilibrium_prediction():
 
     log(f"Prediction with advanced contentiousness {pred_adv}")
 
+def test_spec_repeatability():
+    cactu = spec.SpecWorkload("607.cactuBSSN_s", "train")
+
+    repetitions = 10
+
+    for i in range(repetitions):
+        time = cactu.profile()
+        log(f"Cactu {i}: {time}", logging.INFO)
+
+    xz = spec.SpecWorkload("657.xz_s", "train")
+
+    for i in range(repetitions):
+        time = xz.profile()
+        log(f"XZ {i}: {time}", logging.INFO)
 
 if __name__ == "__main__":
 
@@ -215,13 +229,15 @@ if __name__ == "__main__":
     config.PROGRESSIVE_PROFILING = True
     config.NSOI = 7
 
-    test_equilibrium_prediction()
+    test_spec_repeatability()
+
+    # test_equilibrium_prediction()
 
     # test_soi_additiveness()
 
     # test_combined_contentiousness()
 
-    test_added_contentiousness()
+    # test_added_contentiousness()
 
     # test_hpc_reporter()
 
