@@ -19,10 +19,11 @@ legend_labels = [
     "Range [pp]"
     ]
 
-def draw_errors(data: dict[str, list[float]]) -> None:
-    for key, values in global_data.items():
-        data[key] = values
-    
+def draw_errors(data: dict[str, list[float]], include_baseline: bool = True) -> None:
+    if include_baseline:
+        for key, values in global_data.items():
+            data[key] = values
+
     labels = list(data.keys())
     values = np.array(list(data.values()))  # shape (n_groups, n_metrics)
 

@@ -8,9 +8,10 @@ global_data = {
     "Baseline c6": [4345.46, 3259.61, 33030.783, ],
 }
 
-def draw_times(data, validation: bool = True):
-    for key, values in global_data.items():
-        data[key] = values
+def draw_times(data, validation: bool = True, include_baseline: bool = True):
+    if include_baseline:
+        for key, values in global_data.items():
+            data[key] = values
 
     labels = list(data.keys())
     values = np.array(list(data.values()))  # shape (n_groups, 3)
@@ -18,7 +19,7 @@ def draw_times(data, validation: bool = True):
     x = np.arange(len(labels))
     # width = 0.25
 
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(2 + 2*len(data), 6))
 
     legend = ['Reporter', 'Contentiousness', 'Sensitivity', 'Validation']
     if validation:

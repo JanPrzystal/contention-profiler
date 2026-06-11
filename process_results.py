@@ -109,12 +109,13 @@ def process_zip_files(zip_paths):
 
 
 if __name__ == "__main__":
+    include_baseline = True
     setup_logging()
     zip_paths = sys.argv[1:] if len(sys.argv) > 1 else zip_paths
     errors_data, time_data = process_zip_files(zip_paths)
 
-    draw_errors(errors_data)
-    draw_times(time_data)
+    draw_errors(errors_data, include_baseline)
+    draw_times(time_data, include_baseline=include_baseline)
 
     pd.set_option('display.max_columns', None)
     pd.set_option('display.max_colwidth', None)
