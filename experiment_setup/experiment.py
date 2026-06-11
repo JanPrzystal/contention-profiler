@@ -100,7 +100,8 @@ def conduct_experiment(reporter: Workload, applications: List[Workload], pairwis
 
         max_contentiousness = profile_workload.profile_contentiousness(applications, reporter)
         tcontentiousness = time() - tstart - treporter
-        if max_contentiousness is not None:
+        if max_contentiousness is not None and pairwise:
+            # For multi-competitor the maximum contentiousness cannot be easily assumed
             log(f"Max contentiousness across all workloads: {max_contentiousness}")
             config.DIAL_END_MB = int(max_contentiousness) + 1
 

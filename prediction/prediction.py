@@ -182,7 +182,8 @@ def predict_performance(applications: List[Workload]) -> dict[int, List[Predicti
     
     # return dict(predictions)
 
-    setup_contentiousness_data(applications)
+    if not config.USE_SIMPLE_CONTENTIOUSNESS:
+        setup_contentiousness_data(applications)
     
     for app in applications:
         log(f"Forming predictions for {app.name}")

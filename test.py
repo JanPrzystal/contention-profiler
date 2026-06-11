@@ -212,6 +212,15 @@ def test_spec_repeatability():
         time = xz.profile()
         log(f"XZ {i}: {time}", logging.INFO)
 
+def test_reporter_repetitions(repetitions: int):
+    reporter = rp.AveragingReporter("alternating")
+
+    config.REPORTER_REPETITIONS = repetitions
+
+    log(f"Testing reporter repetitions {repetitions}", logging.INFO)
+
+    profile_reporter(reporter)
+
 if __name__ == "__main__":
 
     setup_logging(DEBUG)
