@@ -2,6 +2,7 @@ from cmath import isnan
 from typing import List, Dict, Iterable
 from experiment_setup.workload import Workload
 from collections import namedtuple
+from prediction.deployment import Deployment
 from profiling.contentiousness import read_application_contentiousness, read_contentiousness
 
 from scipy.interpolate import PchipInterpolator
@@ -216,3 +217,6 @@ def save_predictions(predictions: dict[int, List[Prediction]]) -> None:
             for pred in pred_list:
                 row = [str(c) for c in list(pred._asdict().values())]
                 writer.writerow(row)
+
+def predict_deployment_performance(deployment: Deployment) -> Prediction:
+    return prediction.predict_app_performance(deployment.application, deployment.competitors)

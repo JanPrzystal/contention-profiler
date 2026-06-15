@@ -19,6 +19,7 @@ from experiment_setup.cpu_freq import CpuFreqPolicy, Governor
 import profiling.perf as perf
 from experiment_setup.log import INFO, setup_logging, log, DEBUG
 from analysis.plot_metrics import plot_metrics
+import prediction.deployment as deployment
 
 def test_combined_contentiousness():
     bench = [spec.SpecWorkload("619.lbm_s", "train"), spec.SpecWorkload("600.perlbench_s", "train"), spec.SpecWorkload("649.fotonik3d_s", "train"), spec.SpecWorkload("654.roms_s", "train")]
@@ -238,7 +239,12 @@ if __name__ == "__main__":
     config.PROGRESSIVE_PROFILING = True
     config.NSOI = 7
 
-    test_spec_repeatability()
+
+    # for i in range(1, 11):
+    #     dep = deployment.create_random_deployment(i, spec.WORKLOADS)
+    #     log(f"Deployment {i}: {dep}", logging.INFO)
+    
+    # test_spec_repeatability()
 
     # test_equilibrium_prediction()
 

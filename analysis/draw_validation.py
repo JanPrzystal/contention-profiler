@@ -13,7 +13,7 @@ import config
 # Setup basic logging
 from experiment_setup.log import log
 
-def get_validated_df():
+def get_validated_df(remove_cactu: bool = False) -> pd.DataFrame:
     path = f'{config.RESULTS_DIR}/validated.csv'
     # Read space-separated CSV
     df = pd.read_csv(path, sep=',')
@@ -28,6 +28,10 @@ def get_validated_df():
     df['app'] = df['app'].apply(
         lambda s: s.split(".")[1].split("_")[0][:5]
     )
+
+    # Filter out the app called 'cactu'
+    if remove_cactu:
+        df = df[df['app'] != 'cactu']
 
     # Create a combined label: "App vs Competitor"
     df['label'] = df['app'] + " vs " + df['competitor']
@@ -109,5 +113,41 @@ def draw_validation():
     except Exception as e:
         log(f"Failed to generate chart: {e}", level=logging.ERROR)
 
+def draw_errors_by_competitors() -> None:
+
+    df = get_validated_df(True)
+    df['label'] = df['label'].filter
+
+    plt.figure(figsize=(10, 6))
+
+    # 2. Create the scatter plot
+    # alpha=0.5 handles the overlapping points (density)
+    plt.scatter(df['ncompetitors'], df['diff_pct'], alpha=0.5, label='Data Points')
+
+    # 3. Calculate the trendline (Linear Regression)
+    # We need to convert to numpy arrays to perform math
+    x = df['ncompetitors'].values
+    y = df['diff_pct'].values
+
+    # polyfit returns coefficients [slope, intercept] for a 1st degree polynomial
+    slope, intercept = np.polyfit(x, y, 1)
+
+    # Create the line based on the slope and intercept
+    trendline = slope * x + intercept
+
+    # 4. Plot the trendline
+    plt.plot(x, trendline, color='red', linewidth=2, label=f'Trend (slope: {slope:.2f})')
+
+    # 5. Formatting
+    plt.title('Application Performance Error vs. Competitors', fontsize=14)
+    plt.xlabel('Number of Competitors')
+    plt.ylabel('Error (diff_pct %)')
+    plt.legend() # Shows the labels we defined in scatter/plot
+    plt.grid(True, linestyle='--', alpha=0.6)
+
+    output_path = f"{config.RESULTS_DIR}//errors_by_competitors.png"
+    plt.savefig(output_path, dpi=300)
+
 if __name__ == '__main__':
-    draw_validation()
+    # draw_validation()
+    draw_errors_by_competitors()

@@ -59,4 +59,4 @@ def draw_errors(data: dict[str, list[float]], include_baseline: bool = True) -> 
     plt.savefig(image_output_path, dpi=300)
 
 if __name__ == "__main__":
-    draw_errors(data)
+    draw_errors(global_data)

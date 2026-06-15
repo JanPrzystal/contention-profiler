@@ -2,6 +2,7 @@ from pathlib import Path
 import yaml
 from dataclasses import dataclass
 from typing import List
+from analysis import draw_sensitivity, draw_validation
 from experiment_setup.cpu_freq import CpuFreqPolicy, Governor
 import config
 
@@ -16,7 +17,6 @@ from experiment_setup.spec import SpecWorkload, spec_validation
 from time import time
 from datetime import datetime
 from experiment_setup.cpu_freq import CpuFreqPolicy
-from analysis.draw_contentiousness import draw_contentiousness
 
 from experiment_setup.log import log, DEBUG
 
@@ -175,9 +175,10 @@ def write_description_file(experiment: Experiment) -> None:
         f.write(f"Benchmarks: {', '.join(experiment.benchmarks)}\n")
         f.write(f"Reporter: {experiment.reporter}\n")
         f.write(f"SOI: {experiment.soi.type} ({experiment.soi.number})\n")
-        f.write(f"Max Memory Footlog: {experiment.max_mem_footprint} MB\n")
+        f.write(f"Max Memory Footprint: {experiment.max_mem_footprint} MB\n")
         f.write(f"Memory Interval: {experiment.mem_interval} MB\n")
         f.write(f"Reporter Repetitions: {experiment.reporter_repetitions}\n")
+        f.write(f"Profiling Repetitions: {experiment.profiling_repetitions}\n")
         f.write(f"Data Size: {experiment.data_size}\n")
         f.write(f"Root Priority: {experiment.root}\n")
         f.write(f"Progressive Profiling: {experiment.progressive_profiling}\n")
@@ -202,3 +203,10 @@ def spec_experiment(experiment: Experiment):
     write_description_file(experiment)
 
     conduct_experiment(reporter, applications, experiment.deployment == "pairwise")
+
+    draw_sensitivity.draw_sensitivity()
+    draw_validation.draw_validation()
+
+    if experiment.deployment != "pairwise":
+        draw_validation.draw_errors_by_competitors()
+

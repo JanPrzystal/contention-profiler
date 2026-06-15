@@ -1,6 +1,6 @@
 experiments:
 
-  - name: prog7_sc
+  - name: multi_rand4
     benchmarks:
     - 600.perlbench_s
     - 602.gcc_s
@@ -24,8 +24,8 @@ experiments:
     reporter: alternating
     soi: 
       type: rand
-      number: 7
-    max_mem_footprint: 112
+      number: 4
+    max_mem_footprint: 80
     mem_interval: 16
     reporter_repetitions: 20
     deployment: multi
@@ -33,7 +33,7 @@ experiments:
     root: true
     profiling_repetitions: 2
     use_interpolation: true
-    progressive_profiling: true
+    progressive_profiling: false
     simple_contentiousness: true
     validations: 140
 

@@ -19,6 +19,9 @@ class SpecWorkload(Workload):
         self.size = size
         self.proc = None
 
+    def __str__(self):
+        return self.name
+
     def get_command(self, background: bool = False) -> List[str]:
         iterations = 10000 if background else 1
         cmd = [

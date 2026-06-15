@@ -65,9 +65,6 @@ if __name__ == "__main__":
 
         experiment.spec_experiment(exp)
 
-        draw_sensitivity.draw_sensitivity()
-        draw_validation.draw_validation()
-
         subprocess.run(["zip", "-r", f"results_{exp.name}.zip", config.RESULTS_DIR], check=True)
 
         log(f"Experiment {exp.name} completed\n\n")
