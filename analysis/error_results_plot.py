@@ -9,7 +9,7 @@ sys.path.append(str(parent_dir))
 import config
 
 global_data = {    
-    "Bruno baseline": [16.2, 7.17, 0.98, 16.2 + 10.4],
+    "Pair Baseline": [16.2, 7.17, 0.98, 16.2 + 10.4],
 }
 
 legend_labels = [
@@ -30,7 +30,8 @@ def draw_errors(data: dict[str, list[float]], include_baseline: bool = True) -> 
     x = np.arange(len(labels))
     width = 0.18
 
-    plt.figure(figsize=(4 + 3*len(data), 6))
+    plt.figure(figsize=(3 + 3*len(data), 6))
+    plt.title("Prediction Errors")
 
     for i in range(values.shape[1]):
         rects = plt.bar(x + i * width, values[:, i], width, label=legend_labels[i])

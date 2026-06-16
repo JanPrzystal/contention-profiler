@@ -1,6 +1,6 @@
 experiments:
 
-  - name: multi_rand4
+  - name: multi_sc2
     benchmarks:
     - 600.perlbench_s
     - 602.gcc_s
@@ -24,8 +24,8 @@ experiments:
     reporter: alternating
     soi: 
       type: rand
-      number: 4
-    max_mem_footprint: 80
+      number: 7
+    max_mem_footprint: 112
     mem_interval: 16
     reporter_repetitions: 20
     deployment: multi
@@ -33,7 +33,7 @@ experiments:
     root: true
     profiling_repetitions: 2
     use_interpolation: true
-    progressive_profiling: false
+    progressive_profiling: true
     simple_contentiousness: true
     validations: 140
 

@@ -44,15 +44,6 @@ def validate_prediction(prediction: Prediction, workloads: List[Workload]) -> Va
     
     isolated_perf = get_sensitivity(primary.name)(0)
 
-    # Get cores for background workloads
-    # start, end = map(int, config.WORKLOAD_IN_BACKGROUND_CORES.split("-"))
-    # ncores = end - start + 1
-    # cores = iter(range(start, end + 1))
-
-    # Check if there are enough cores for all competitors
-    # if len(competitors) > ncores:
-    #     raise ValueError("Not enough cores for all competitors")
-
     # Start competitors in the background
     background_processes = []
     for competitor in competitors:

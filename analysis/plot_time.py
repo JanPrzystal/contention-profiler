@@ -5,7 +5,7 @@ import numpy as np
 import config
 
 global_data = {    
-    "Baseline c6": [4345.46, 3259.61, 33030.783, ],
+    "Pair Baseline": [4345.46, 3259.61, 33030.783, ],
 }
 
 def draw_times(data, validation: bool = True, include_baseline: bool = True):
@@ -19,7 +19,8 @@ def draw_times(data, validation: bool = True, include_baseline: bool = True):
     x = np.arange(len(labels))
     # width = 0.25
 
-    plt.figure(figsize=(2 + 2*len(data), 6))
+    plt.figure(figsize=(1 + 2*len(data), 6))
+    plt.title("Profiling Time")
 
     legend = ['Reporter', 'Contentiousness', 'Sensitivity', 'Validation']
     if validation:
@@ -42,4 +43,4 @@ def draw_times(data, validation: bool = True, include_baseline: bool = True):
     plt.savefig(image_output_path, dpi=300)
 
 if __name__ == "__main__":
-    draw_times(data)
+    draw_times(global_data)

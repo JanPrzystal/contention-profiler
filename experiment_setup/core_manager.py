@@ -20,5 +20,5 @@ class CoreManager:
         with self.lock:
             self.available.add(core)
 
-background_cores = config.WORKLOAD_IN_BACKGROUND_CORES.split("-")
-background_core_dispenser = CoreManager(range(int(background_cores[0]), int(background_cores[1]) + 1))
+background_cores = config.WORKLOAD_IN_BACKGROUND_CORES.split(",")
+background_core_dispenser: CoreManager = CoreManager(background_cores)

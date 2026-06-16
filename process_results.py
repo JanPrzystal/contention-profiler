@@ -7,7 +7,7 @@ from analysis.plot_time import draw_times
 from experiment_setup.log import log, setup_logging
 
 
-zip_paths = ["results_2rand_alternating_pair.zip", "results_2rand_alternating_pair_nointerpolation.zip"]
+# zip_paths = ["results_2rand_alternating_pair.zip", "results_2rand_alternating_pair_nointerpolation.zip"]
 
 results = []
 
@@ -109,9 +109,15 @@ def process_zip_files(zip_paths):
 
 
 if __name__ == "__main__":
-    include_baseline = True
     setup_logging()
-    zip_paths = sys.argv[1:] if len(sys.argv) > 1 else zip_paths
+
+    start_arg = 1
+    include_baseline = False
+    if sys.argv[1] == "--baseline":
+        include_baseline = True
+        start_arg = 2
+
+    zip_paths = sys.argv[start_arg:] if len(sys.argv) > start_arg else ""
     errors_data, time_data = process_zip_files(zip_paths)
 
     draw_errors(errors_data, include_baseline)

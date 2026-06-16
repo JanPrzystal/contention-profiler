@@ -65,8 +65,7 @@ def profile_reporter_contentiousness(reporter: Workload) -> float:
     with open(f"{config.RESULTS_DIR}/reporter_contentiousness.csv", "a+") as f:
         f.write(f"footprint_mb,contentiousness\n")
 
-        bcore = config.WORKLOAD_IN_BACKGROUND_CORES.split("-")[0]
-        background = reporter.run_background(bcore)
+        reporter.run_in_background()
         
         time.sleep(config.WORKLOAD_WARMUP_TIME)
 
@@ -76,7 +75,7 @@ def profile_reporter_contentiousness(reporter: Workload) -> float:
         
         contentiousness = cnt.contentiousness_lookup(score)
 
-        os.kill(background.pid, signal.SIGKILL)
+        reporter.stop()
 
         f.write(f"{0},{contentiousness}\n")
 
