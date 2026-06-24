@@ -3,7 +3,6 @@ import subprocess
 from typing import List
 import config
 
-# from experiment_setup import core_manager
 import experiment_setup.core_manager as cm
 from experiment_setup.log import WARNING, log, DEBUG
 from experiment_setup.workload import Process, Workload, stop_process

@@ -36,6 +36,7 @@ experiments:
     progressive_profiling: true
     simple_contentiousness: true
     validations: 140
+    background_cores: 7,6,5,4,3,2,1
 
 
 # 600.perlbench_s,

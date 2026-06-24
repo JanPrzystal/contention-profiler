@@ -18,7 +18,8 @@ from time import time
 from datetime import datetime
 from experiment_setup.cpu_freq import CpuFreqPolicy
 
-from experiment_setup.log import log, DEBUG
+from experiment_setup.log import log, DEBUG, ERROR
+import experiment_setup.core_manager as cm
 
 
 @dataclass
@@ -44,6 +45,7 @@ class Experiment:
     progressive_profiling: bool
     validations: int
     simple_contentiousness: bool
+    background_cores: List[int]
 
 
 def parse_config():
@@ -69,6 +71,7 @@ def parse_config():
             progressive_profiling=exp["progressive_profiling"],
             validations=exp["validations"],
             simple_contentiousness=exp["simple_contentiousness"],
+            background_cores=exp["background_cores"].split(","),
         )
         experiments.append(experiment)
         log(exp)
@@ -156,6 +159,10 @@ def setup_config(experiment: Experiment) -> None:
     config.PROGRESSIVE_PROFILING = experiment.progressive_profiling
     config.VALIDATIONS = experiment.validations
     config.USE_SIMPLE_CONTENTIOUSNESS = experiment.simple_contentiousness
+    if len(experiment.background_cores) < 1:
+        log("NO BACKGROUND CORES SPECIFIED!", ERROR)
+    else:
+        cm.background_core_dispenser = cm.CoreManager(experiment.background_cores)
 
 def setup_reporter(experiment: Experiment) -> Workload:
     reporter = None
@@ -184,6 +191,7 @@ def write_description_file(experiment: Experiment) -> None:
         f.write(f"Progressive Profiling: {experiment.progressive_profiling}\n")
         f.write(f"Interpolation: {experiment.use_interpolation}\n")
         f.write(f"Simple Contentiousness: {experiment.simple_contentiousness}\n")
+        f.write(f"Background Cores: {experiment.background_cores}\n")
 
         f.flush()
 

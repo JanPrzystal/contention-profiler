@@ -234,24 +234,36 @@ def test_same_core():
 
     reporter = rp.AveragingReporter("alternating")
 
-    app = spec.lbm
-    core = 0
+    cores = [0,1,8]
+    with open(f"{config.RESULTS_DIR}/cores_test.txt", "w") as f:
+        f.write(f"Using Reporter {reporter.name}\n")
+        for app in spec.WORKLOADS:
+            for core in cores: 
+                cm.background_core_dispenser = cm.CoreManager([core])
 
-    core_manager = cm.CoreManager([core])
+                app.run_in_background()
 
-    cm.background_core_dispenser = core_manager
+                sleep(config.WORKLOAD_WARMUP_TIME)
 
-    log(f"Testing reporter on the same core", logging.INFO)
+                score = reporter.profile()
 
-    app.run_in_background()
+                app.stop()
 
-    sleep(config.WORKLOAD_WARMUP_TIME)
+                f.write(f"Reporter score with lbm on core {core}: {score}\n")
 
-    score = reporter.profile()
+def profile_reporter_all_cores():
+    config.DIAL_END_MB = 256
+    config.DIAL_RANGE_MB = 256
 
-    app.stop()
+    config.PROGRESSIVE_PROFILING = True
+    config.NSOI = 1
 
-    log(f"Reporter score with lbm on core {core}: {score}")
+    cores = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0]
+    cm.background_core_dispenser = cm.CoreManager(cores)
+    
+    reporter = rp.AveragingReporter("alternating")
+
+    profile_reporter(reporter)
 
 if __name__ == "__main__":
 
@@ -271,6 +283,7 @@ if __name__ == "__main__":
     config.NSOI = 7
 
     test_same_core()
+    profile_reporter_all_cores()
 
     # for i in range(1, 11):
     #     dep = deployment.create_random_deployment(i, spec.WORKLOADS)
