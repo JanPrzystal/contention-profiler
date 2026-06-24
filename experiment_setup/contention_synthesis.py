@@ -6,7 +6,7 @@ import config
 from experiment_setup.workload import Workload, Process
 
 from experiment_setup.log import log, WARNING
-from experiment_setup.core_manager import background_core_dispenser
+import experiment_setup.core_manager as cm
 
 
 BUILD_DIR = "build"
@@ -107,7 +107,7 @@ class Bubble(Workload):
 
             core = ""
             try:
-                core = background_core_dispenser.acquire()
+                core = cm.background_core_dispenser.acquire()
             except Exception as e:
                 log(f"Failed to acquire background core for bubble process {i+1}: {e}")
                 raise Exception("Failed to acquire background core for bubble process")

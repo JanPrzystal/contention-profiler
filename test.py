@@ -1,7 +1,7 @@
 from time import sleep
 import logging
 
-from experiment_setup.core_manager import CoreManager, background_core_dispenser
+import experiment_setup.core_manager as cm
 from profiling.profile_reporter import profile_reporter, profile_reporter_contentiousness
 import profiling.profile_workload as profile_workload
 import experiment_setup.reporter as reporter
@@ -224,23 +224,34 @@ def test_reporter_repetitions(repetitions: int):
     profile_reporter(reporter)
 
 def test_same_core():
-    global background_core_dispenser
+    # global background_core_dispenser
 
-    config.DIAL_END_MB = 48
-    config.DIAL_RANGE_MB = 48
+    config.DIAL_END_MB = 16
+    config.DIAL_RANGE_MB = 16
 
-    config.PROGRESSIVE_PROFILING = False
+    config.PROGRESSIVE_PROFILING = True
     config.NSOI = 1
 
     reporter = rp.AveragingReporter("alternating")
 
-    # cm = CoreManager([6])
+    app = spec.lbm
+    core = 0
 
-    # background_core_dispenser = cm
+    core_manager = cm.CoreManager([core])
+
+    cm.background_core_dispenser = core_manager
 
     log(f"Testing reporter on the same core", logging.INFO)
 
-    profile_reporter(reporter)
+    app.run_in_background()
+
+    sleep(config.WORKLOAD_WARMUP_TIME)
+
+    score = reporter.profile()
+
+    app.stop()
+
+    log(f"Reporter score with lbm on core {core}: {score}")
 
 if __name__ == "__main__":
 

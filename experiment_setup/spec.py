@@ -6,7 +6,6 @@ import config
 
 from experiment_setup.workload import Workload, Process, run_background_workload
 from experiment_setup.log import log, DEBUG, ERROR
-from experiment_setup.core_manager import background_core_dispenser
 
 from prediction.prediction import Prediction
 from prediction.validation import ValidatedPrediction, validate_prediction

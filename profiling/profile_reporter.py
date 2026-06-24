@@ -38,14 +38,13 @@ def _profile_reporter_progressive(reporter: Workload) -> None:
         f.write(f"footprint_mb,perf\n")
 
         max_soi = config.NSOI
-        dial_start = config.DIAL_START_MB
         interval = config.DIAL_RANGE_MB // max_soi
 
         nsoi = 0
 
         for size_mb in range(config.DIAL_START_MB, config.DIAL_END_MB + config.DIAL_STEP_MB, config.DIAL_STEP_MB):
             if size_mb > 0:
-                nsoi = max(size_mb // (config.DIAL_RANGE_MB // config.NSOI), 1)
+                nsoi = max(size_mb // interval, 1)
 
             log(f"Profiling with SoI size {size_mb}MB and {nsoi} SoI ({size_mb}/{config.DIAL_RANGE_MB // config.NSOI})", DEBUG)
 

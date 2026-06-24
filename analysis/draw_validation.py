@@ -1,3 +1,5 @@
+from typing import List
+
 import pandas as pd
 import logging
 import matplotlib.pyplot as plt
@@ -13,8 +15,10 @@ import config
 # Setup basic logging
 from experiment_setup.log import log
 
-def get_validated_df(remove_cactu: bool = False) -> pd.DataFrame:
-    path = f'{config.RESULTS_DIR}/validated.csv'
+def get_validated_df(remove_cactu: bool = False, path: str = "") -> pd.DataFrame:
+    if not path:
+        path = f'{config.RESULTS_DIR}/validated.csv'
+    
     # Read space-separated CSV
     df = pd.read_csv(path, sep=',')
     
@@ -36,6 +40,8 @@ def get_validated_df(remove_cactu: bool = False) -> pd.DataFrame:
     # Create a combined label: "App vs Competitor"
     df['label'] = df['app'] + " vs " + df['competitor']
     df['ncompetitors'] = df['competitor'].apply(lambda x: len(x.split(" + ")))
+
+    df['name'] = path.split("/")[-1]
     return df
 
 def draw_single_validation_chart(df):
@@ -113,41 +119,63 @@ def draw_validation():
     except Exception as e:
         log(f"Failed to generate chart: {e}", level=logging.ERROR)
 
-def draw_errors_by_competitors() -> None:
 
-    df = get_validated_df(True)
-    df['label'] = df['label'].filter
+def draw_errors_by_competitors(dfs: List[pd.DataFrame]) -> None:
+    
+    y_min = 0
+    y_max = 0
 
-    plt.figure(figsize=(10, 6))
+    for df in dfs:
+        if df['diff_pct'].min() < y_min:
+            y_min = df['diff_pct'].min()
+        if df['diff_pct'].max() > y_max:
+            y_max = df['diff_pct'].max()
 
-    # 2. Create the scatter plot
-    # alpha=0.5 handles the overlapping points (density)
-    plt.scatter(df['ncompetitors'], df['diff_pct'], alpha=0.5, label='Data Points')
+    y_padding = max((y_max - y_min) * 0.05, 0.1)
 
-    # 3. Calculate the trendline (Linear Regression)
-    # We need to convert to numpy arrays to perform math
-    x = df['ncompetitors'].values
-    y = df['diff_pct'].values
+    for df in dfs:
+        df['label'] = df['label'].filter
 
-    # polyfit returns coefficients [slope, intercept] for a 1st degree polynomial
-    slope, intercept = np.polyfit(x, y, 1)
+        plt.figure(figsize=(10, 6))
 
-    # Create the line based on the slope and intercept
-    trendline = slope * x + intercept
+        # 2. Create the scatter plot
+        # alpha=0.5 handles the overlapping points (density)
+        plt.scatter(df['ncompetitors'], df['diff_pct'], alpha=0.5, label='Data Points')
 
-    # 4. Plot the trendline
-    plt.plot(x, trendline, color='red', linewidth=2, label=f'Trend (slope: {slope:.2f})')
+        # 3. Calculate the trendline (Linear Regression)
+        # We need to convert to numpy arrays to perform math
+        x = df['ncompetitors'].values
+        y = df['diff_pct'].values
 
-    # 5. Formatting
-    plt.title('Application Performance Error vs. Competitors', fontsize=14)
-    plt.xlabel('Number of Competitors')
-    plt.ylabel('Error (diff_pct %)')
-    plt.legend() # Shows the labels we defined in scatter/plot
-    plt.grid(True, linestyle='--', alpha=0.6)
+        # polyfit returns coefficients [slope, intercept] for a 1st degree polynomial
+        slope, intercept = np.polyfit(x, y, 1)
 
-    output_path = f"{config.RESULTS_DIR}//errors_by_competitors.png"
-    plt.savefig(output_path, dpi=300)
+        # Create the line based on the slope and intercept
+        trendline = slope * x + intercept
+
+        # 4. Plot the trendline
+        plt.plot(x, trendline, color='red', linewidth=2, label=f'Trend (slope: {slope:.2f})')
+
+        # Set plot y-scale from the global diff_pct min/max across all dataframes
+        plt.ylim(y_min - y_padding, y_max + y_padding)
+
+        # 5. Formatting
+        plt.title('Application Performance Error vs. Competitors', fontsize=14)
+        plt.xlabel('Number of Competitors')
+        plt.ylabel('Error (diff_pct %)')
+        plt.legend() # Shows the labels we defined in scatter/plot
+        plt.grid(True, linestyle='--', alpha=0.6)
+
+        output_path = f"{config.RESULTS_DIR}//errors_by_competitors_{df['name'][0]}.png"
+        plt.savefig(output_path, dpi=300)
 
 if __name__ == '__main__':
-    # draw_validation()
-    draw_errors_by_competitors()
+    if len(sys.argv) > 1:
+        dfs = []
+        for path in sys.argv[1:]:
+            dfs.append(get_validated_df(True, path))
+
+        draw_errors_by_competitors(dfs)
+
+    else:
+        draw_validation()

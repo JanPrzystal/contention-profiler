@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List
 import subprocess
 import config
-from experiment_setup.core_manager import background_core_dispenser
+import experiment_setup.core_manager as cm
 import os
 import signal
 
@@ -15,7 +15,7 @@ class Process:
 
     def stop(self) -> None:
         os.killpg(os.getpgid(self.proc.pid), signal.SIGKILL)
-        background_core_dispenser.release(self.core)
+        cm.background_core_dispenser.release(self.core)
 
 class Workload(ABC):
 
@@ -41,7 +41,7 @@ class Workload(ABC):
 
 
 def run_background_workload(workload: Workload) -> Process:
-    core = background_core_dispenser.acquire()
+    core = cm.background_core_dispenser.acquire()
     log(f"Running {workload.name} in background on core {core}")
 
     cmd = workload.get_command(True)

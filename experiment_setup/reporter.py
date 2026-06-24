@@ -4,10 +4,9 @@ from typing import List
 import config
 
 # from experiment_setup import core_manager
-from experiment_setup.core_manager import background_core_dispenser
+import experiment_setup.core_manager as cm
 from experiment_setup.log import WARNING, log, DEBUG
 from experiment_setup.workload import Process, Workload, stop_process
-import profiling.perf as perf
 
 REPORTER_SCRIPT_FILES = {
     "alternating":"build/altern_reporter.out",
@@ -89,7 +88,7 @@ class AveragingReporter(Workload):
     
     def run_in_background(self) -> None:
         log("Running reporter in the background")
-        core = background_core_dispenser.acquire()
+        core = cm.background_core_dispenser.acquire()
 
         cmd = [
             "taskset",
@@ -171,7 +170,7 @@ class MembenchReporter(Workload):
         return self._process_output(output)
 
     def run_in_background(self):
-        core = background_core_dispenser.acquire()
+        core = cm.background_core_dispenser.acquire()
 
         cmd = self.get_command(True)
         
