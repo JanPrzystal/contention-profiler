@@ -13,7 +13,7 @@ import sys
 import prediction.prediction as prediction
 import prediction.validation as validation
 import profiling.contentiousness as contentiousness
-from experiment_setup.contention_synthesis import Bubble, BUILD_DIR
+from experiment_setup.source_of_interference import Bubble, BUILD_DIR
 import config
 import experiment_setup.reporter as rp
 from experiment_setup.cpu_freq import CpuFreqPolicy, Governor

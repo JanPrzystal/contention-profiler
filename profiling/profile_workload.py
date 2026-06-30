@@ -9,7 +9,7 @@ from experiment_setup import core_manager
 import experiment_setup.reporter as rp
 import experiment_setup.workload as workload
 
-from experiment_setup.contention_synthesis import Bubble
+from experiment_setup.source_of_interference import Bubble
 import config
 from config import SENSITIVITY_DIR
 from experiment_setup.workload import Workload

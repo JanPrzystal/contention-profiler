@@ -3,7 +3,7 @@ import time
 import signal
 
 from experiment_setup.log import log, DEBUG
-from experiment_setup.contention_synthesis import Bubble
+from experiment_setup.source_of_interference import Bubble
 import config
 from experiment_setup.workload import Workload
 import profiling.contentiousness as cnt
