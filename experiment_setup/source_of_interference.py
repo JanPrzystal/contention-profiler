@@ -3,7 +3,8 @@ import os
 from typing import List
 
 import config
-from experiment_setup.workload import Workload, Process
+from experiment_setup.spec import SpecWorkload
+from experiment_setup.workload import Workload, Process, run_background_workload
 
 from experiment_setup.log import log, WARNING
 import experiment_setup.core_manager as cm
@@ -125,7 +126,31 @@ class Bubble(Workload):
             )
             self.procs.append(Process(proc, core))
     
+    def stop(self) -> None:
+        for proc in self.procs:
+            proc.stop()
+        self.procs.clear()
 
+
+class SpecSoI(Workload):
+    ELEM_SIZE = 8 # The size of the elements used in the SoI application in bytes (int64 = 8)
+
+    def __init__(self, spec: SpecWorkload, n_proc = 1):
+        self.workload = spec
+        self.n_proc = n_proc
+        self.procs = []
+
+    def profile(self) -> float:
+        raise NotImplementedError("\"profile\" not implemented for Bubble")
+    
+    def get_command(self, background: bool = False) -> List[str]:
+        return self.workload.get_command(background)
+
+    def run_in_background(self) -> None:
+        for _ in range(self.n_proc):   
+            self.procs.append(
+                run_background_workload(self.workload)
+            )
     
     def stop(self) -> None:
         for proc in self.procs:

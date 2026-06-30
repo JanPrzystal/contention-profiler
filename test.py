@@ -331,9 +331,15 @@ if __name__ == "__main__":
     config.PROGRESSIVE_PROFILING = True
     config.NSOI = 7
 
+
+    # reporter = rp.MembenchReporter("tinymembench")
+    reporter = rp.AveragingReporter("alternating")
+
+    profile_reporter(reporter)
+
     # test_same_core()
     # profile_reporter_all_cores()
-    profile_reporter_hpc_cores()
+    # profile_reporter_hpc_cores()
 
     # for i in range(1, 11):
     #     dep = deployment.create_random_deployment(i, spec.WORKLOADS)

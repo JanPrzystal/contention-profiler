@@ -2,12 +2,12 @@ import os
 import time
 import signal
 
+from experiment_setup import spec
 from experiment_setup.log import log, DEBUG
-from experiment_setup.source_of_interference import Bubble
+from experiment_setup.source_of_interference import Bubble, SpecSoI
 import config
 from experiment_setup.workload import Workload
 import profiling.contentiousness as cnt
-
 
 def profile_reporter_sensitivity(reporter: Workload, size_mb: int, nsoi: int = config.NSOI) -> float:
     if size_mb == 0:
@@ -15,7 +15,10 @@ def profile_reporter_sensitivity(reporter: Workload, size_mb: int, nsoi: int = c
         return reporter.profile()
 
 
-    bubble = Bubble(size_mb, nsoi)
+    if config.USE_SPEC_SOI:
+        bubble = SpecSoI(spec.lbm, nsoi)
+    else:
+        bubble = Bubble(size_mb, nsoi)
     bubble.run_in_background()
     time.sleep(config.WORKLOAD_WARMUP_TIME)
     try:
