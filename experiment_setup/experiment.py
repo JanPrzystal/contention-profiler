@@ -3,6 +3,7 @@ import yaml
 from dataclasses import dataclass
 from typing import List
 from analysis import draw_sensitivity, draw_validation
+from experiment_setup import spec
 from experiment_setup.cpu_freq import CpuFreqPolicy, Governor
 import config
 
@@ -170,8 +171,13 @@ def setup_reporter(experiment: Experiment) -> Workload:
     if experiment.reporter == "tinymembench":
         script = "tinymembench"
         reporter = rp.MembenchReporter(script)
-    else:
+    elif experiment.reporter == "omnetpp":
+        reporter = spec.omnetpp
+    elif experiment.reporter == "alternating":
         reporter = rp.AveragingReporter(experiment.reporter)
+    else:
+        log(f"Unknown Reporter {experiment.reporter}\nDefaulting to alternating", ERROR)
+        reporter = rp.AveragingReporter("alternating")
 
     return reporter
 
@@ -216,5 +222,6 @@ def spec_experiment(experiment: Experiment):
     draw_validation.draw_validation()
 
     if experiment.deployment != "pairwise":
-        draw_validation.draw_errors_by_competitors()
+        data = draw_validation.get_validated_df(True)
+        draw_validation.draw_errors_by_competitors(data)
 

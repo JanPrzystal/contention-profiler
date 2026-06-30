@@ -249,14 +249,14 @@ def test_same_core():
 
                 app.stop()
 
-                f.write(f"Reporter score with lbm on core {core}: {score}\n")
+                f.write(f"Reporter score with {app.name} on core {core}: {score}\n")
 
 def profile_reporter_all_cores():
     config.DIAL_END_MB = 256
     config.DIAL_RANGE_MB = 256
 
     config.PROGRESSIVE_PROFILING = True
-    config.NSOI = 1
+    config.NSOI = 16
 
     cores = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0]
     cm.background_core_dispenser = cm.CoreManager(cores)
@@ -264,6 +264,55 @@ def profile_reporter_all_cores():
     reporter = rp.AveragingReporter("alternating")
 
     profile_reporter(reporter)
+
+def profile_reporter_hpc_cores():
+    config.USE_HPC = True
+    config.DIAL_END_MB = 16
+    config.DIAL_RANGE_MB = 16
+
+    config.PROGRESSIVE_PROFILING = True
+    config.NSOI = 1
+
+    cores = [0]
+    cm.background_core_dispenser = cm.CoreManager(cores)
+    
+    # reporter = rp.MembenchReporter("tinymembench")
+    # reporter = rp.AveragingReporter("alternating")
+
+    # profile_workload.profile_sensitivity([reporter])
+
+    app1 = spec.omnetpp
+    app2 = spec.fotonik3d
+
+    path = config.SENSITIVITY_DIR / f"{app1}_data.csv"
+
+    with open(path, "w+") as f:
+        f.write(f"footprint_mb,time,LLC-loads,LLC-load-misses,LLC-stores,LLC-store-misses,L1-dcache-loads,L1-dcache-load-misses,L1-icache-load-misses,L1-dcache-stores,cache-misses,dTLB-load-misses,LLC-miss-rate,CPI\n")
+
+        # Profile alone
+        core = config.WORKLOAD_UNDER_PROFILING_CORES
+        result = perf.profile(app1.get_command(), cores=core)
+
+        f.write(
+            f"{0},{result['time_elapsed']},{result['LLC-loads']},{result['LLC-load-misses']},{result['LLC-stores']},"
+            f"{result['LLC-store-misses']},{result['L1-dcache-loads']},{result['L1-dcache-load-misses']},{result['L1-icache-load-misses']},{result['L1-dcache-stores']},"
+            f"{result['cache-misses']},{result['dTLB-load-misses']},{result['llc_miss_rate']},{result['cpi']}\n"
+        )
+
+        # Profile with a competitor
+        app2.run_in_background()
+        sleep(2)
+
+        core = config.WORKLOAD_UNDER_PROFILING_CORES
+        result = perf.profile(app1.get_command(), cores=core)
+
+        app2.stop()
+
+        f.write(
+            f"{1},{result['time_elapsed']},{result['LLC-loads']},{result['LLC-load-misses']},{result['LLC-stores']},"
+            f"{result['LLC-store-misses']},{result['L1-dcache-loads']},{result['L1-dcache-load-misses']},{result['L1-icache-load-misses']},{result['L1-dcache-stores']},"
+            f"{result['cache-misses']},{result['dTLB-load-misses']},{result['llc_miss_rate']},{result['cpi']}\n"
+        )
 
 if __name__ == "__main__":
 
@@ -282,8 +331,9 @@ if __name__ == "__main__":
     config.PROGRESSIVE_PROFILING = True
     config.NSOI = 7
 
-    test_same_core()
-    profile_reporter_all_cores()
+    # test_same_core()
+    # profile_reporter_all_cores()
+    profile_reporter_hpc_cores()
 
     # for i in range(1, 11):
     #     dep = deployment.create_random_deployment(i, spec.WORKLOADS)

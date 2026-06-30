@@ -14,19 +14,24 @@ import config
 
 xpad = 8
 
-METRICS = ["time", 
-    "LLC-loads", 
-    "LLC-load-misses", 
-    "LLC-store-misses", 
-    "L1-dcache-load-misses", 
-    # "LLC-miss-rate", 
-    # "L1-icache-load-misses", 
-    "cache-misses", 
+METRICS = [
+    "time",
+    "LLC-loads",
+    "LLC-load-misses",
+    # "LLC-store-misses",
+    "L1-dcache-loads",
+    "L1-dcache-load-misses",
+    # "LLC-miss-rate",
+    # "L1-icache-load-misses",
+    # "cache-misses",
     # "dTLB-load-misses",
-    # "CPI"
-    ]
+    "CPI",
+]
 
-def plot_metrics(filename: str):
+NORMALIZE = True
+# NORMALIZE = False
+
+def plot_metrics(filename: str, bar_chart: bool = False):
     csv_path = pathlib.Path(config.RESULTS_DIR) / "sensitivity" / filename
     df = pd.read_csv(csv_path, delimiter=",")
     df = df.sort_values("footprint_mb")
@@ -36,16 +41,17 @@ def plot_metrics(filename: str):
     if finite_x.size == 0:
         raise ValueError("No valid footprint_mb values found in CSV")
 
-    xlim = finite_x.max() + xpad
+    xlim = finite_x.max() + (xpad / (xpad - finite_x.max()))
 
     fig, ax = plt.subplots(figsize=(10, 5))
 
     colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
     markers = ["o", "s", "v", "^", "D", "X", "P", "*"]
 
-    for metric, marker, color in zip(METRICS, markers, colors):
-        if metric not in df.columns:
-            continue
+    available_metrics = [metric for metric in METRICS if metric in df.columns]
+    for metric_index, metric in enumerate(available_metrics):
+        marker = markers[metric_index % len(markers)]
+        color = colors[metric_index % len(colors)]
 
         y = pd.to_numeric(df[metric], errors="coerce").to_numpy(dtype=float)
         if y.size == 0:
@@ -59,11 +65,28 @@ def plot_metrics(filename: str):
         y_valid = y[valid]
 
         # Normalize each metric to its first measured value so different scales can be plotted together.
-        first_value = y_valid[0]
-        if first_value != 0 and np.isfinite(first_value):
-            y_valid = y_valid / first_value
+        if NORMALIZE:
+            first_value = y_valid[0]
+            if first_value != 0 and np.isfinite(first_value):
+                y_valid = y_valid / first_value
 
-        if config.USE_INTERPOLATION and x_valid.size > 1:
+        if bar_chart:
+            if x_valid.size > 1:
+                x_spacing = np.median(np.diff(np.unique(x_valid)))
+            else:
+                x_spacing = 1.0
+            bar_width = 0.6 * max(1.0, x_spacing) / max(1, len(available_metrics))
+            offset = (metric_index - (len(available_metrics) - 1) / 2) * bar_width
+            ax.bar(
+                x_valid + offset,
+                y_valid,
+                width=bar_width,
+                label=metric,
+                color=color,
+                alpha=0.8,
+            )
+            
+        elif config.USE_INTERPOLATION and x_valid.size > 1:
             spline = PchipInterpolator(x_valid, y_valid)
             x_smooth = np.linspace(x_valid.min(), x_valid.max(), 400)
             y_smooth = spline(x_smooth)
@@ -73,9 +96,37 @@ def plot_metrics(filename: str):
 
     ax.set_title("Metrics vs. footprint")
     ax.set_xlabel("MemBW footprint (MB)")
-    ax.set_ylabel("Normalized value")
-    ax.set_xlim([0, xlim])
-    ax.set_xticks(np.arange(0, xlim + 1, 16))
+    if NORMALIZE:
+        ax.set_ylabel("Normalized value")
+    else:
+        ax.set_ylabel("Numeric Value")
+
+    if bar_chart:
+        bar_positions = []
+        for metric_index, metric in enumerate(available_metrics):
+            y = pd.to_numeric(df[metric], errors="coerce").to_numpy(dtype=float)
+            valid = np.isfinite(x) & np.isfinite(y)
+            if not np.any(valid):
+                continue
+            x_valid = x[valid]
+            if x_valid.size > 1:
+                x_spacing = np.median(np.diff(np.unique(x_valid)))
+            else:
+                x_spacing = 1.0
+            bar_width = 0.5 * max(1.0, x_spacing) / max(1, len(available_metrics))
+            offset = (metric_index - (len(available_metrics) - 1) / 2) * bar_width
+            bar_positions.extend(x_valid + offset)
+        if bar_positions:
+            xlim_min = -1.5 * bar_width * (len(METRICS) / 2)
+            xlim_max = max(xlim, max(bar_positions) + bar_width + 1.0)
+            ax.set_xlim([xlim_min, xlim_max])
+            ax.set_xticks(np.arange(0, xlim_max + 1, finite_x.max()))
+        else:
+            ax.set_xlim([0, xlim])
+            ax.set_xticks(np.arange(0, xlim + 1, finite_x.max()))
+    else:
+        ax.set_xlim([0, xlim])
+        ax.set_xticks(np.arange(0, xlim + 1, finite_x.max()))
     ax.grid(True)
     ax.legend()
 
@@ -87,4 +138,21 @@ def plot_metrics(filename: str):
 
 if __name__ == "__main__":
     config.USE_INTERPOLATION = True
-    plot_metrics(sys.argv[1])
+
+    if len(sys.argv) < 2:
+        print("Provide a path!")
+        exit()
+
+    path = ""
+    bar = False
+    if sys.argv[1] == "--bar":
+        bar = True
+        if sys.argv[2] == "--raw":
+            NORMALIZE = False
+            path = sys.argv[3]
+        else:
+            path = sys.argv[2]
+    else:
+        path = sys.argv[1]
+
+    plot_metrics(path, bar)

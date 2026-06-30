@@ -11,14 +11,13 @@ import experiment_setup.workload as workload
 
 from experiment_setup.contention_synthesis import Bubble
 import config
+from config import SENSITIVITY_DIR
 from experiment_setup.workload import Workload
 
 import profiling.perf as perf
 import profiling.contentiousness as cnt
 
 from experiment_setup.log import DEBUG, log, WARNING
-
-SENSITIVITY_DIR = Path(config.RESULTS_DIR) / 'sensitivity'
 
 
 def _get_sensitivity_data(workload_name: str) -> dict[int, float]:
@@ -212,7 +211,15 @@ def profile_sensitivity_hpc(workload: Workload) -> None:
     path = SENSITIVITY_DIR / f"{name}_data.csv"
 
     with open(path, "w+") as f:
-        f.write(f"footprint_mb,time,LLC-loads,LLC-load-misses,LLC-stores,LLC-store-misses,L1-dcache-loads,L1-dcache-load-misses,L1-icache-load-misses,L1-dcache-stores,cache-misses,dTLB-load-misses,LLC-miss-rate,CPI\n")
+        f.write(f"footprint_mb,time,"
+        f"LLC-loads,LLC-load-misses,"
+        # f"LLC-stores,LLC-store-misses,"
+        f"L1-dcache-loads,L1-dcache-load-misses,"
+        # f"L1-icache-load-misses,L1-dcache-stores,"
+        f"cache-misses,"
+        # f"dTLB-load-misses,"
+        f"LLC-miss-rate,"
+        f"CPI\n")
 
         max_soi = config.NSOI
         interval = config.DIAL_RANGE_MB // max_soi
@@ -234,8 +241,14 @@ def profile_sensitivity_hpc(workload: Workload) -> None:
                 bubble.stop()
 
             f.write(
-                f"{size_mb},{result['time_elapsed']},{result['LLC-loads']},{result['LLC-load-misses']},{result['LLC-stores']},"
-                f"{result['LLC-store-misses']},{result['L1-dcache-loads']},{result['L1-dcache-load-misses']},{result['L1-icache-load-misses']},{result['L1-dcache-stores']},"
-                f"{result['cache-misses']},{result['dTLB-load-misses']},{result['llc_miss_rate']},{result['cpi']}\n"
+                f"{size_mb},{result['time_elapsed']},"
+                f"{result['LLC-loads']},{result['LLC-load-misses']},"
+                # f"{result['LLC-stores']},{result['LLC-store-misses']},"
+                f"{result['L1-dcache-loads']},{result['L1-dcache-load-misses']},"
+                # f"{result['L1-icache-load-misses']},{result['L1-dcache-stores']},"
+                f"{result['cache-misses']},"
+                # f"{result['dTLB-load-misses']}",
+                f"{result['llc_miss_rate']},{result['cpi']}\n"
             )
     
+

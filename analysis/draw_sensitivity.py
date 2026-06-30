@@ -57,7 +57,7 @@ def draw_sensitivity():
         ax.set_title(label)
         ax.set_xlabel("MemBW footprint (MB)")
         ax.set_ylabel("Performance (norm.)")
-        xticks = np.arange(0, 128, 16)
+        xticks = np.arange(0, xlim, 16)
         ax.set_xticks(xticks)
         ax.set_xlim([0, xlim])
         ax.grid(True)
