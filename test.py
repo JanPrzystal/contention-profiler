@@ -277,9 +277,9 @@ def profile_reporter_hpc_cores():
     cm.background_core_dispenser = cm.CoreManager(cores)
     
     # reporter = rp.MembenchReporter("tinymembench")
-    # reporter = rp.AveragingReporter("alternating")
+    reporter = rp.AveragingReporter("alternating")
 
-    # profile_workload.profile_sensitivity([reporter])
+    profile_workload.profile_sensitivity([reporter])
 
     app1 = spec.omnetpp
     app2 = spec.fotonik3d
@@ -333,13 +333,13 @@ if __name__ == "__main__":
 
 
     # reporter = rp.MembenchReporter("tinymembench")
-    reporter = rp.AveragingReporter("alternating")
+    # reporter = rp.AveragingReporter("alternating")
 
-    profile_reporter(reporter)
+    # profile_reporter(reporter)
 
     # test_same_core()
     # profile_reporter_all_cores()
-    # profile_reporter_hpc_cores()
+    profile_reporter_hpc_cores()
 
     # for i in range(1, 11):
     #     dep = deployment.create_random_deployment(i, spec.WORKLOADS)

@@ -211,13 +211,16 @@ def profile_sensitivity_hpc(workload: Workload) -> None:
     path = SENSITIVITY_DIR / f"{name}_data.csv"
 
     with open(path, "w+") as f:
-        f.write(f"footprint_mb,time,"
+        f.write(f"footprint_mb,"
+        f"time,time_user,time_sys"
         f"LLC-loads,LLC-load-misses,"
         # f"LLC-stores,LLC-store-misses,"
         f"L1-dcache-loads,L1-dcache-load-misses,"
         # f"L1-icache-load-misses,L1-dcache-stores,"
         f"cache-misses,"
-        # f"dTLB-load-misses,"
+        f"dTLB-load-misses,dTLB-store-misses,"
+        f"branch-misses,"
+        f"context-switches,"
         f"LLC-miss-rate,"
         f"CPI\n")
 
@@ -241,13 +244,16 @@ def profile_sensitivity_hpc(workload: Workload) -> None:
                 bubble.stop()
 
             f.write(
-                f"{size_mb},{result['time_elapsed']},"
+                f"{size_mb},"
+                f"{result['time_elapsed']},{result['user_time']},{result['sys_time']},"
                 f"{result['LLC-loads']},{result['LLC-load-misses']},"
-                # f"{result['LLC-stores']},{result['LLC-store-misses']},"
+                f"{result['LLC-stores']},{result['LLC-store-misses']},"
                 f"{result['L1-dcache-loads']},{result['L1-dcache-load-misses']},"
                 # f"{result['L1-icache-load-misses']},{result['L1-dcache-stores']},"
                 f"{result['cache-misses']},"
-                # f"{result['dTLB-load-misses']}",
+                f"{result['dTLB-load-misses']},{result['dTLB-store-misses']},"
+                f"{result['branch-misses']},"
+                f"{result['context-switches']},"
                 f"{result['llc_miss_rate']},{result['cpi']}\n"
             )
     

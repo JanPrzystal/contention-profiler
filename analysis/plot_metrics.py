@@ -16,15 +16,18 @@ xpad = 8
 
 METRICS = [
     "time",
-    "LLC-loads",
+    # "LLC-loads",
     "LLC-load-misses",
     # "LLC-store-misses",
-    "L1-dcache-loads",
+    # "L1-dcache-loads",
     "L1-dcache-load-misses",
     # "LLC-miss-rate",
     # "L1-icache-load-misses",
     # "cache-misses",
-    # "dTLB-load-misses",
+    "dTLB-load-misses",
+    "dTLB-store-misses",
+    "branch-misses",
+    "context-switchesS",
     "CPI",
 ]
 
@@ -32,8 +35,8 @@ NORMALIZE = True
 # NORMALIZE = False
 
 def plot_metrics(filename: str, bar_chart: bool = False):
-    csv_path = pathlib.Path(config.RESULTS_DIR) / "sensitivity" / filename
-    df = pd.read_csv(csv_path, delimiter=",")
+    # csv_path = pathlib.Path(config.RESULTS_DIR) / "sensitivity" / filename
+    df = pd.read_csv(filename, delimiter=",")
     df = df.sort_values("footprint_mb")
 
     x = pd.to_numeric(df["footprint_mb"], errors="coerce").to_numpy(dtype=float)
@@ -41,7 +44,9 @@ def plot_metrics(filename: str, bar_chart: bool = False):
     if finite_x.size == 0:
         raise ValueError("No valid footprint_mb values found in CSV")
 
-    xlim = finite_x.max() + (xpad / (xpad - finite_x.max()))
+    xmax = finite_x.max()
+    padding = max(0.05 * xmax, 1.0)   # 5% or at least 1 MB
+    xlim = xmax + padding
 
     fig, ax = plt.subplots(figsize=(10, 5))
 
@@ -96,6 +101,10 @@ def plot_metrics(filename: str, bar_chart: bool = False):
 
     ax.set_title("Metrics vs. footprint")
     ax.set_xlabel("MemBW footprint (MB)")
+    
+    # ax.set_xlim(left=0)
+    ax.margins(x=0.05)
+    
     if NORMALIZE:
         ax.set_ylabel("Normalized value")
     else:
@@ -117,16 +126,16 @@ def plot_metrics(filename: str, bar_chart: bool = False):
             offset = (metric_index - (len(available_metrics) - 1) / 2) * bar_width
             bar_positions.extend(x_valid + offset)
         if bar_positions:
-            xlim_min = -1.5 * bar_width * (len(METRICS) / 2)
-            xlim_max = max(xlim, max(bar_positions) + bar_width + 1.0)
-            ax.set_xlim([xlim_min, xlim_max])
-            ax.set_xticks(np.arange(0, xlim_max + 1, finite_x.max()))
+            # xlim_min = -1.5 * bar_width * (len(METRICS) / 2)
+            # xlim_max = max(xlim, max(bar_positions) + bar_width + 1.0)
+            # ax.set_xlim([xlim_min, xlim_max])
+            ax.set_xticks(np.arange(0, xlim, finite_x.max()))
         else:
-            ax.set_xlim([0, xlim])
-            ax.set_xticks(np.arange(0, xlim + 1, finite_x.max()))
+            # ax.set_xlim([0, xlim])
+            ax.set_xticks(np.arange(0, xlim, finite_x.max()))
     else:
-        ax.set_xlim([0, xlim])
-        ax.set_xticks(np.arange(0, xlim + 1, finite_x.max()))
+        # ax.set_xlim([0, xlim])
+        ax.set_xticks(np.arange(0, xlim, finite_x.max()))
     ax.grid(True)
     ax.legend()
 
