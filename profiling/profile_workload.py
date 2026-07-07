@@ -206,15 +206,30 @@ def _profile_sensitivity_progressive(benchmark: Workload):
             perf = _profile_sensitivity_dial(benchmark, size_mb, nsoi)
             f.write(f"{size_mb},{perf}\n")
 
-def profile_sensitivity_hpc(workload: Workload) -> None:
+def _write_hpc_result(file, result, label):
+    file.write(
+        f"{label},"
+        f"{result['time_elapsed']},{result['user_time']},{result['sys_time']},"
+        f"{result['LLC-loads']},{result['LLC-load-misses']},"
+        f"{result['LLC-stores']},{result['LLC-store-misses']},"
+        f"{result['L1-dcache-loads']},{result['L1-dcache-load-misses']},"
+        # f"{result['L1-icache-load-misses']},{result['L1-dcache-stores']},"
+        f"{result['cache-misses']},"
+        f"{result['dTLB-load-misses']},{result['dTLB-store-misses']},"
+        f"{result['branch-misses']},"
+        f"{result['context-switches']},"
+        f"{result['llc_miss_rate']},{result['cpi']}\n"
+    )
+
+def profile_sensitivity_hpc(workload: Workload, competitor: Workload = None) -> None:
     name = workload.name.replace(".", "_")
     path = SENSITIVITY_DIR / f"{name}_data.csv"
 
     with open(path, "w+") as f:
         f.write(f"footprint_mb,"
-        f"time,time_user,time_sys"
+        f"time,time_user,time_sys,"
         f"LLC-loads,LLC-load-misses,"
-        # f"LLC-stores,LLC-store-misses,"
+        f"LLC-stores,LLC-store-misses,"
         f"L1-dcache-loads,L1-dcache-load-misses,"
         # f"L1-icache-load-misses,L1-dcache-stores,"
         f"cache-misses,"
@@ -224,37 +239,39 @@ def profile_sensitivity_hpc(workload: Workload) -> None:
         f"LLC-miss-rate,"
         f"CPI\n")
 
-        max_soi = config.NSOI
-        interval = config.DIAL_RANGE_MB // max_soi
+        if competitor is None:
+            max_soi = config.NSOI
+            interval = config.DIAL_RANGE_MB // max_soi
+            nsoi = 0
+            
+            for size_mb in range(config.DIAL_START_MB, config.DIAL_END_MB + config.DIAL_STEP_MB, config.DIAL_STEP_MB):
+                bubble = None
+                if size_mb > 0:
+                    nsoi = max(size_mb // interval, 1)
+                    bubble = Bubble(size_mb, nsoi)
+                    bubble.run_in_background()
+                    time.sleep(config.WORKLOAD_WARMUP_TIME)
 
-        nsoi = 0
-        
-        for size_mb in range(config.DIAL_START_MB, config.DIAL_END_MB + config.DIAL_STEP_MB, config.DIAL_STEP_MB):
-            bubble = None
-            if size_mb > 0:
-                nsoi = max(size_mb // interval, 1)
-                bubble = Bubble(size_mb, nsoi)
-                bubble.run_in_background()
-                time.sleep(config.WORKLOAD_WARMUP_TIME)
+                core = config.WORKLOAD_UNDER_PROFILING_CORES
+                result = perf.profile(workload.get_command(), cores=core)
+
+                if bubble is not None:
+                    bubble.stop()
+
+                _write_hpc_result(f, result, size_mb)
+        else:
+            core = config.WORKLOAD_UNDER_PROFILING_CORES
+            result = perf.profile(workload.get_command(), cores=core)
+            _write_hpc_result(f, result, 0)
+
+            competitor.run_in_background()
+            time.sleep(config.WORKLOAD_WARMUP_TIME)
 
             core = config.WORKLOAD_UNDER_PROFILING_CORES
             result = perf.profile(workload.get_command(), cores=core)
 
-            if bubble is not None:
-                bubble.stop()
+            competitor.stop()
 
-            f.write(
-                f"{size_mb},"
-                f"{result['time_elapsed']},{result['user_time']},{result['sys_time']},"
-                f"{result['LLC-loads']},{result['LLC-load-misses']},"
-                f"{result['LLC-stores']},{result['LLC-store-misses']},"
-                f"{result['L1-dcache-loads']},{result['L1-dcache-load-misses']},"
-                # f"{result['L1-icache-load-misses']},{result['L1-dcache-stores']},"
-                f"{result['cache-misses']},"
-                f"{result['dTLB-load-misses']},{result['dTLB-store-misses']},"
-                f"{result['branch-misses']},"
-                f"{result['context-switches']},"
-                f"{result['llc_miss_rate']},{result['cpi']}\n"
-            )
-    
+            _write_hpc_result(f, result, 1)
+
 

@@ -24,10 +24,10 @@ METRICS = [
     # "LLC-miss-rate",
     # "L1-icache-load-misses",
     # "cache-misses",
-    "dTLB-load-misses",
-    "dTLB-store-misses",
+    # "dTLB-load-misses",
+    # "dTLB-store-misses",
     "branch-misses",
-    "context-switchesS",
+    "context-switches",
     "CPI",
 ]
 

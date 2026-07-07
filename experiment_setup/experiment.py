@@ -96,8 +96,12 @@ def check_profiling_complete() -> bool:
     return reporter and contentiousness and sensitivity
 
 def conduct_experiment(reporter: Workload, applications: List[Workload], pairwise: bool):
+    # Timers
     tstart, treporter, tcontentiousness, tsensitivity = 0, 0, 0, 0
+
+    # Check if the experiment can be resumed
     if not check_profiling_complete():
+        # Sensitivity and contentiousness profiling
         tstart = time()
         profile_reporter.profile_reporter(reporter)
         treporter = time() - tstart
@@ -117,6 +121,7 @@ def conduct_experiment(reporter: Workload, applications: List[Workload], pairwis
 
     ttotal = time() - tstart
 
+    # Predictions and validations
     if pairwise:
         log("Starting pairwise prediction and validation")
         predictions = prediction.predict_pair_performance(applications, applications)
@@ -124,14 +129,17 @@ def conduct_experiment(reporter: Workload, applications: List[Workload], pairwis
         validation.save_validated_predictions(validated_predictions)
     else:
         predictions = predict_performance(applications)
-        validated_predictions = []
-        validated_predictions = validation.validate_predictions(predictions, applications)
         prediction_list = []
         for plist in list(predictions.values()):
             prediction_list.extend(plist)
 
         log(f"Formed {len(prediction_list)} predictions")
-        validated_predictions.extend(spec_validation(prediction_list))
+
+        validated_predictions = []
+        validated_predictions = validation.validate_predictions(predictions, applications)
+        if config.PREDEFINED_VALIDATIONS:
+            validated_predictions.extend(spec_validation(prediction_list))
+
         validation.save_validated_predictions(validated_predictions)
 
     texperiment = time() - tstart

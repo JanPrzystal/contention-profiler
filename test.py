@@ -286,33 +286,7 @@ def profile_reporter_hpc_cores():
 
     path = config.SENSITIVITY_DIR / f"{app1}_data.csv"
 
-    with open(path, "w+") as f:
-        f.write(f"footprint_mb,time,LLC-loads,LLC-load-misses,LLC-stores,LLC-store-misses,L1-dcache-loads,L1-dcache-load-misses,L1-icache-load-misses,L1-dcache-stores,cache-misses,dTLB-load-misses,LLC-miss-rate,CPI\n")
-
-        # Profile alone
-        core = config.WORKLOAD_UNDER_PROFILING_CORES
-        result = perf.profile(app1.get_command(), cores=core)
-
-        f.write(
-            f"{0},{result['time_elapsed']},{result['LLC-loads']},{result['LLC-load-misses']},{result['LLC-stores']},"
-            f"{result['LLC-store-misses']},{result['L1-dcache-loads']},{result['L1-dcache-load-misses']},{result['L1-icache-load-misses']},{result['L1-dcache-stores']},"
-            f"{result['cache-misses']},{result['dTLB-load-misses']},{result['llc_miss_rate']},{result['cpi']}\n"
-        )
-
-        # Profile with a competitor
-        app2.run_in_background()
-        sleep(2)
-
-        core = config.WORKLOAD_UNDER_PROFILING_CORES
-        result = perf.profile(app1.get_command(), cores=core)
-
-        app2.stop()
-
-        f.write(
-            f"{1},{result['time_elapsed']},{result['LLC-loads']},{result['LLC-load-misses']},{result['LLC-stores']},"
-            f"{result['LLC-store-misses']},{result['L1-dcache-loads']},{result['L1-dcache-load-misses']},{result['L1-icache-load-misses']},{result['L1-dcache-stores']},"
-            f"{result['cache-misses']},{result['dTLB-load-misses']},{result['llc_miss_rate']},{result['cpi']}\n"
-        )
+    profile_workload.profile_sensitivity_hpc(app1, app2)
 
 if __name__ == "__main__":
 

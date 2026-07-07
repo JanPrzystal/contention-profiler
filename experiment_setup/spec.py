@@ -171,9 +171,9 @@ VALIDATION_DEPLOYMENTS = [
     Deployment(lbm, [perlbench, deepsjeng, bwaves, cactu, cam4]),
     Deployment(fotonik3d, [gcc, xalancbmk, deepsjeng, lbm, cam4 , pop2, nab]),
 #---22---
-    Deployment(lbm, [mcf, omnetpp, bwaves, pop2, nab, fotonik3d, roms]),
+    Deployment(lbm, [gcc, xalancbmk, deepsjeng, fotonik3d, cam4 , pop2, nab]),
 
-    Deployment(deepsjeng, [omnetpp, bwaves, lbm]),
+    Deployment(deepsjeng, [bwaves, lbm, fotonik3d, roms]),
 
     Deployment(omnetpp, [bwaves, lbm, fotonik3d]),
     Deployment(roms, [mcf, bwaves, lbm, fotonik3d]),
@@ -228,7 +228,7 @@ VALIDATION_DEPLOYMENTS = [
 
     Deployment(deepsjeng, [omnetpp, xz, bwaves, lbm, pop2, fotonik3d, roms]),
 
-    Deployment(imagick, [omnetpp, bwaves, lbm, cam4, pop2, fotonik3d, roms]),
+    Deployment(imagick, [omnetpp, xalancbmk, deepsjeng, exchange2, xz, lbm, fotonik3d]),
 
     Deployment(leela, [perlbench, gcc, xalancbmk, exchange2, xz, lbm, fotonik3d]),
 
@@ -239,9 +239,9 @@ VALIDATION_DEPLOYMENTS = [
     Deployment(fotonik3d, [gcc, mcf, omnetpp, xz, lbm, pop2, roms]),
 
     Deployment(xz, [x264, leela, exchange2, bwaves, lbm, pop2, fotonik3d]),
-
-    Deployment(xz, [x264, leela, exchange2, bwaves, lbm, pop2, fotonik3d])
 #---59---
+    Deployment(x264, [xz, leela, exchange2, bwaves, lbm, pop2, fotonik3d])
+
 ]
 def spec_validation(predictions: List[Prediction]) -> List[ValidatedPrediction]:
 

@@ -1,6 +1,6 @@
 experiments:
 
-  - name: pair_samecore_omnetpp
+  - name: multi4_lsamecore_alternating
     benchmarks:
     - 600.perlbench_s
     - 602.gcc_s
@@ -21,19 +21,19 @@ experiments:
     - 644.nab_s
     - 649.fotonik3d_s
     - 654.roms_s
-    reporter: omnetpp
+    reporter: alternating
     soi: 
       type: rand
-      number: 2
-    max_mem_footprint: 32
+      number: 4
+    max_mem_footprint: 64
     mem_interval: 16
     reporter_repetitions: 20
-    deployment: pairwise
+    deployment: multi
     data_size: train
     root: true
     profiling_repetitions: 2
     use_interpolation: true
     progressive_profiling: true
     simple_contentiousness: true
-    validations: 140
-    background_cores: 8,1
+    validations: 60
+    background_cores: 0,0,0,0
