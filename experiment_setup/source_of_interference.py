@@ -6,7 +6,7 @@ import config
 from experiment_setup.spec import SpecWorkload
 from experiment_setup.workload import Workload, Process, run_background_workload
 
-from experiment_setup.log import log, WARNING
+from experiment_setup.log import log, WARNING, ERROR
 import experiment_setup.core_manager as cm
 
 
@@ -107,10 +107,11 @@ class Bubble(Workload):
             file = "bubble"
 
             core = ""
+            idx = -1
             try:
-                core = cm.background_core_dispenser.acquire()
+                idx, core = cm.background_core_dispenser.acquire()
             except Exception as e:
-                log(f"Failed to acquire background core for bubble process {i+1}: {e}")
+                log(f"Failed to acquire background core for bubble process {i+1}: {e}", ERROR)
                 raise Exception("Failed to acquire background core for bubble process")
         
             cmd = ["taskset", "-c", f"{core}", f"./{BUILD_DIR}/{file}", "0", bubble_type]
@@ -124,7 +125,7 @@ class Bubble(Workload):
                 stdin=subprocess.DEVNULL,
                 preexec_fn=os.setpgrp
             )
-            self.procs.append(Process(proc, core))
+            self.procs.append(Process(proc, idx))
     
     def stop(self) -> None:
         for proc in self.procs:

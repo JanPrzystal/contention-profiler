@@ -87,7 +87,7 @@ class AveragingReporter(Workload):
     
     def run_in_background(self) -> None:
         log("Running reporter in the background")
-        core = cm.background_core_dispenser.acquire()
+        idx, core = cm.background_core_dispenser.acquire()
 
         cmd = [
             "taskset",
@@ -104,7 +104,7 @@ class AveragingReporter(Workload):
 
         subprocess = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-        self.proc = Process(subprocess, core)
+        self.proc = Process(subprocess, idx)
 
     def stop(self) -> None:
         if self.proc is not None:
@@ -169,7 +169,7 @@ class MembenchReporter(Workload):
         return self._process_output(output)
 
     def run_in_background(self):
-        core = cm.background_core_dispenser.acquire()
+        idx, core = cm.background_core_dispenser.acquire()
 
         cmd = self.get_command(True)
         
@@ -178,7 +178,7 @@ class MembenchReporter(Workload):
 
         reporter = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         
-        self.proc = Process(reporter, core)
+        self.proc = Process(reporter, idx)
     
     def stop(self) -> None:
         if self.proc is not None:

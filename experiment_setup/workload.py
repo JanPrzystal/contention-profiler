@@ -9,13 +9,13 @@ import signal
 from experiment_setup.log import DEBUG, ERROR, log
 
 class Process:
-    def __init__(self, proc: subprocess.Popen, core: str):
+    def __init__(self, proc: subprocess.Popen, core_idx: int):
         self.proc = proc
-        self.core = core
+        self.core_idx = core_idx
 
     def stop(self) -> None:
         os.killpg(os.getpgid(self.proc.pid), signal.SIGKILL)
-        cm.background_core_dispenser.release(self.core)
+        cm.background_core_dispenser.release(self.core_idx)
 
 class Workload(ABC):
 
@@ -41,7 +41,7 @@ class Workload(ABC):
 
 
 def run_background_workload(workload: Workload) -> Process:
-    core = cm.background_core_dispenser.acquire()
+    idx, core = cm.background_core_dispenser.acquire()
     log(f"Running {workload.name} in background on core {core}")
 
     cmd = workload.get_command(True)
@@ -62,7 +62,7 @@ def run_background_workload(workload: Workload) -> Process:
         preexec_fn=os.setpgrp
     )
 
-    return Process(proc, core)
+    return Process(proc, idx)
 
     
 def stop_process(proc: Process):
