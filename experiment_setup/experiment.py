@@ -231,5 +231,5 @@ def spec_experiment(experiment: Experiment):
 
     if experiment.deployment != "pairwise":
         data = draw_validation.get_validated_df(True)
-        draw_validation.draw_errors_by_competitors(data)
+        draw_validation.draw_errors_by_competitors([data])
 

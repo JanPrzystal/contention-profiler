@@ -11,11 +11,11 @@ from pathlib import Path
 parent_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(parent_dir))
 import config
+import zipfile
 
-# Setup basic logging
 from experiment_setup.log import log
 
-def get_validated_df(remove_cactu: bool = False, path: str = "") -> pd.DataFrame:
+def get_validated_df(remove_cactu: bool = False, path: str = "", name: str = "") -> pd.DataFrame:
     if not path:
         path = f'{config.RESULTS_DIR}/validated.csv'
     
@@ -41,7 +41,10 @@ def get_validated_df(remove_cactu: bool = False, path: str = "") -> pd.DataFrame
     df['label'] = df['app'] + " vs " + df['competitor']
     df['ncompetitors'] = df['competitor'].apply(lambda x: len(x.split(" + ")))
 
-    df['name'] = path.split("/")[-1]
+    try:
+        df['name'] = path.split("/")[-1]
+    except:
+        df['name'] = name
     return df
 
 def draw_single_validation_chart(df):
@@ -136,14 +139,12 @@ def draw_errors_by_competitors(dfs: List[pd.DataFrame]) -> None:
     for df in dfs:
         df['label'] = df['label'].filter
 
-        plt.figure(figsize=(10, 6))
+        plt.figure(figsize=(8, 6))
 
-        # 2. Create the scatter plot
-        # alpha=0.5 handles the overlapping points (density)
+        # Create the scatter plot
         plt.scatter(df['ncompetitors'], df['diff_pct'], alpha=0.5, label='Data Points')
 
-        # 3. Calculate the trendline (Linear Regression)
-        # We need to convert to numpy arrays to perform math
+        # Calculate the trendline (Linear Regression)
         x = df['ncompetitors'].values
         y = df['diff_pct'].values
 
@@ -153,19 +154,21 @@ def draw_errors_by_competitors(dfs: List[pd.DataFrame]) -> None:
         # Create the line based on the slope and intercept
         trendline = slope * x + intercept
 
-        # 4. Plot the trendline
+        # Plot the trendline
         plt.plot(x, trendline, color='red', linewidth=2, label=f'Trend (slope: {slope:.2f})')
 
         # Set plot y-scale from the global diff_pct min/max across all dataframes
         plt.ylim(y_min - y_padding, y_max + y_padding)
 
-        # 5. Formatting
-        plt.title('Application Performance Error vs. Competitors', fontsize=14)
-        plt.xlabel('Number of Competitors')
-        plt.ylabel('Error (diff_pct %)')
-        plt.legend() # Shows the labels we defined in scatter/plot
+        # Formatting
+        plt.title('Prediction Error vs. Number of Competitors', fontsize=14)
+        plt.xlabel('Number of Competitors', fontsize=14)
+        plt.ylabel('Error (%)', fontsize=14)
+        plt.xticks(x, fontsize=12)
+        plt.yticks(fontsize=12)
+        plt.legend()
         plt.grid(True, linestyle='--', alpha=0.6)
-
+        plt.tight_layout()
         output_path = f"{config.RESULTS_DIR}//errors_by_competitors_{df['name'][0]}.png"
         plt.savefig(output_path, dpi=300)
 
@@ -173,7 +176,9 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         dfs = []
         for path in sys.argv[1:]:
-            dfs.append(get_validated_df(True, path))
+            with zipfile.ZipFile(path) as z:
+                with z.open("experiment_results/validated.csv") as f:
+                    dfs.append(get_validated_df(True, f, path.split("/")[-1].replace(".zip", "")))
 
         draw_errors_by_competitors(dfs)
 

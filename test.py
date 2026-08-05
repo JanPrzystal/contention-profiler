@@ -288,6 +288,17 @@ def profile_reporter_hpc_cores():
 
     profile_workload.profile_sensitivity_hpc(app1, app2)
 
+def profile_spec_competition_hpc():
+    app1 = spec.omnetpp
+    app2 = spec.fotonik3d
+
+    cores = [0,1,8]
+    for core in cores: 
+        cm.background_core_dispenser = cm.CoreManager([core])
+        path = config.SENSITIVITY_DIR / f"{app1}_c{core}_data.csv"
+
+        profile_workload.profile_sensitivity_hpc(app1, app2, path)
+
 if __name__ == "__main__":
 
     setup_logging(DEBUG)
@@ -306,6 +317,9 @@ if __name__ == "__main__":
     config.NSOI = 7
 
 
+    profile_spec_competition_hpc()
+
+    
     # reporter = rp.MembenchReporter("tinymembench")
     # reporter = rp.AveragingReporter("alternating")
 
@@ -313,7 +327,7 @@ if __name__ == "__main__":
 
     # test_same_core()
     # profile_reporter_all_cores()
-    profile_reporter_hpc_cores()
+    # profile_reporter_hpc_cores()
 
     # for i in range(1, 11):
     #     dep = deployment.create_random_deployment(i, spec.WORKLOADS)

@@ -213,7 +213,7 @@ def _write_hpc_result(file, result, label):
         f"{result['LLC-loads']},{result['LLC-load-misses']},"
         f"{result['LLC-stores']},{result['LLC-store-misses']},"
         f"{result['L1-dcache-loads']},{result['L1-dcache-load-misses']},"
-        # f"{result['L1-icache-load-misses']},{result['L1-dcache-stores']},"
+        f"{result['L1-icache-load-misses']},{result['L1-dcache-stores']},"
         f"{result['cache-misses']},"
         f"{result['dTLB-load-misses']},{result['dTLB-store-misses']},"
         f"{result['branch-misses']},"
@@ -221,9 +221,10 @@ def _write_hpc_result(file, result, label):
         f"{result['llc_miss_rate']},{result['cpi']}\n"
     )
 
-def profile_sensitivity_hpc(workload: Workload, competitor: Workload = None) -> None:
+def profile_sensitivity_hpc(workload: Workload, competitor: Workload = None, path: Path = None) -> None:
     name = workload.name.replace(".", "_")
-    path = SENSITIVITY_DIR / f"{name}_data.csv"
+    if not path:
+        path = SENSITIVITY_DIR / f"{name}_data.csv"
 
     with open(path, "w+") as f:
         f.write(f"footprint_mb,"
@@ -231,7 +232,7 @@ def profile_sensitivity_hpc(workload: Workload, competitor: Workload = None) -> 
         f"LLC-loads,LLC-load-misses,"
         f"LLC-stores,LLC-store-misses,"
         f"L1-dcache-loads,L1-dcache-load-misses,"
-        # f"L1-icache-load-misses,L1-dcache-stores,"
+        f"L1-icache-load-misses,L1-dcache-stores,"
         f"cache-misses,"
         f"dTLB-load-misses,dTLB-store-misses,"
         f"branch-misses,"

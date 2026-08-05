@@ -60,18 +60,20 @@ def _form_equilibrium(applications: Iterable[str], contention_scores: dict[str, 
         return equilibrium_store[key]
 
     equilibrium = {}
+    for app in applications:
+        equilibrium[app] = 0.0
     total_contention = 0.0
     
     for i in range(config.EQUILIBRIUM_ITERATIONS):
         for app in applications:
-            equilibrium[app] = float(contention_scores[app](total_contention))
+            equilibrium[app] = float(contention_scores[app](total_contention - equilibrium[app]))
         total_contention = sum(equilibrium.values())
         
         if isnan(total_contention):
             log(f"NaN encountered in equilibrium calculation for {applications} with equilibrium {equilibrium}", WARNING)
             break
 
-        log(f"Iteration {i}: Equilibrium contention scores: {equilibrium}, total contention: {total_contention}", DEBUG)
+        # log(f"Iteration {i}: Equilibrium contention scores: {equilibrium}, total contention: {total_contention}", DEBUG)
 
     equilibrium_store[key] = equilibrium
 
