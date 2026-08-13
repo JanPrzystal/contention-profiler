@@ -37,7 +37,10 @@ def draw_sensitivity():
 
     for ax, df, label in zip(axes, dfs, labels):
         # Normalize the series
-        df["perf"] = df["perf"][0] / df["perf"]
+        if df.empty:
+            continue
+        
+        df["perf"] = df["perf"].iloc[0] / df["perf"]
 
         x = df["footprint_mb"].to_numpy()
         y = df["perf"].to_numpy()

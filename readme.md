@@ -1,5 +1,5 @@
-# Resource Contention
-This is an implementation of the Master Thesis: https://www.akesson.nl/files/students/dzikowski-thesis.pdf
+# Performance Prediction of Co-Deployed Applications
+This project implements a framework for profiling and predicting performance degradation caused by shared-resource contention between co-deployed applications. It automates the deployment of benchmark and interference workloads, measures application sensitivity and contentiousness, generates performance predictions for pairwise or multi-competitor deployments, and validates these predictions through experiments.
 
 ## Prerequisites
 * Python 3.11+
@@ -24,18 +24,11 @@ chmod 700 compileReporters.sh
 ./compileReporters.sh
 ```
 
-## Kubernetes setup
-1. Install [MicroK8S](https://canonical.com/microk8s/docs/getting-started) on two nodes 
-1. Create a multi-node cluster (https://canonical.com/microk8s/docs/clustering)
-1. Set registry secret
-```
-cd mds
-./setRegistrySecret.sh <docker-username> <docker-password> <docker-email>
-```
-4. Follow [prometheus/runbook.md](prometheus/runbok.md) to setup Prometheus
 
 ## Running experiments
-Adjust config in `constants.py`. Experiment configuration-as-code can be done in `main.py`.
+Define experiments and their configuration in `experiments.yaml`. 
+
+To run experiments with the SPEC2017 benchmarks the SPEC_PATH variable in `config.py` needs to point to the folder correct folder. Default value is "../cpu2017"
 
 To run experiments, use `screen`. This is necessary because they take so long that your ssh connection will time out.
 
@@ -45,10 +38,4 @@ Run:
 screen
 python main.py
 ```
-And detach the screen with ctrl-a ctrl-d
 
-You can kill the screen after experiment is done:
-```shell
-screen -ls
-screen -XS <screen_name> quit
-```
