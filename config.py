@@ -9,7 +9,7 @@ SENSITIVITY_DIR = Path(RESULTS_DIR) / 'sensitivity'
 RANDOM_SEED: Final[int] = 42
 
 WORKLOAD_UNDER_PROFILING_CORES: Final[str] = "0"
-WORKLOAD_IN_BACKGROUND_CORES: Final[str] = "7,6,5,4,3,2,1"
+WORKLOAD_IN_BACKGROUND_CORES: Final[str] = "5,4,3,2,1"
 MAX_COMPETITORS: Final[int] = 7
 
 WORKLOAD_WARMUP_TIME = 5
@@ -18,8 +18,8 @@ WORKLOAD_WIND_DOWN_TIME = 1
 # Reporter and SoI dial constants
 REPORTER_CORES: str = "0"
 DIAL_START_MB: int = 0
-DIAL_STEP_MB: int = 16
-DIAL_END_MB: int = 80
+DIAL_STEP_MB: int = 32
+DIAL_END_MB: int = 128
 DIAL_RANGE_MB: int = DIAL_END_MB
 
 # MDS constants

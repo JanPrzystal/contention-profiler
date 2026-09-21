@@ -58,7 +58,7 @@ def draw_sensitivity():
             ax.plot(x_smooth, y_smooth, "-", linewidth=1.5, label="spline")
         
         ax.set_title(label)
-        ax.set_xlabel("MemBW footprint (MB)")
+        ax.set_xlabel("Memory pressure (MB)")
         ax.set_ylabel("Performance (norm.)")
         xticks = np.arange(0, xlim, 16)
         ax.set_xticks(xticks)

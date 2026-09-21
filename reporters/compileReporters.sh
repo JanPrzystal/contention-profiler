@@ -2,15 +2,18 @@
 set -euo pipefail
 
 INCLUDES="-I../benchmark/include"
-LIBS="-L../benchmark/build/src -lbenchmark -pthread -static-libstdc++ -static-libgcc"
+LIB_FLAGS="-L../benchmark/build/src"
+LIBS="-lbenchmark -pthread -static-libstdc++ -static-libgcc"
 BUILD_DIR="../build"
+
 mkdir -p "$BUILD_DIR"
 
 for src in altern_reporter.cc hybrid_reporter.cc rand_reporter.cc stream_reporter.cc; do
   base="${src%.cc}"
-  out="${BUILD_DIR}/${base}.out"
+  out="${BUILD_DIR}/${base}"
   echo "Compiling $src -> $out"
-  g++ -std=c++11 -O2 $INCLUDES "$src" $LIBS -o "$out"
+  
+  g++ -O3 -march=native $INCLUDES $LIB_FLAGS "$src" -o "$out" $LIBS
 done
 
 echo "All done."

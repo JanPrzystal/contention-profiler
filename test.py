@@ -13,7 +13,7 @@ import sys
 import prediction.prediction as prediction
 import prediction.validation as validation
 import profiling.contentiousness as contentiousness
-from experiment_setup.source_of_interference import Bubble, BUILD_DIR
+from experiment_setup.source_of_interference import Bubble, BUILD_DIR, compile_soi
 import config
 import experiment_setup.reporter as rp
 from experiment_setup.cpu_freq import CpuFreqPolicy, Governor
@@ -304,60 +304,23 @@ if __name__ == "__main__":
     setup_logging(DEBUG)
 
 
-    config.USE_ROOT_PRIORITY = True
+    config.USE_ROOT_PRIORITY = False
     config.DATA_SIZE = "train"
 
     CpuFreqPolicy.set_governor(Governor.PERFORMANCE)
 
+    compile_soi()
 
-    config.DIAL_END_MB = 112
-    config.DIAL_RANGE_MB = 112
+    config.DIAL_END_MB = 160
+    config.DIAL_RANGE_MB = 160
 
     config.PROGRESSIVE_PROFILING = True
-    config.NSOI = 7
+    config.NSOI = 5
 
-
-    profile_spec_competition_hpc()
-
-    
-    # reporter = rp.MembenchReporter("tinymembench")
-    # reporter = rp.AveragingReporter("alternating")
-
-    # profile_reporter(reporter)
-
-    # test_same_core()
-    # profile_reporter_all_cores()
-    # profile_reporter_hpc_cores()
-
-    # for i in range(1, 11):
-    #     dep = deployment.create_random_deployment(i, spec.WORKLOADS)
-    #     log(f"Deployment {i}: {dep}", logging.INFO)
-
-    # test_spec_repeatability()
-
-    # test_equilibrium_prediction()
-
-    # test_soi_additiveness()
-
-    # test_combined_contentiousness()
-
-    # test_added_contentiousness()
-
-    # test_hpc_reporter()
-
-    # test_hpc_spec()
-
-    # test_hpc_soi()
-
-    # profile_workload.profile_sensitivity([spec.SpecWorkload("657.xz_s", "train")])
-
-    # stats = perf.profile("./membench/membench")
-
-    # log (stats)
-
-    # reporter = rp.AveragingReporter("alternating")
-    # cnt = profile_workload.profile_contentiousness([spec.SpecWorkload("657.xz_s", "train")], reporter)
-    # log(f"Contentiousness: {cnt}", logging.INFO)
+    # reporter = rp.AveragingReporter("streaming")
+    reporter = rp.MembenchReporter("tinymembench")
+    # reporter.profile()
+    profile_reporter(reporter)
 
     CpuFreqPolicy.reset_governor()
 

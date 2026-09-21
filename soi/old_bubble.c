@@ -20,9 +20,9 @@
     #define BUBBLE_TYPE 0
 #endif
 
-#ifndef NUM_THREADS
-    #define NUM_THREADS 1
-#endif
+// #ifndef NUM_THREADS
+//     #define NUM_THREADS 1
+// #endif
 
 #define STRIDE 64
 
@@ -59,6 +59,13 @@ void streaming_access(int (*condition)(void)) {
         // #pragma omp parallel for
         for (int i = offset; i < STREAM_SIZE - PADDING_SIZE - 4096; i += (STRIDE * 8)) {
             mid[i] = bw_data[i]++;
+            mid[i + 1] = bw_data[i + 1]++;
+            mid[i + 2] = bw_data[i + 2]++;
+            mid[i + 3] = bw_data[i + 3]++;
+            mid[i + 4] = bw_data[i + 4]++;
+            mid[i + 5] = bw_data[i + 5]++;
+            mid[i + 6] = bw_data[i + 6]++;
+            mid[i + 7] = bw_data[i + 7]++;
             mid[i + STRIDE] = bw_data[i + STRIDE]++;
             mid[i + (STRIDE * 2)] = bw_data[i + (STRIDE * 2)]++;
             mid[i + (STRIDE * 3)] = bw_data[i + (STRIDE * 3)]++;
@@ -69,20 +76,6 @@ void streaming_access(int (*condition)(void)) {
         }
 
         offset = (offset + (STRIDE * 8)) % 4096;
-
-        // #pragma omp parallel for
-        // for (int i = 0; i < STREAM_SIZE - PADDING_SIZE; i += 10) {
-        //     bw_data[i] = mid[i];
-        //     bw_data[i+1] = mid[i+1];
-        //     bw_data[i+2] = mid[i+2];
-        //     bw_data[i+3] = mid[i+3];
-        //     bw_data[i+4] = mid[i+4];
-        //     bw_data[i+5] = mid[i+5];
-        //     bw_data[i+6] = mid[i+6];
-        //     bw_data[i+7] = mid[i+7];
-        //     bw_data[i+8] = mid[i+8];
-        //     bw_data[i+9] = mid[i+9];
-        // }
     }
 }
 

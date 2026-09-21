@@ -28,9 +28,9 @@ def draw_errors(data: dict[str, list[float]], include_baseline: bool = True) -> 
     values = np.array(list(data.values()))  # shape (n_groups, n_metrics)
 
     x = np.arange(len(labels))
-    width = 0.18
+    width = 0.2
 
-    plt.figure(figsize=(3 + 3*len(data), 6))
+    plt.figure(figsize=(3 + 2*len(data), 6))
     plt.title("Prediction Errors")
 
     for i in range(values.shape[1]):
@@ -46,12 +46,12 @@ def draw_errors(data: dict[str, list[float]], include_baseline: bool = True) -> 
                 textcoords="offset points",
                 ha="center",
                 va="bottom",
-                fontsize=8,
+                fontsize=9,
             )
 
     plt.axhline(0, color='black', linewidth=1)
-    plt.xticks(x + width * (values.shape[1] - 1) / 2, labels)
-    plt.ylabel("Error (%)")
+    plt.xticks(x + width * (values.shape[1] - 1) / 2, labels, fontsize=12)
+    plt.ylabel("Error (%)", fontsize=12)
     plt.legend()
     plt.tight_layout()
     # plt.show()

@@ -6,7 +6,7 @@ import config
 from experiment_setup.spec import SpecWorkload
 from experiment_setup.workload import Workload, Process, run_background_workload
 
-from experiment_setup.log import log, WARNING, ERROR
+from experiment_setup.log import log, WARNING, ERROR, DEBUG
 import experiment_setup.core_manager as cm
 
 
@@ -56,43 +56,72 @@ class Sledge():
             return
         os.kill(self.proc.pid, 9)
 
+
+def compile_soi() -> bool:
+    log("Compiling soi executable...")
+    try:
+        os.makedirs(BUILD_DIR, exist_ok=True)
+
+        result = subprocess.run(
+            [
+                "gcc",
+                "-O3",
+                "-fno-tree-loop-distribute-patterns",
+                "-march=native",
+                f"{config.SOI_DIR}/memory_soi.c",
+                "-o",
+                f"{BUILD_DIR}/memory_soi",
+            ],
+            stdin=subprocess.DEVNULL,
+        )
+        log("Success", DEBUG)
+    except subprocess.CalledProcessError as e:
+        log(f"Failed with code {e.returncode}", ERROR)
+        log(f"Error output: {e.stderr}", ERROR)
+        return False
+    except FileNotFoundError:
+        log("Command not found", ERROR)
+        return False
+
+    return True
+
+soi_exists = False
+def check_soi_exists() -> bool:
+    global soi_exists
+    if not soi_exists:
+        soi_exists = os.path.isfile(f"{BUILD_DIR}/memory_soi")
+        if not soi_exists:
+            log(f"SoI executable not found at {BUILD_DIR}/memory_soi", DEBUG)
+            soi_exists = compile_soi()
+
+    return soi_exists
+
 class Bubble(Workload):
     ELEM_SIZE = 8 # The size of the elements used in the SoI application in bytes (int64 = 8)
 
     def __init__(self, size_mb: int, n_proc = 1):
-        self.name = "bubble_"+config.BUBBLE_TYPE
+        assert check_soi_exists(), "SoI executable not found. Please ensure it is compiled and available."
+
+        # self.name = "bubble_"+config.BUBBLE_TYPE
+        self.name = "soi"
         self.n_proc = n_proc
         self.size = size_mb * 1_000_000 
-        end_size = round(self.size / n_proc / Bubble.ELEM_SIZE)
-        log(f"Building bubble with total footprint size {self.size} and per-process size {end_size} ({self.ELEM_SIZE} bytes)")
-
-        os.makedirs(BUILD_DIR, exist_ok=True)
-        subprocess.run(
-            [
-                "gcc",
-                "-O2",
-                "-fopenmp",
-                "-march=native",
-                f"-DFOOTPRINT_SIZE={end_size}",
-                "-DNUM_THREADS=1",
-                f"{config.SOI_DIR}/bubble.c",
-                "-o",
-                f"{BUILD_DIR}/bubble",
-            ],
-            stdin=subprocess.DEVNULL,
-        )
+        self.soi_size = round(self.size / n_proc / Bubble.ELEM_SIZE)
+        log(f"Preparing SoIs with total footprint size {self.size / 1_000_000}MB and per-process size {self.soi_size} ({self.ELEM_SIZE} bytes per element)")
         self.procs = []
 
     def profile(self) -> float:
         raise NotImplementedError("\"profile\" not implemented for Bubble")
     
     def get_command(self, background: bool = False) -> List[str]:
-        file = "bubble"
+        file = "memory_soi"
     
-        arg1 = "0" if background else "10000"
-        arg2 = config.BUBBLE_TYPE
+        # arg1 = "0" if background else "10000"
+        # arg2 = config.BUBBLE_TYPE
 
-        return [f"./{BUILD_DIR}/{file}", arg1, arg2]
+        arg1 = self.soi_size
+
+        return [f"./{BUILD_DIR}/{file}", str(arg1)]
 
     def run_in_background(self) -> None:
         for i in range(self.n_proc):
@@ -104,7 +133,7 @@ class Bubble(Workload):
                 bubble_type = "stream" if i % 2 == 0 else "rand"
             log(f"Running bubble {bubble_type}")
 
-            file = "bubble"
+            file = "memory_soi"
 
             core = ""
             idx = -1
@@ -114,11 +143,10 @@ class Bubble(Workload):
                 log(f"Failed to acquire background core for bubble process {i+1}: {e}", ERROR)
                 raise Exception("Failed to acquire background core for bubble process")
         
-            cmd = ["taskset", "-c", f"{core}", f"./{BUILD_DIR}/{file}", "0", bubble_type]
-    
+            cmd = ["taskset", "-c", str(core), *self.get_command(background=True)]
 
             if config.USE_ROOT_PRIORITY:
-                cmd = config.ROOT_TASK_CMD + cmd
+                cmd = [*config.ROOT_TASK_CMD, *cmd]
 
             proc = subprocess.Popen(
                 cmd,
