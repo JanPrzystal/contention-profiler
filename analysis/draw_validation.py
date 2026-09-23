@@ -1,5 +1,3 @@
-from typing import list
-
 import pandas as pd
 import logging
 import matplotlib.pyplot as plt

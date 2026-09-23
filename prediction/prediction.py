@@ -1,5 +1,5 @@
 from cmath import isnan
-from typing import List, Dict, Iterable
+from collections.abc import Iterable
 from experiment_setup.workload import Workload
 from collections import namedtuple
 from prediction.deployment import Deployment
@@ -10,12 +10,12 @@ from scipy.interpolate import PchipInterpolator
 import config
 from itertools import combinations
 import csv
-import prediction.prediction as prediction
+from prediction import prediction
 
 from experiment_setup.log import WARNING, log, setup_logging, DEBUG
 
-from concurrent.futures import ProcessPoolExecutor
-from itertools import repeat
+# from concurrent.futures import ProcessPoolExecutor
+# from itertools import repeat
 from collections import defaultdict
 
 
@@ -42,7 +42,7 @@ def get_sensitivity(name: str) -> PchipInterpolator:
 def _form_pair_prediction(
     app: str,
     competitor: str,
-    scores: Dict[str, float],
+    scores: dict[str, float],
     sensitivity: dict[str, PchipInterpolator],
 ) -> Prediction:
     contention = scores[competitor]
@@ -52,8 +52,6 @@ def _form_pair_prediction(
 
 
 def _form_equilibrium(applications: Iterable[str], contention_scores: dict[str, PchipInterpolator]) -> dict[str, float]:
-    global equilibrium_store
-    global store_hits
     key = tuple(applications)
 
     if key in equilibrium_store:
@@ -79,8 +77,7 @@ def _form_equilibrium(applications: Iterable[str], contention_scores: dict[str, 
 
     return equilibrium
 
-def predict_total_contention(competitors: List[Workload]) -> float:
-    global contentiousness_data
+def predict_total_contention(competitors: list[Workload]) -> float:
     if config.USE_SIMPLE_CONTENTIOUSNESS:
         contentiousness = _get_contentiousness()
 
@@ -102,7 +99,7 @@ def predict_total_contention(competitors: List[Workload]) -> float:
         return sum(final_scores.values())
 
 
-def predict_app_performance(application: Workload, competitors: List[Workload]) -> Prediction:
+def predict_app_performance(application: Workload, competitors: list[Workload]) -> Prediction:
     sensitivity = get_sensitivity(application.name)
 
     total_contention = predict_total_contention(competitors)
@@ -112,8 +109,7 @@ def predict_app_performance(application: Workload, competitors: List[Workload]) 
     y_max = sensitivity(sensitivity.x[-1])
     for x in sensitivity.x:
         y = sensitivity(x)
-        if y > y_max:
-            y_max = y
+        y_max = max(y_max, y)
             
     if prediction > y_max:
         prediction = y_max
@@ -122,7 +118,7 @@ def predict_app_performance(application: Workload, competitors: List[Workload]) 
 
     return Prediction(app=application.name, competitor=" + ".join(comp.name for comp in competitors), perf=sensitivity(0) / prediction, contentiousness=total_contention)
 
-def predict_pair_performance(applications: List[Workload], competitors: List[Workload]) -> List[Prediction]:
+def predict_pair_performance(applications: list[Workload], competitors: list[Workload]) -> list[Prediction]:
     scores = _get_contentiousness()
 
     sensitivity = {app.name: get_sensitivity(app.name) for app in applications}
@@ -161,29 +157,30 @@ def _predict_app(app, all_apps):
 
     return result
 
-def setup_contentiousness_data(applications: List[Workload]) -> None:
-    global contentiousness_data
+def setup_contentiousness_data(applications: Iterable[Workload]) -> None:
     for app in applications:
         cnt = read_application_contentiousness(app.name)
         contentiousness_data[app.name] = PchipInterpolator(list(cnt.keys()), list(cnt.values()))
 
-def predict_performance(applications: List[Workload]) -> dict[int, List[Prediction]]:
-    global equilibrium_store
-    global contentiousness_data
+def predict_deployments(deployments: list[Deployment]) -> dict[int, list[Prediction]]:
     predictions = defaultdict(list)
+    if not config.USE_SIMPLE_CONTENTIOUSNESS:
+        # TODO improve this conversion
+        apps = set(item for x in deployments for item in x.competitors)
+        setup_contentiousness_data(apps)
 
-    # with ProcessPoolExecutor() as executor:
+    for deployment in deployments:
+        pred = prediction.predict_app_performance(deployment.application, deployment.competitors)
+        k = len(deployment.competitors)
+        predictions[k].append(pred)
 
-    #     results = executor.map(
-    #         _predict_app,
-    #         applications,
-    #         repeat(applications)
-    #     )
-    #     for result in results:
-    #         for k, values in result.items():
-    #             predictions[k].extend(values)
-    
-    # return dict(predictions)
+    contentiousness_data.clear()
+    equilibrium_store.clear()
+
+    return predictions
+
+def predict_performance(applications: list[Workload]) -> dict[int, list[Prediction]]:
+    predictions = defaultdict(list)
 
     if not config.USE_SIMPLE_CONTENTIOUSNESS:
         setup_contentiousness_data(applications)
@@ -202,7 +199,7 @@ def predict_performance(applications: List[Workload]) -> dict[int, List[Predicti
 
     return predictions
 
-def _predict_with_competitors(application: Workload, competitors: List[Workload], n_competitors: int) -> List[Prediction]:
+def _predict_with_competitors(application: Workload, competitors: list[Workload], n_competitors: int) -> list[Prediction]:
     predictions = []
     competitors.sort(key=lambda comp: comp.name)
 
@@ -211,7 +208,7 @@ def _predict_with_competitors(application: Workload, competitors: List[Workload]
     
     return predictions
 
-def save_predictions(predictions: dict[int, List[Prediction]]) -> None:
+def save_predictions(predictions: dict[int, list[Prediction]]) -> None:
     for k, pred_list in predictions.items():
         with open(f"{config.RESULTS_DIR}/predictions_{k}comp.csv", "w") as f:
             writer = csv.writer(f, delimiter=",")

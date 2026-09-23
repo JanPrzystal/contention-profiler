@@ -3,8 +3,6 @@ import os
 import csv
 import random
 import time
-from tracemalloc import start
-from typing import Union, List
 from collections import namedtuple
 import config
 from experiment_setup.workload import Workload, run_background_workload, stop_process
@@ -18,7 +16,7 @@ ValidatedPrediction = namedtuple(
     "ValidatedPrediction", Prediction._fields + ("actual_perf",)
 )
 
-def get_key(prediction: Union[Prediction, ValidatedPrediction]) -> str:
+def get_key(prediction: Prediction | ValidatedPrediction) -> str:
     return f"{prediction.app} + {prediction.competitor}"
 
 
@@ -30,7 +28,7 @@ def read_predictions() -> list[Prediction]:
             for p in data
         ]
 
-def validate_prediction(prediction: Prediction, workloads: List[Workload]) -> ValidatedPrediction:
+def validate_prediction(prediction: Prediction, workloads: list[Workload]) -> ValidatedPrediction:
     # Get the tested app as a Workload object
     primary = next((w for w in workloads if w.name == prediction.app), None)
 
@@ -77,8 +75,8 @@ def writerow_and_sync(f, writer, row):
     f.flush()  # flush Python buffers to OS
     os.fsync(f.fileno())  # force OS to write to disk
 
-def validate_pair_predictions(applications: List[Workload], competitors: List[Workload], predictions: List[Prediction]) -> List[ValidatedPrediction]:
-    snapshot = read_snapshot()
+def validate_pair_predictions(applications: list[Workload], competitors: list[Workload], predictions: list[Prediction]) -> list[ValidatedPrediction]:
+    # snapshot = read_snapshot()
     # predictions = read_predictions()
 
     validated = []
@@ -89,29 +87,11 @@ def validate_pair_predictions(applications: List[Workload], competitors: List[Wo
 
     return validated
 
-    with open(VALIDATION_FILE, "a+") as f:
-        f.seek(0)
-        is_empty = f.read(1) == ""
-
-        writer = csv.writer(f, delimiter=",")
-        if is_empty:
-            writer.writerow(ValidatedPrediction._fields)
-
-        f.seek(0, os.SEEK_END)
-
-        for p in predictions:
-            key = get_key(p)
-            if key in snapshot:
-                continue
-            row = validate_prediction(p, applications + competitors)
-            log(str(row), INFO)
-            writerow_and_sync(f, writer, row)
-
 rng = random.Random(config.RANDOM_SEED)
-def rng_sample(predictions: List[Prediction], n: int) -> List[Prediction]:
+def rng_sample(predictions: list[Prediction], n: int) -> list[Prediction]:
     return rng.sample(predictions, min(n, len(predictions)))
 
-def choose_predictions(predictions: dict[int, List[Prediction]], max: int = config.VALIDATIONS) -> List[Prediction]:
+def choose_predictions(predictions: dict[int, list[Prediction]], max: int = config.VALIDATIONS) -> list[Prediction]:
     sample_size = max #min(max, len(predictions))
 
     max_competitors = config.MAX_COMPETITORS
@@ -147,7 +127,7 @@ def choose_predictions(predictions: dict[int, List[Prediction]], max: int = conf
 
     return predictions_list
 
-def validate_predictions(predictions: dict[int, List[Prediction]], workloads: List[Workload]) -> List[ValidatedPrediction]:
+def sample_and_validate_predictions(predictions: dict[int, list[Prediction]], workloads: list[Workload]) -> list[ValidatedPrediction]:
     validated_predictions = []
 
     sampled_predictions = choose_predictions(predictions, config.VALIDATIONS)
@@ -160,7 +140,16 @@ def validate_predictions(predictions: dict[int, List[Prediction]], workloads: Li
 
     return validated_predictions
 
-def save_validated_predictions(validated_predictions: List[ValidatedPrediction]) -> None:
+def validate_predictions(predictions: list[Prediction]) -> list[ValidatedPrediction]:
+    validated_predictions = []
+
+    for pred in predictions:
+        log(f"Validating prediction: {pred}")
+        validated_predictions.append(validate_prediction(pred, []))
+
+    return validated_predictions
+
+def save_validated_predictions(validated_predictions: list[ValidatedPrediction]) -> None:
     with open(f"{config.RESULTS_DIR}/validated.csv", "w") as f:
         writer = csv.writer(f, delimiter=",")
         writer.writerow(ValidatedPrediction._fields)

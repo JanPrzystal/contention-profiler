@@ -1,4 +1,3 @@
-from typing import list
 import os
 import pandas as pd
 import time
@@ -74,21 +73,21 @@ def _profile_contentiousness(workload: Workload, reporter: Workload) -> float:
         workload.run_in_background()
         time.sleep(config.WORKLOAD_WARMUP_TIME)
 
-        max = 0.0
-        min = 0.0
+        max_val = 0.0
+        min_val = 0.0
         try:
             for _ in range(config.PROFILING_REPETITIONS):
                 score = cnt.contentiousness_lookup(reporter.profile())
                 avg += score
-                max = max(max, score)
-                if score < min or min == 0.0:
-                    min = score
+                max_val = max(max_val, score)
+                if score < min_val or min_val == 0.0:
+                    min_val = score
                 time.sleep(config.WORKLOAD_WIND_DOWN_TIME)
 
         finally:
             workload.stop()
 
-        log(f"Range of contentiousness scores for {workload.name}: {max - min}, min: {min}, max: {max}", DEBUG)
+        log(f"Range of contentiousness scores for {workload.name}: {max_val - min_val}, min: {min_val}, max: {max_val}", DEBUG)
 
         return avg / config.PROFILING_REPETITIONS
 

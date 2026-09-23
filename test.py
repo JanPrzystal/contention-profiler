@@ -2,18 +2,16 @@ from time import sleep
 import logging
 
 import experiment_setup.core_manager as cm
+from experiment_setup.experiment import sample_deployments
 from profiling.profile_reporter import profile_reporter, profile_reporter_contentiousness
-import profiling.profile_workload as profile_workload
-import experiment_setup.reporter as reporter
+from profiling import profile_workload
 import experiment_setup.spec as spec
-import atexit
 import os
 import signal
-import sys
-import prediction.prediction as prediction
+from prediction import prediction
 import prediction.validation as validation
-import profiling.contentiousness as contentiousness
-from experiment_setup.source_of_interference import Bubble, BUILD_DIR, compile_soi
+from profiling import contentiousness
+from experiment_setup.source_of_interference import SoI, compile_soi
 import config
 import experiment_setup.reporter as rp
 from experiment_setup.cpu_freq import CpuFreqPolicy, Governor
@@ -85,8 +83,8 @@ def test_soi_additiveness():
     log("Test with SoI", logging.INFO)
 
     for i in range(1, 7):
-        soi1 = Bubble(base*i, 1)
-        soi2 = Bubble(base, i)
+        soi1 = SoI(base*i, 1)
+        soi2 = SoI(base, i)
 
         soi1.run_in_background()
 
@@ -173,13 +171,13 @@ def test_hpc_reporter():
     # log(f"Perf results: {perf_results}", logging.INFO)
 
 def test_hpc_soi():
-    soi = Bubble(16, 1)
+    soi = SoI(16, 1)
 
     config.USE_HPC = True
 
     profile_workload.profile_sensitivity([soi])
 
-    plot_metrics("bubble_rand_data.csv")
+    plot_metrics("soi_rand_data.csv")
 
 def test_equilibrium_prediction():
     bench = [spec.deepsjeng, spec.leela, spec.bwaves, spec.cam4, spec.nab, spec.fotonik3d]
@@ -299,11 +297,8 @@ def profile_spec_competition_hpc():
 
         profile_workload.profile_sensitivity_hpc(app1, app2, path)
 
-if __name__ == "__main__":
 
-    setup_logging(DEBUG)
-
-
+def main():
     config.USE_ROOT_PRIORITY = False
     config.DATA_SIZE = "train"
 
@@ -324,3 +319,13 @@ if __name__ == "__main__":
 
     CpuFreqPolicy.reset_governor()
 
+if __name__ == "__main__":
+    # main()
+    setup_logging(DEBUG)
+
+    deployments = sample_deployments(spec.ALL_SPEC_WORKLOADS, 15, 20)
+
+    apps = set(item for x in deployments for item in x.competitors)
+
+    for app in apps:
+        print(f"{app.name}")

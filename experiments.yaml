@@ -1,44 +1,5 @@
 experiments:
-
-  - name: multi_new_ac
-    benchmarks:
-    - 600.perlbench_s
-    - 602.gcc_s
-    - 605.mcf_s
-    - 620.omnetpp_s
-    - 623.xalancbmk_s
-    - 625.x264_s
-    - 631.deepsjeng_s
-    - 641.leela_s
-    - 648.exchange2_s
-    - 657.xz_s
-    - 603.bwaves_s
-    - 607.cactuBSSN_s
-    - 619.lbm_s
-    - 627.cam4_s
-    - 628.pop2_s
-    - 638.imagick_s
-    - 644.nab_s
-    - 649.fotonik3d_s
-    - 654.roms_s
-    reporter: alternating
-    soi: 
-      type: rand
-      number: 7
-    max_mem_footprint: 112
-    mem_interval: 16
-    reporter_repetitions: 20
-    deployment: multi
-    data_size: train
-    root: true
-    profiling_repetitions: 2
-    use_interpolation: true
-    progressive_profiling: true
-    simple_contentiousness: false
-    validations: 140
-    background_cores: 1,2,3,4,5,6,7
-
-  - name: multi_new_ac_tmb
+  - name: cpu_sc_tmb
     benchmarks:
     - 600.perlbench_s
     - 602.gcc_s
@@ -62,9 +23,47 @@ experiments:
     reporter: tinymembench
     soi: 
       type: rand
-      number: 7
-    max_mem_footprint: 112
-    mem_interval: 16
+      number: 15
+    max_mem_footprint: 480
+    mem_interval: 32
+    reporter_repetitions: 2
+    deployment: multi
+    data_size: train
+    root: true
+    profiling_repetitions: 2
+    use_interpolation: true
+    progressive_profiling: true
+    simple_contentiousness: true
+    validations: 31
+    background_cores: 1,2,3,4,5,6,7,0,1,2,3,4,5,6,7
+
+  - name: cpu_ac_tmb
+    benchmarks:
+    - 600.perlbench_s
+    - 602.gcc_s
+    - 605.mcf_s
+    - 620.omnetpp_s
+    - 623.xalancbmk_s
+    - 625.x264_s
+    - 631.deepsjeng_s
+    - 641.leela_s
+    - 648.exchange2_s
+    - 657.xz_s
+    - 603.bwaves_s
+    - 607.cactuBSSN_s
+    - 619.lbm_s
+    - 627.cam4_s
+    - 628.pop2_s
+    - 638.imagick_s
+    - 644.nab_s
+    - 649.fotonik3d_s
+    - 654.roms_s
+    reporter: tinymembench
+    soi: 
+      type: rand
+      number: 15
+    max_mem_footprint: 480
+    mem_interval: 32
     reporter_repetitions: 2
     deployment: multi
     data_size: train
@@ -73,5 +72,5 @@ experiments:
     use_interpolation: true
     progressive_profiling: true
     simple_contentiousness: false
-    validations: 140
-    background_cores: 1,2,3,4,5,6,7
+    validations: 31
+    background_cores: 1,2,3,4,5,6,7,0,1,2,3,4,5,6,7

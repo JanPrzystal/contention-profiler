@@ -1,7 +1,6 @@
 from pathlib import Path
 import yaml
 from dataclasses import dataclass
-from typing import List
 from analysis import draw_sensitivity, draw_validation
 from experiment_setup import spec
 from experiment_setup.cpu_freq import CpuFreqPolicy, Governor
@@ -10,15 +9,13 @@ import config
 import experiment_setup.reporter as rp
 from experiment_setup.workload import Workload
 
-import profiling.profile_workload as profile_workload
-import profiling.profile_reporter as profile_reporter
-import prediction.prediction as prediction
-import prediction.validation as validation
-from experiment_setup.spec import SpecWorkload, spec_validation
+from prediction.deployment import Deployment, MULTI_VALIDATION_DEPLOYMENTS, CPU_VALIDATION_DEPLOYMENTS, create_random_deployment
+from profiling import profile_workload
+from profiling import profile_reporter
+from prediction import prediction, validation
+from experiment_setup.spec import SpecWorkload
 from time import time
 from datetime import datetime
-from experiment_setup.cpu_freq import CpuFreqPolicy
-
 from experiment_setup.log import log, DEBUG, ERROR
 import experiment_setup.core_manager as cm
 
@@ -32,7 +29,7 @@ class SoIConfig:
 @dataclass
 class Experiment:
     name: str
-    benchmarks: List[str]
+    benchmarks: list[str]
     reporter: str
     soi: SoIConfig
     max_mem_footprint: int
@@ -46,7 +43,7 @@ class Experiment:
     progressive_profiling: bool
     validations: int
     simple_contentiousness: bool
-    background_cores: List[int]
+    background_cores: list[int]
 
 
 def parse_config():
@@ -81,31 +78,78 @@ def parse_config():
 
 
 
-def predict_performance(applications: List[Workload]) -> dict[int, List[prediction.Prediction]]:
+def predict_performance_applications(applications: list[Workload]) -> dict[int, list[prediction.Prediction]]:
     predictions = prediction.predict_performance(applications)
     prediction.save_predictions(predictions)
 
     return predictions
 
-def check_profiling_complete() -> bool:
-    reporter = Path(config.RESULTS_DIR + "/reporter_sensitivity.csv").is_file()
+def predict_performance_deployments(deployments: list[Deployment]) -> dict[int, list[prediction.Prediction]]:
+    predictions = prediction.predict_deployments(deployments)
+    prediction.save_predictions(predictions)
+
+    return predictions
+
+def sample_deployments(
+        applications: list[Workload], 
+        ncompetitors: int, 
+        random_samples: int, 
+        add_predefined: bool = True,
+        only_max_competitors: bool = False
+    ) -> list[Deployment]:
+    deployments = []
+
+    if add_predefined:
+        if ncompetitors < 8:
+            deployments += MULTI_VALIDATION_DEPLOYMENTS
+        else:
+            deployments += CPU_VALIDATION_DEPLOYMENTS
+
+    if only_max_competitors:
+        for _ in range(random_samples):
+            deployment = create_random_deployment(ncompetitors, applications)
+            deployments.append(deployment)
+
+    else:
+        samples = random_samples // ncompetitors
+        for i in range(1, ncompetitors + 1):
+            for _ in range(samples):    
+                deployment = create_random_deployment(i, applications)
+                deployments.append(deployment)
+
+    return deployments
+    
+
+def check_profiling_state() -> int:
+    reporter_file = Path(config.RESULTS_DIR + "/reporter_sensitivity.csv")
+    if not reporter_file.is_file() or reporter_file.stat().st_size == 0:
+        # log(f"Reporter file {reporter_file} does not exist or is empty", ERROR)
+        return 0 
+
     contentiousness = Path(config.RESULTS_DIR + "/contentiousness.csv").is_file() or Path(config.RESULTS_DIR + "/contentiounsess").is_dir()
-    sensitivity = Path(config.RESULTS_DIR + "/sensitivity").is_dir()
+    if not contentiousness:
+        return 1
+    
+    sensitivity_dir = Path(config.RESULTS_DIR + "/sensitivity")
+    if not sensitivity_dir.is_dir() or not any(sensitivity_dir.iterdir()):
+        return 2
 
-    log(f"Profiling status check {reporter}, {contentiousness}, {sensitivity}")
-    return reporter and contentiousness and sensitivity
+    return 3
 
-def conduct_experiment(reporter: Workload, applications: List[Workload], pairwise: bool):
+def conduct_experiment(reporter: Workload, applications: list[Workload], pairwise: bool):
     # Timers
     tstart, treporter, tcontentiousness, tsensitivity = 0, 0, 0, 0
 
     # Check if the experiment can be resumed
-    if not check_profiling_complete():
+    profiling_state = check_profiling_state()
+    log(f"Profiling state: {profiling_state}")
+    if profiling_state < 1:
         # Sensitivity and contentiousness profiling
         tstart = time()
         profile_reporter.profile_reporter(reporter)
         treporter = time() - tstart
 
+    if profiling_state < 2:
         max_contentiousness = profile_workload.profile_contentiousness(applications, reporter)
         tcontentiousness = time() - tstart - treporter
         if max_contentiousness is not None and pairwise:
@@ -113,6 +157,7 @@ def conduct_experiment(reporter: Workload, applications: List[Workload], pairwis
             log(f"Max contentiousness across all workloads: {max_contentiousness}")
             config.DIAL_END_MB = int(max_contentiousness) + 1
 
+    if profiling_state < 3:
         profile_workload.profile_sensitivity(applications)
         tsensitivity = time() - tstart - treporter - tcontentiousness
 
@@ -120,6 +165,7 @@ def conduct_experiment(reporter: Workload, applications: List[Workload], pairwis
     # draw_contentiousness()
 
     ttotal = time() - tstart
+    log("Profiling complete")
 
     # Predictions and validations
     if pairwise:
@@ -128,7 +174,16 @@ def conduct_experiment(reporter: Workload, applications: List[Workload], pairwis
         validated_predictions = validation.validate_pair_predictions(applications, applications, predictions)
         validation.save_validated_predictions(validated_predictions)
     else:
-        predictions = predict_performance(applications)
+        deployments = sample_deployments(
+            applications, 
+            config.MAX_COMPETITORS, 
+            config.VALIDATIONS, 
+            config.PREDEFINED_VALIDATIONS,
+            True
+        )
+
+        predictions = predict_performance_deployments(deployments)
+
         prediction_list = []
         for plist in list(predictions.values()):
             prediction_list.extend(plist)
@@ -136,9 +191,7 @@ def conduct_experiment(reporter: Workload, applications: List[Workload], pairwis
         log(f"Formed {len(prediction_list)} predictions")
 
         validated_predictions = []
-        validated_predictions = validation.validate_predictions(predictions, applications)
-        if config.PREDEFINED_VALIDATIONS:
-            validated_predictions.extend(spec_validation(prediction_list))
+        validated_predictions = validation.sample_and_validate_predictions(predictions, applications)
 
         validation.save_validated_predictions(validated_predictions)
 

@@ -1,6 +1,5 @@
 import subprocess
 import os
-from typing import list
 import sys
 import re
 import config

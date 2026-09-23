@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 import subprocess
-from typing import list
 import config
 
 import experiment_setup.core_manager as cm
