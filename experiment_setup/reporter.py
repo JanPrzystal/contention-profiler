@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import subprocess
-from typing import List
+from typing import list
 import config
 
 import experiment_setup.core_manager as cm
@@ -44,9 +44,9 @@ class AveragingReporter(Workload):
 
         self.script_file = REPORTER_SCRIPT_FILES[script_file]
         if self.script_file is None:
-            raise ValueError(f"Invalid script file")
+            raise ValueError("Invalid script file")
         
-    def get_command(self, background: bool = False) -> List[str]:
+    def get_command(self, background: bool = False) -> list[str]:
         repetitions: int = config.REPORTER_REPETITIONS
 
         return [
@@ -73,6 +73,7 @@ class AveragingReporter(Workload):
         reporter = subprocess.run(
             cmd,
             capture_output=True,
+            check=False
         )
 
         raw_output = reporter.stdout.decode("utf-8")
@@ -102,9 +103,9 @@ class AveragingReporter(Workload):
         if config.USE_ROOT_PRIORITY:
             cmd = config.ROOT_TASK_CMD + cmd
 
-        subprocess = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        subproc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-        self.proc = Process(subprocess, idx)
+        self.proc = Process(subproc, idx)
 
     def stop(self) -> None:
         if self.proc is not None:
@@ -125,9 +126,9 @@ class MembenchReporter(Workload):
 
         self.script_file = REPORTER_SCRIPT_FILES[script_file]
         if self.script_file is None:
-            raise ValueError(f"Invalid script file")
+            raise ValueError("Invalid script file")
 
-    def get_command(self, background: bool = False) -> List[str]:
+    def get_command(self, background: bool = False) -> list[str]:
         repetitions: int = config.REPORTER_REPETITIONS if not background else 1000
 
         return [
@@ -150,6 +151,7 @@ class MembenchReporter(Workload):
         reporter = subprocess.run(
             cmd,
             capture_output=True,
+            check=False
         )
 
         raw_output = reporter.stdout.decode("utf-8")
@@ -169,7 +171,7 @@ class MembenchReporter(Workload):
         return self._process_output(output)
 
     def run_in_background(self):
-        idx, core = cm.background_core_dispenser.acquire()
+        idx, _ = cm.background_core_dispenser.acquire()
 
         cmd = self.get_command(True)
         

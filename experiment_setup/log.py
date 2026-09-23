@@ -12,7 +12,6 @@ ERROR = logging.ERROR
 logger = logging.getLogger(LOGGER_NAME)
 
 def setup_logging(level=logging.INFO):
-    global logger
     # remove/close any existing handlers to avoid writing to deleted files
     for h in list(logger.handlers):
         try:
@@ -46,7 +45,6 @@ def setup_logging(level=logging.INFO):
 
 
 def log(message: str, level=logging.INFO):
-    global logger
     if level == logging.DEBUG:
         logger.debug(message)
     elif level == logging.INFO:

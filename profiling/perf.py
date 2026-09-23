@@ -1,6 +1,6 @@
 import subprocess
 import os
-from typing import List
+from typing import list
 import sys
 import re
 import config
@@ -73,7 +73,7 @@ def parse_perf_output(output: str) -> dict:
 
     return results
 
-def profile(workload: List[str], cores: str = None) -> dict:
+def profile(workload: list[str], cores: str | None = None) -> dict:
 
     cmd = [
         "perf",

@@ -4,6 +4,7 @@ from typing import Final
 RESULTS_DIR: Final[str] = "experiment_results"
 SOI_DIR: Final[str] = "./soi"
 SPEC_PATH: Final[str] = "../cpu2017"
+BUILD_DIR: Final[str] = "build"
 SENSITIVITY_DIR = Path(RESULTS_DIR) / 'sensitivity'
 
 RANDOM_SEED: Final[int] = 42

@@ -4,7 +4,7 @@ import signal
 
 from experiment_setup import spec
 from experiment_setup.log import log, DEBUG
-from experiment_setup.source_of_interference import Bubble, SpecSoI
+from experiment_setup.source_of_interference import SoI, SpecSoI
 import config
 from experiment_setup.workload import Workload
 import profiling.contentiousness as cnt
@@ -16,20 +16,20 @@ def profile_reporter_sensitivity(reporter: Workload, size_mb: int, nsoi: int = c
 
 
     if config.USE_SPEC_SOI:
-        bubble = SpecSoI(spec.lbm, nsoi)
+        soi = SpecSoI(spec.lbm, nsoi)
     else:
-        bubble = Bubble(size_mb, nsoi)
-    bubble.run_in_background()
+        soi = SoI(size_mb, nsoi)
+    soi.run_in_background()
     time.sleep(config.WORKLOAD_WARMUP_TIME)
     try:
         return reporter.profile()
     finally:
-        bubble.stop()
+        soi.stop()
 
 
 def _profile_reporter(reporter: Workload) -> None:
     with open(f"{config.RESULTS_DIR}/reporter_sensitivity.csv", "w+") as f:
-        f.write(f"footprint_mb,perf\n")
+        f.write("pressure,perf\n")
         
         for size_mb in range(config.DIAL_START_MB, config.DIAL_END_MB + config.DIAL_STEP_MB, config.DIAL_STEP_MB):
             perf = profile_reporter_sensitivity(reporter, size_mb, config.NSOI)
@@ -38,7 +38,7 @@ def _profile_reporter(reporter: Workload) -> None:
 
 def _profile_reporter_progressive(reporter: Workload) -> None:
     with open(f"{config.RESULTS_DIR}/reporter_sensitivity.csv", "w+") as f:
-        f.write(f"footprint_mb,perf\n")
+        f.write("pressure,perf\n")
 
         max_soi = config.NSOI
         interval = config.DIAL_RANGE_MB // max_soi
@@ -65,7 +65,7 @@ def profile_reporter_contentiousness(reporter: Workload) -> float:
     result = 0.0
 
     with open(f"{config.RESULTS_DIR}/reporter_contentiousness.csv", "a+") as f:
-        f.write(f"footprint_mb,contentiousness\n")
+        f.write("pressure,contentiousness\n")
 
         reporter.run_in_background()
         

@@ -1,15 +1,12 @@
-from typing import List
+from typing import list
 import os
 import pandas as pd
 import time
 from pathlib import Path
 
 from analysis.draw_contentiousness import draw_contentiousness
-from experiment_setup import core_manager
-import experiment_setup.reporter as rp
-import experiment_setup.workload as workload
 
-from experiment_setup.source_of_interference import Bubble
+from experiment_setup.source_of_interference import SoI
 import config
 from config import SENSITIVITY_DIR
 from experiment_setup.workload import Workload
@@ -38,9 +35,8 @@ def _save_sensitivity_data(workload_name: str, sensitivity: dict[int, float]) ->
     benchmark_file = workload_name.replace(".", "_")
     path = SENSITIVITY_DIR / f"{benchmark_file}_data.csv"
     with open(path, "w+") as f:
-        f.write("footprint_mb,perf\n")
-        for k, v in sensitivity.items():
-            f.write(f"{k},{v}\n")
+        f.write("pressure,perf\n")
+        f.writelines(f"{k},{v}\n" for k, v in sensitivity.items())
 
 
 def _profile_sensitivity(workload: Workload) -> None:
@@ -63,15 +59,15 @@ def _profile_sensitivity_dial(workload: Workload, size_mb: int, nproc: int) -> f
     if size_mb == 0:
         log("Profiling in isolation")
         return workload.profile()
-    bubble = Bubble(size_mb, nproc)
-    bubble.run_in_background()
+    soi = SoI(size_mb, nproc)
+    soi.run_in_background()
 
     time.sleep(config.WORKLOAD_WARMUP_TIME)
     
     try:
         return workload.profile()
     finally:
-        bubble.stop()
+        soi.stop()
 
 def _profile_contentiousness(workload: Workload, reporter: Workload) -> float:
         avg = 0.0
@@ -84,8 +80,7 @@ def _profile_contentiousness(workload: Workload, reporter: Workload) -> float:
             for _ in range(config.PROFILING_REPETITIONS):
                 score = cnt.contentiousness_lookup(reporter.profile())
                 avg += score
-                if score > max:
-                    max = score
+                max = max(max, score)
                 if score < min or min == 0.0:
                     min = score
                 time.sleep(config.WORKLOAD_WIND_DOWN_TIME)
@@ -103,7 +98,7 @@ def _save_contentiousness_data(data: dict[str,float]) -> None:
     df = pd.DataFrame(csv_data)
     df.to_csv(f"{config.RESULTS_DIR}/contentiousness.csv", sep=",", index=False, header=True)
 
-def profile_sensitivity(workloads: List[Workload]) -> None:
+def profile_sensitivity(workloads: list[Workload]) -> None:
     if not os.path.isdir(SENSITIVITY_DIR):
         os.mkdir(SENSITIVITY_DIR)
     for workload in workloads:
@@ -116,7 +111,7 @@ def profile_sensitivity(workloads: List[Workload]) -> None:
     
 
 # Profiles the contentiousness of each workload and saves the results to a file. Returns the maximum contentiousness score across all workloads.
-def _profile_contentiousness_simple(workloads: List[Workload], reporter: Workload) -> float:
+def _profile_contentiousness_simple(workloads: list[Workload], reporter: Workload) -> float:
     contentiousness = {}
     max_contentiousness = 0
 
@@ -131,15 +126,14 @@ def _profile_contentiousness_simple(workloads: List[Workload], reporter: Workloa
         log(f"{workload.name} contentiousness: {contentiousness[workload.name]}")
 
         # Find biggest contentiousness score
-        if contentiousness[workload.name] > max_contentiousness:
-            max_contentiousness = contentiousness[workload.name]
+        max_contentiousness = max(max_contentiousness, contentiousness[workload.name])
     
     _save_contentiousness_data(contentiousness)
 
     log(f"MaxContentiousness: {max_contentiousness}")
     return max_contentiousness
 
-def profile_contentiousness(workloads: List[Workload], reporter: Workload) -> float | None:
+def profile_contentiousness(workloads: list[Workload], reporter: Workload) -> float | None:
     if config.USE_SIMPLE_CONTENTIOUSNESS:
         return _profile_contentiousness_simple(workloads, reporter)
     else:
@@ -168,12 +162,12 @@ def profile_added_contentiousness(workload: Workload, reporter: Workload) -> Non
 
             log(f"Profiling {workload.name} with {nsoi} SoI size {size_mb}MB")
             
-            bubble = Bubble(size_mb, nsoi)
-            bubble.run_in_background()
+            soi = SoI(size_mb, nsoi)
+            soi.run_in_background()
             try:
                 result = _profile_contentiousness(workload, reporter) - size_mb
             finally:
-                bubble.stop()
+                soi.stop()
 
         contentiousness[size_mb] = result
 
@@ -184,16 +178,15 @@ def profile_added_contentiousness(workload: Workload, reporter: Workload) -> Non
     path = f"{config.RESULTS_DIR}/contentiousness/{benchmark_file}_contentiousness.csv"
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w+") as f:
-        f.write("footprint_mb,contentiousness\n")
-        for k, v in contentiousness.items():
-            f.write(f"{k},{v}\n")
+        f.write("pressure,contentiousness\n")
+        f.writelines(f"{k},{v}\n" for k, v in contentiousness.items())
 
     
 def _profile_sensitivity_progressive(benchmark: Workload):
     name = benchmark.name.replace(".", "_")
     path = SENSITIVITY_DIR / f"{name}_data.csv"
     with open(path, "w+") as f:
-        f.write(f"footprint_mb,perf\n")
+        f.write("pressure,perf\n")
 
         max_soi = config.NSOI
         interval = config.DIAL_RANGE_MB // max_soi
@@ -221,24 +214,24 @@ def _write_hpc_result(file, result, label):
         f"{result['llc_miss_rate']},{result['cpi']}\n"
     )
 
-def profile_sensitivity_hpc(workload: Workload, competitor: Workload = None, path: Path = None) -> None:
+def profile_sensitivity_hpc(workload: Workload, competitor: Workload | None = None, path: Path | None = None) -> None:
     name = workload.name.replace(".", "_")
     if not path:
         path = SENSITIVITY_DIR / f"{name}_data.csv"
 
     with open(path, "w+") as f:
-        f.write(f"footprint_mb,"
-        f"time,time_user,time_sys,"
-        f"LLC-loads,LLC-load-misses,"
-        f"LLC-stores,LLC-store-misses,"
-        f"L1-dcache-loads,L1-dcache-load-misses,"
-        f"L1-icache-load-misses,L1-dcache-stores,"
-        f"cache-misses,"
-        f"dTLB-load-misses,dTLB-store-misses,"
-        f"branch-misses,"
-        f"context-switches,"
-        f"LLC-miss-rate,"
-        f"CPI\n")
+        f.write("pressure,"
+        "time,time_user,time_sys,"
+        "LLC-loads,LLC-load-misses,"
+        "LLC-stores,LLC-store-misses,"
+        "L1-dcache-loads,L1-dcache-load-misses,"
+        "L1-icache-load-misses,L1-dcache-stores,"
+        "cache-misses,"
+        "dTLB-load-misses,dTLB-store-misses,"
+        "branch-misses,"
+        "context-switches,"
+        "LLC-miss-rate,"
+        "CPI\n")
 
         if competitor is None:
             max_soi = config.NSOI
@@ -246,18 +239,18 @@ def profile_sensitivity_hpc(workload: Workload, competitor: Workload = None, pat
             nsoi = 0
             
             for size_mb in range(config.DIAL_START_MB, config.DIAL_END_MB + config.DIAL_STEP_MB, config.DIAL_STEP_MB):
-                bubble = None
+                soi = None
                 if size_mb > 0:
                     nsoi = max(size_mb // interval, 1)
-                    bubble = Bubble(size_mb, nsoi)
-                    bubble.run_in_background()
+                    soi = SoI(size_mb, nsoi)
+                    soi.run_in_background()
                     time.sleep(config.WORKLOAD_WARMUP_TIME)
 
                 core = config.WORKLOAD_UNDER_PROFILING_CORES
                 result = perf.profile(workload.get_command(), cores=core)
 
-                if bubble is not None:
-                    bubble.stop()
+                if soi is not None:
+                    soi.stop()
 
                 _write_hpc_result(f, result, size_mb)
         else:

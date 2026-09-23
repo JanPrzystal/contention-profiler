@@ -1,3 +1,4 @@
+from collections import defaultdict
 import sys
 import zipfile
 import pandas as pd
@@ -54,8 +55,8 @@ def handle_validation_csv(file):
         }
 
 
-def handle_timing(file):
-    timings = dict()
+def handle_timing(file) -> dict[str, float]:
+    timings = defaultdict(float)
     for line in file:
         line = line.decode("utf-8").strip()
         name = line.split("=")[0].strip()
@@ -65,8 +66,6 @@ def handle_timing(file):
     return timings
 
 def process_zip_files(zip_paths):
-    global results
-
     for zip_path in zip_paths:
         result = {"name": zip_path.split(".zip")[0]}
         with zipfile.ZipFile(zip_path) as z:

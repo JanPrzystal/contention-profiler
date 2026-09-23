@@ -37,21 +37,21 @@ NORMALIZE = True
 def plot_metrics(filename: str, bar_chart: bool = False):
     # csv_path = pathlib.Path(config.RESULTS_DIR) / "sensitivity" / filename
     df = pd.read_csv(filename, delimiter=",")
-    # df = df.sort_values("footprint_mb")
+    # df = df.sort_values("pressure")
 
-    labels = df["footprint_mb"].astype(str).to_numpy()
+    labels = df["pressure"].astype(str).to_numpy()
     x = np.arange(len(labels))
 
-    # x = pd.to_numeric(df["footprint_mb"], errors="coerce").to_numpy(dtype=float)
+    # x = pd.to_numeric(df["pressure"], errors="coerce").to_numpy(dtype=float)
     finite_x = x[np.isfinite(x)]
     if finite_x.size == 0:
-        raise ValueError("No valid footprint_mb values found in CSV")
+        raise ValueError("No valid pressure values found in CSV")
 
     xmax = finite_x.max()
     padding = max(0.05 * xmax, 1.0)   # 5% or at least 1 MB
     xlim = xmax + padding
 
-    fig, ax = plt.subplots(figsize=(10, 5))
+    _, ax = plt.subplots(figsize=(10, 5))
 
     colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
     markers = ["o", "s", "v", "^", "D", "X", "P", "*"]
@@ -155,7 +155,7 @@ if __name__ == "__main__":
 
     if len(sys.argv) < 2:
         print("Provide a path!")
-        exit()
+        sys.exit()
 
     path = ""
     bar = False

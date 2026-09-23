@@ -1,4 +1,4 @@
-from typing import List
+from typing import list
 
 import pandas as pd
 import logging
@@ -43,7 +43,7 @@ def get_validated_df(remove_cactu: bool = False, path: str = "", name: str = "")
 
     try:
         df['name'] = path.split("/")[-1]
-    except:
+    except ValueError:
         df['name'] = name
     return df
 
@@ -123,16 +123,14 @@ def draw_validation():
         log(f"Failed to generate chart: {e}", level=logging.ERROR)
 
 
-def draw_errors_by_competitors(dfs: List[pd.DataFrame]) -> None:
+def draw_errors_by_competitors(dfs: list[pd.DataFrame]) -> None:
     
     y_min = 0
     y_max = 0
 
     for df in dfs:
-        if df['diff_pct'].min() < y_min:
-            y_min = df['diff_pct'].min()
-        if df['diff_pct'].max() > y_max:
-            y_max = df['diff_pct'].max()
+        y_min = min(y_min, df['diff_pct'].min())
+        y_max = max(y_max, df['diff_pct'].max())
 
     y_padding = max((y_max - y_min) * 0.05, 0.1)
 
@@ -176,9 +174,13 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         dfs = []
         for path in sys.argv[1:]:
-            with zipfile.ZipFile(path) as z:
-                with z.open("experiment_results/validated.csv") as f:
-                    dfs.append(get_validated_df(True, f, path.split("/")[-1].replace(".zip", "")))
+            with (
+                zipfile.ZipFile(path) as z,
+                z.open("experiment_results/validated.csv") as f
+            ):
+                dfs.append(
+                    get_validated_df(True, f, Path(path).stem)
+                )
 
         draw_errors_by_competitors(dfs)
 

@@ -39,7 +39,7 @@ def draw_contentiousness():
 
     for ax, df, label in zip(axes, dfs, labels):
         # Normalize the series
-        x = df["footprint_mb"].to_numpy()
+        x = df["pressure"].to_numpy()
         y = df["contentiousness"].to_numpy()
 
         # Interpolate

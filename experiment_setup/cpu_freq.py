@@ -19,7 +19,7 @@ class Governor(Enum):
 class CpuFreqPolicy:
     DEFAULT_GOVERNOR = "ondemand"
     SET_COMMAND = "sudo cpupower frequency-set --governor {governor}"
-    GET_COMMAND ="cpupower frequency-info -o proc".split(" ")
+    GET_COMMAND =["cpupower", "frequency-info", "-o", "proc"]
 
     @staticmethod
     def set_governor(governor: Governor):

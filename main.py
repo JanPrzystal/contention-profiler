@@ -2,16 +2,12 @@ import os
 import sys
 import shutil
 import config
-import analysis.draw_sensitivity as draw_sensitivity
-import analysis.draw_validation as draw_validation
 from experiment_setup.log import DEBUG, log, setup_logging
 
 import subprocess
-from py_containters.mds import MdsFactory
-from py_containters.kube_workload import KubeWorkload
-from typing import List
-import experiment_setup.experiment as experiment
-import csv
+# from py_containters.mds import MdsFactory
+# from py_containters.kube_workload import KubeWorkload 
+from experiment_setup import experiment
 from experiment_setup.cpu_freq import CpuFreqPolicy
 
 
@@ -46,7 +42,7 @@ MDS_SERVICES = ["datatest", "dataforwarding", "datageneration"]
 #     conduct_experiment(reporter, applications, competitors)
 
 if __name__ == "__main__":
-    resume = False if len(sys.argv) < 2 else True if sys.argv[1] == "resume" else False
+    resume = False if len(sys.argv) < 2 else sys.argv[1] == "resume"
     
     experiments = experiment.parse_config()
 

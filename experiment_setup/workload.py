@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import list
 import subprocess
 import config
 import experiment_setup.core_manager as cm
@@ -21,10 +21,9 @@ class Workload(ABC):
 
     def __init__(self, name: str):
         self.name = name
-        pass
 
     @abstractmethod
-    def get_command(self, background: bool = False) -> List[str]:
+    def get_command(self, background: bool = False) -> list[str]:
         pass
 
     @abstractmethod

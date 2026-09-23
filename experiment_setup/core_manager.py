@@ -8,7 +8,7 @@ class CoreManager:
         self.available_indices = set(range(len(self.cores)))
         self.lock = threading.Lock()
 
-    def acquire(self) -> (int, str):
+    def acquire(self) -> tuple[int, str]:
         with self.lock:
             if not self.available_indices:
                 raise RuntimeError("No free cores available")

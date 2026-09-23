@@ -42,7 +42,7 @@ def draw_sensitivity():
         
         df["perf"] = df["perf"].iloc[0] / df["perf"]
 
-        x = df["footprint_mb"].to_numpy()
+        x = df["pressure"].to_numpy()
         y = df["perf"].to_numpy()
 
         xlim = x.max() + xpad
