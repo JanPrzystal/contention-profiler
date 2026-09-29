@@ -126,7 +126,7 @@ def check_profiling_state() -> int:
         # log(f"Reporter file {reporter_file} does not exist or is empty", ERROR)
         return 0 
 
-    contentiousness = Path(config.RESULTS_DIR + "/contentiousness.csv").is_file() or Path(config.RESULTS_DIR + "/contentiounsess").is_dir()
+    contentiousness = Path(config.RESULTS_DIR + "/contentiousness.csv").is_file() or Path(config.RESULTS_DIR + "/contentiousness").is_dir()
     if not contentiousness:
         return 1
     
@@ -191,7 +191,7 @@ def conduct_experiment(reporter: Workload, applications: list[Workload], pairwis
         log(f"Formed {len(prediction_list)} predictions")
 
         validated_predictions = []
-        validated_predictions = validation.sample_and_validate_predictions(predictions, applications)
+        validated_predictions = validation.validate_predictions(prediction_list)
 
         validation.save_validated_predictions(validated_predictions)
 

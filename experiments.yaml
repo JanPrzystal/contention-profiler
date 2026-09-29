@@ -1,5 +1,5 @@
 experiments:
-  - name: cpu_sc_tmb
+  - name: multi_ac_tmb
     benchmarks:
     - 600.perlbench_s
     - 602.gcc_s
@@ -23,8 +23,8 @@ experiments:
     reporter: tinymembench
     soi: 
       type: rand
-      number: 15
-    max_mem_footprint: 480
+      number: 7
+    max_mem_footprint: 224
     mem_interval: 32
     reporter_repetitions: 2
     deployment: multi
@@ -33,9 +33,9 @@ experiments:
     profiling_repetitions: 2
     use_interpolation: true
     progressive_profiling: true
-    simple_contentiousness: true
-    validations: 31
-    background_cores: 1,2,3,4,5,6,7,0,1,2,3,4,5,6,7
+    simple_contentiousness: false
+    validations: 140
+    background_cores: 1,2,3,4,5,6,7
 
   - name: cpu_ac_tmb
     benchmarks:

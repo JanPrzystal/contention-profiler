@@ -5,6 +5,7 @@ import random
 import time
 from collections import namedtuple
 import config
+from experiment_setup.spec import ALL_SPEC_WORKLOADS
 from experiment_setup.workload import Workload, run_background_workload, stop_process
 from prediction.prediction import Prediction
 
@@ -145,7 +146,7 @@ def validate_predictions(predictions: list[Prediction]) -> list[ValidatedPredict
 
     for pred in predictions:
         log(f"Validating prediction: {pred}")
-        validated_predictions.append(validate_prediction(pred, []))
+        validated_predictions.append(validate_prediction(pred, ALL_SPEC_WORKLOADS))
 
     return validated_predictions
 

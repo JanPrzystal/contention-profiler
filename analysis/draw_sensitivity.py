@@ -12,7 +12,7 @@ parent_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(parent_dir))
 import config
 
-xpad = 8
+xpad = 1
 
 def draw_sensitivity():
     labels, dfs = get_data()
@@ -25,7 +25,7 @@ def draw_sensitivity():
     fig, axes = plt.subplots(
         nrows=rows,
         ncols=cols,
-        figsize=(cols * 3, rows * 3),
+        figsize=((cols + 1) * 3, rows * 3),
         sharex=True,
         sharey=True,
     )
@@ -45,6 +45,12 @@ def draw_sensitivity():
         x = df["pressure"].to_numpy()
         y = df["perf"].to_numpy()
 
+        # Pressure is in MB, convert to nr of competitors
+        x_steps = np.diff(np.sort(np.unique(x)))
+        tick_interval = x_steps[x_steps > 0].min()
+
+        x = (x - x.min()) / tick_interval
+
         xlim = x.max() + xpad
 
         ax.plot(x, y, "o", markersize=4, label="measured")
@@ -58,9 +64,10 @@ def draw_sensitivity():
             ax.plot(x_smooth, y_smooth, "-", linewidth=1.5, label="spline")
         
         ax.set_title(label)
-        ax.set_xlabel("Memory pressure (MB)")
+        ax.set_xlabel("Number of Competitors")
         ax.set_ylabel("Performance (norm.)")
-        xticks = np.arange(0, xlim, 16)
+
+        xticks = np.arange(0, xlim)
         ax.set_xticks(xticks)
         ax.set_xlim([0, xlim])
         ax.grid(True)
