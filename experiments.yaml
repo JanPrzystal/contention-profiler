@@ -26,6 +26,7 @@ experiments:
       number: 7
     max_mem_footprint: 224
     mem_interval: 32
+    max_competitors: 7
     reporter_repetitions: 2
     deployment: multi
     data_size: train
@@ -64,6 +65,7 @@ experiments:
       number: 15
     max_mem_footprint: 480
     mem_interval: 32
+    max_competitors: 15
     reporter_repetitions: 2
     deployment: multi
     data_size: train

@@ -34,6 +34,7 @@ class Experiment:
     soi: SoIConfig
     max_mem_footprint: int
     mem_interval: int
+    max_competitors: int
     reporter_repetitions: int
     deployment: str
     root: bool
@@ -59,6 +60,7 @@ def parse_config():
             reporter=exp["reporter"],
             soi=soi,
             max_mem_footprint=exp["max_mem_footprint"],
+            max_competitors=exp["max_competitors"],
             mem_interval=exp["mem_interval"],
             reporter_repetitions=exp["reporter_repetitions"],
             deployment=exp["deployment"],
@@ -221,6 +223,7 @@ def setup_config(experiment: Experiment) -> None:
     config.PROGRESSIVE_PROFILING = experiment.progressive_profiling
     config.VALIDATIONS = experiment.validations
     config.USE_SIMPLE_CONTENTIOUSNESS = experiment.simple_contentiousness
+    config.MAX_COMPETITORS = experiment.max_competitors
     if len(experiment.background_cores) < 1:
         log("NO BACKGROUND CORES SPECIFIED!", ERROR)
     else:
