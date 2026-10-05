@@ -107,6 +107,10 @@ def sample_deployments(
         else:
             deployments += CPU_VALIDATION_DEPLOYMENTS
 
+        for deployment in deployments:
+            if len(deployment.competitors) > config.MAX_COMPETITORS:
+                deployment.competitors = deployment.competitors[:config.MAX_COMPETITORS]
+
     if only_max_competitors:
         for _ in range(random_samples):
             deployment = create_random_deployment(ncompetitors, applications)

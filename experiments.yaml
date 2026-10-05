@@ -1,5 +1,5 @@
 experiments:
-  - name: multi_ac_tmb
+  - name: cpu_other_ac_tmb
     benchmarks:
     - 600.perlbench_s
     - 602.gcc_s
@@ -23,11 +23,11 @@ experiments:
     reporter: tinymembench
     soi: 
       type: rand
-      number: 7
-    max_mem_footprint: 224
+      number: 14
+    max_mem_footprint: 448
     mem_interval: 32
-    max_competitors: 7
-    reporter_repetitions: 2
+    max_competitors: 14
+    reporter_repetitions: 1
     deployment: multi
     data_size: train
     root: true
@@ -36,43 +36,43 @@ experiments:
     progressive_profiling: true
     simple_contentiousness: false
     validations: 140
-    background_cores: 1,2,3,4,5,6,7
+    background_cores: 1,2,3,4,5,6,7,1,2,3,4,5,6,7
 
-  - name: cpu_ac_tmb
-    benchmarks:
-    - 600.perlbench_s
-    - 602.gcc_s
-    - 605.mcf_s
-    - 620.omnetpp_s
-    - 623.xalancbmk_s
-    - 625.x264_s
-    - 631.deepsjeng_s
-    - 641.leela_s
-    - 648.exchange2_s
-    - 657.xz_s
-    - 603.bwaves_s
-    - 607.cactuBSSN_s
-    - 619.lbm_s
-    - 627.cam4_s
-    - 628.pop2_s
-    - 638.imagick_s
-    - 644.nab_s
-    - 649.fotonik3d_s
-    - 654.roms_s
-    reporter: tinymembench
-    soi: 
-      type: rand
-      number: 15
-    max_mem_footprint: 480
-    mem_interval: 32
-    max_competitors: 15
-    reporter_repetitions: 2
-    deployment: multi
-    data_size: train
-    root: true
-    profiling_repetitions: 2
-    use_interpolation: true
-    progressive_profiling: true
-    simple_contentiousness: false
-    validations: 31
-    background_cores: 1,2,3,4,5,6,7,0,1,2,3,4,5,6,7
+  # - name: cpu_ac_tmb
+  #   benchmarks:
+  #   - 600.perlbench_s
+  #   - 602.gcc_s
+  #   - 605.mcf_s
+  #   - 620.omnetpp_s
+  #   - 623.xalancbmk_s
+  #   - 625.x264_s
+  #   - 631.deepsjeng_s
+  #   - 641.leela_s
+  #   - 648.exchange2_s
+  #   - 657.xz_s
+  #   - 603.bwaves_s
+  #   - 607.cactuBSSN_s
+  #   - 619.lbm_s
+  #   - 627.cam4_s
+  #   - 628.pop2_s
+  #   - 638.imagick_s
+  #   - 644.nab_s
+  #   - 649.fotonik3d_s
+  #   - 654.roms_s
+  #   reporter: tinymembench
+  #   soi: 
+  #     type: rand
+  #     number: 15
+  #   max_mem_footprint: 480
+  #   mem_interval: 32
+  #   max_competitors: 15
+  #   reporter_repetitions: 2
+  #   deployment: multi
+  #   data_size: train
+  #   root: true
+  #   profiling_repetitions: 2
+  #   use_interpolation: true
+  #   progressive_profiling: true
+  #   simple_contentiousness: false
+  #   validations: 31
+  #   background_cores: 1,2,3,4,5,6,7,0,1,2,3,4,5,6,7

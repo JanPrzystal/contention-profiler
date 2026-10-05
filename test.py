@@ -325,7 +325,8 @@ if __name__ == "__main__":
 
     deployments = sample_deployments(spec.ALL_SPEC_WORKLOADS, 15, 20)
 
-    apps = set(item for x in deployments for item in x.competitors)
+    log(f"len: {len(deployments[0].competitors)}")
 
-    for app in apps:
-        print(f"{app.name}")
+    # apps = set(item for x in deployments for item in x.competitors)
+    # for app in apps:
+    #     print(f"{app.name}")
