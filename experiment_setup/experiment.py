@@ -185,7 +185,7 @@ def conduct_experiment(reporter: Workload, applications: list[Workload], pairwis
             config.MAX_COMPETITORS, 
             config.VALIDATIONS, 
             config.PREDEFINED_VALIDATIONS,
-            True
+            config.ONLY_MAX_COMPETITORS
         )
 
         predictions = predict_performance_deployments(deployments)

@@ -1,3 +1,4 @@
+from random import random, shuffle
 from time import sleep
 import logging
 
@@ -298,8 +299,68 @@ def profile_spec_competition_hpc():
         profile_workload.profile_sensitivity_hpc(app1, app2, path)
 
 
+def cpu_contentiousness_averaging():
+    config.DIAL_END_MB = 64
+    config.DIAL_RANGE_MB = 64
+
+    config.PROGRESSIVE_PROFILING = True
+    config.NSOI = 2
+    config.USE_SIMPLE_CONTENTIOUSNESS = True
+
+    reporter = rp.MembenchReporter("tinymembench")
+    # profile_reporter(reporter)
+
+    cm.background_core_dispenser = cm.CoreManager([1,1,1,1,1,1,1,1])
+
+    benchmarks = [spec.lbm, spec.omnetpp, spec.fotonik3d, spec.perlbench, spec.xz, spec.gcc]
+
+    # _maxc = profile_workload.profile_contentiousness(benchmarks, reporter)
+
+    shuffle(benchmarks)
+
+    cont_avg = 0.0
+    counter = 0
+    cont_scores = contentiousness.read_contentiousness()
+    
+    for bench in benchmarks:
+        counter += 1
+        bench.run_in_background()
+
+        sleep(config.WORKLOAD_WARMUP_TIME)
+
+        score = reporter.profile()
+        cont = contentiousness.contentiousness_lookup(score)
+
+        log(f"Contentiousness with {bench.name}: {cont}")
+
+        cont_avg += cont_scores[bench.name]
+        log(f"Average should be: {cont_avg/counter}")
+
+    for bench in benchmarks:
+        bench.stop()
+
+def test_equilibrium_convergence():
+
+    reporter = rp.MembenchReporter("tinymembench")
+    profile_reporter(reporter)
+
+    _maxc = profile_workload.profile_contentiousness(spec.ALL_SPEC_WORKLOADS, reporter)
+
+    config.USE_SIMPLE_CONTENTIOUSNESS = False
+
+    prediction.setup_contentiousness_data(spec.ALL_SPEC_WORKLOADS)
+
+    deployments = []
+
+    for deployment in deployments:
+        competitor_names = [comp.name for comp in deployment.competitors]
+
+        equilibrium = prediction._form_equilibrium(competitor_names)
+
+        log(f"Equilibrium for deployment {deployment}: {equilibrium}", DEBUG)
+
 def main():
-    config.USE_ROOT_PRIORITY = False
+    config.USE_ROOT_PRIORITY = True
     config.DATA_SIZE = "train"
 
     CpuFreqPolicy.set_governor(Governor.PERFORMANCE)

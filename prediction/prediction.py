@@ -51,7 +51,7 @@ def _form_pair_prediction(
     return Prediction(app=app, competitor=competitor, perf=sensitivity[app](0) / prediction, contentiousness=contention)
 
 
-def _form_equilibrium(applications: Iterable[str], contention_scores: dict[str, PchipInterpolator]) -> dict[str, float]:
+def _form_equilibrium(applications: Iterable[str], contention_scores: dict[str, PchipInterpolator] = contentiousness_data) -> dict[str, float]:
     key = tuple(applications)
 
     if key in equilibrium_store:
@@ -61,11 +61,18 @@ def _form_equilibrium(applications: Iterable[str], contention_scores: dict[str, 
     for app in applications:
         equilibrium[app] = 0.0
     total_contention = 0.0
-    
+
+    last_total_contention = 0.0
     for i in range(config.EQUILIBRIUM_ITERATIONS):
         for app in applications:
             equilibrium[app] = float(contention_scores[app](total_contention - equilibrium[app]))
         total_contention = sum(equilibrium.values())
+
+        log(f"Iteration {i}: Equilibrium change: {abs(total_contention - last_total_contention)}", DEBUG)
+        
+        if abs(total_contention - last_total_contention) < config.EQUILIBRIUM_THRESHOLD:
+            log(f"Equilibrium converged after {i} iterations for {applications} with equilibrium {equilibrium}", DEBUG)
+            break
         
         if isnan(total_contention):
             log(f"NaN encountered in equilibrium calculation for {applications} with equilibrium {equilibrium}", WARNING)

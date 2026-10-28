@@ -68,7 +68,7 @@ def _profile_sensitivity_dial(workload: Workload, size_mb: int, nproc: int) -> f
     finally:
         soi.stop()
 
-def _profile_contentiousness(workload: Workload, reporter: Workload) -> float:
+def _profile_contentiousness(workload: Workload, reporter: Workload, ret_raw_val: bool = False) -> float:
         avg = 0.0
         workload.run_in_background()
         time.sleep(config.WORKLOAD_WARMUP_TIME)
@@ -77,7 +77,9 @@ def _profile_contentiousness(workload: Workload, reporter: Workload) -> float:
         min_val = 0.0
         try:
             for _ in range(config.PROFILING_REPETITIONS):
-                score = cnt.contentiousness_lookup(reporter.profile())
+                score = reporter.profile()
+                if not ret_raw_val:
+                    score = cnt.contentiousness_lookup(score)
                 avg += score
                 max_val = max(max_val, score)
                 if score < min_val or min_val == 0.0:
@@ -164,7 +166,9 @@ def profile_added_contentiousness(workload: Workload, reporter: Workload) -> Non
             soi = SoI(size_mb, nsoi)
             soi.run_in_background()
             try:
-                result = _profile_contentiousness(workload, reporter) - size_mb
+                reporter_sensitivity = cnt.get_reporter_sensitivity_spline()
+                raw_performance = _profile_contentiousness(workload, reporter, True) - reporter_sensitivity(size_mb)
+                result = cnt.contentiousness_lookup(raw_performance)
             finally:
                 soi.stop()
 
