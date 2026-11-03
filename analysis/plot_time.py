@@ -12,18 +12,29 @@ global_data = {
     "Pair Baseline": [4345.46, 3259.61, 33030.783, ],
 }
 
-def draw_times(data, validation: bool = True, include_baseline: bool = True):
+thickness = 0.5
+
+FONTSIZE_SMALL = 12
+FONTSIZE_LARGE = 14
+
+def draw_times(
+    data,
+    validation: bool = True,
+    include_baseline: bool = True,
+    horizontal: bool = True,
+):
     if include_baseline:
         for key, values in global_data.items():
             data[key] = values
 
-    labels = list(data.keys())
+    labels = [label.replace(" ", "\n") for label in data.keys()]
     values = np.array(list(data.values()))  # shape (n_groups, 3)
 
     x = np.arange(len(labels))
     # width = 0.25
 
-    plt.figure(figsize=(1 + 2*len(data), 6))
+    figsize = (8, 2 + 1.2 * len(data)) if horizontal else (1 + 4 * len(data), 6)
+    plt.figure(figsize=figsize)
     plt.title("Profiling Time")
 
     legend = ['Reporter', 'Contentiousness', 'Sensitivity', 'Validation']
@@ -33,12 +44,19 @@ def draw_times(data, validation: bool = True, include_baseline: bool = True):
     bottom = np.zeros(len(labels))
 
     for i in range(values.shape[1]):
-        heights = values[:, i] / 3600.0
-        plt.bar(x, heights, bottom=bottom, label=legend[i], width=0.5)
-        bottom += heights
+        durations = values[:, i] / 3600.0
+        if horizontal:
+            plt.barh(x, durations, left=bottom, label=legend[i], height=thickness)
+        else:
+            plt.bar(x, durations, bottom=bottom, label=legend[i], width=thickness)
+        bottom += durations
 
-    plt.xticks(x, labels)
-    plt.ylabel("Time (h)")
+    if horizontal:
+        plt.yticks(x, labels, rotation=0, fontsize=FONTSIZE_LARGE, va='center')
+        plt.xlabel("Time (h)", fontsize=FONTSIZE_LARGE)
+    else:
+        plt.xticks(x, labels, fontsize=FONTSIZE_LARGE)
+        plt.ylabel("Time (h)", fontsize=FONTSIZE_LARGE)
     plt.legend()
     plt.tight_layout()
     # plt.show()

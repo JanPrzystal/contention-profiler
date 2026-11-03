@@ -132,9 +132,9 @@ class MembenchReporter(Workload):
 
         return [
             f"{self.script_file}",
-            "--max-size=64M", 
-            "--num-threads=1",
-            f"--iterations={repetitions}",
+            # "--max-size=64M", 
+            # "--num-threads=1",
+            # f"--iterations={repetitions}",
             ]
     
     def profile(self) -> float:

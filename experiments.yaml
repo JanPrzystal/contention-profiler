@@ -1,5 +1,5 @@
 experiments:
-  - name: cpu_other_ac_tmb
+  - name: mem7_final_ac_700v
     benchmarks:
     - 600.perlbench_s
     - 602.gcc_s
@@ -23,20 +23,20 @@ experiments:
     reporter: tinymembench
     soi: 
       type: rand
-      number: 14
-    max_mem_footprint: 448
-    mem_interval: 32
-    max_competitors: 14
+      number: 7
+    max_mem_footprint: 224
+    mem_interval: 16
+    max_competitors: 7
     reporter_repetitions: 1
     deployment: multi
     data_size: train
     root: true
-    profiling_repetitions: 2
+    profiling_repetitions: 1
     use_interpolation: true
     progressive_profiling: true
     simple_contentiousness: false
     validations: 140
-    background_cores: 1,2,3,4,5,6,7,1,2,3,4,5,6,7
+    background_cores: 1,2,3,4,5,6,7
 
   # - name: cpu_ac_tmb
   #   benchmarks:

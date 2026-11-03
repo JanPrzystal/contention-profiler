@@ -350,7 +350,7 @@ def test_equilibrium_convergence():
 
     prediction.setup_contentiousness_data(spec.ALL_SPEC_WORKLOADS)
 
-    deployments = []
+    deployments = deployment.MULTI_VALIDATION_DEPLOYMENTS
 
     for deployment in deployments:
         competitor_names = [comp.name for comp in deployment.competitors]
@@ -358,6 +358,7 @@ def test_equilibrium_convergence():
         equilibrium = prediction._form_equilibrium(competitor_names)
 
         log(f"Equilibrium for deployment {deployment}: {equilibrium}", DEBUG)
+
 
 def main():
     config.USE_ROOT_PRIORITY = True

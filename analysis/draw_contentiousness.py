@@ -27,7 +27,7 @@ def draw_contentiousness():
     fig, axes = plt.subplots(
         nrows=rows,
         ncols=cols,
-        figsize=((cols+1) * 3, rows * 3),
+        figsize=((cols+1) * 2, rows * 3),
         sharex=True,
         sharey=True,
     )
@@ -62,7 +62,7 @@ def draw_contentiousness():
         
         ax.set_title(label)
         ax.set_xlabel("Number of Competitors")
-        ax.set_ylabel("Contentiousness (MB)")
+        ax.set_ylabel("Contentiousness")
         xticks = np.arange(0, xlim)
         ax.set_xticks(xticks)
         ax.set_xlim([0, xlim])

@@ -167,8 +167,10 @@ def profile_added_contentiousness(workload: Workload, reporter: Workload) -> Non
             soi.run_in_background()
             try:
                 reporter_sensitivity = cnt.get_reporter_sensitivity_spline()
-                raw_performance = _profile_contentiousness(workload, reporter, True) - reporter_sensitivity(size_mb)
-                result = cnt.contentiousness_lookup(raw_performance)
+                raw_performance = _profile_contentiousness(workload, reporter) 
+                diff = raw_performance - cnt.contentiousness_lookup(reporter_sensitivity(size_mb))
+                result = diff
+                log(f"Raw performance: {raw_performance}, reporter sensitivity: {reporter_sensitivity(size_mb)}, diff: {diff}, contentiousness: {result}", DEBUG)
             finally:
                 soi.stop()
 
