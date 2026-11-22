@@ -57,7 +57,7 @@ def run_background_workload(workload: Workload) -> Process:
         stdin=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
         stdout=subprocess.DEVNULL,
-        preexec_fn=os.setpgrp
+        start_new_session=True,
     )
 
     return Process(proc, idx)

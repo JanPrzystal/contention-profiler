@@ -41,7 +41,7 @@ def get_validated_df(remove_cactu: bool = False, path: str = "", name: str = "")
 
     try:
         df['name'] = path.split("/")[-1]
-    except ValueError:
+    except ValueError, AttributeError:
         df['name'] = name
     return df
 

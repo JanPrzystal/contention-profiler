@@ -133,9 +133,7 @@ def sample_and_validate_predictions(predictions: dict[int, list[Prediction]], wo
 
     sampled_predictions = choose_predictions(predictions, config.VALIDATIONS)
 
-    counter = 0
-    for pred in sampled_predictions:
-        counter += 1
+    for counter, pred in enumerate(sampled_predictions, start=1):
         log(f"Validating prediction {counter}/{len(sampled_predictions)}")
         validated_predictions.append(validate_prediction(pred, workloads))
 

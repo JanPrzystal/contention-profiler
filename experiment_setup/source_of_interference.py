@@ -5,7 +5,7 @@ import config
 from experiment_setup.spec import SpecWorkload
 from experiment_setup.workload import Workload, Process, run_background_workload
 
-from experiment_setup.log import log, WARNING, ERROR, DEBUG
+from experiment_setup.log import log, ERROR, DEBUG
 import experiment_setup.core_manager as cm
 
 
@@ -90,9 +90,9 @@ class SoI(Workload):
             idx = -1
             try:
                 idx, core = cm.background_core_dispenser.acquire()
-            except Exception as e:
+            except cm.CoreException as e:
                 log(f"Failed to acquire background core for soi process {i+1}: {e}", ERROR)
-                raise Exception("Failed to acquire background core for soi process")
+                raise Exception("TODO: Handle this error properly")
         
             cmd = ["taskset", "-c", str(core), *self.get_command(background=True)]
 
@@ -102,7 +102,7 @@ class SoI(Workload):
             proc = subprocess.Popen(
                 cmd,
                 stdin=subprocess.DEVNULL,
-                preexec_fn=os.setpgrp
+                start_new_session=True,
             )
             self.procs.append(Process(proc, idx))
     

@@ -11,7 +11,17 @@ class Deployment:
     def __str__(self):
         competitors_str = ", ".join([str(c) for c in self.competitors])
         return f"Application: {self.application}, Competitors: [{competitors_str}]"
-    
+
+    def profile(self) -> float:
+        for competitor in self.competitors:
+            competitor.run_in_background()
+
+        performance = self.application.profile()
+
+        for competitor in self.competitors:
+            competitor.stop()
+
+        return performance
 
 def create_random_deployment(ncompetitors: int, all_workloads: list[Workload]) -> Deployment:
     app = random.choice(all_workloads)

@@ -1,13 +1,9 @@
-import matplotlib.pyplot as plt
 import math
 import csv
 
 import config
 from scipy.interpolate import PchipInterpolator
-from scipy.optimize import brentq
 import numpy as np
-
-from experiment_setup.log import log
 
 
 def get_reporter_sensitivity_spline() -> PchipInterpolator:
@@ -85,6 +81,7 @@ def contentiousness_lookup(y: float) -> float | None:
 
 
 contentiousness = None
+# Used for simple contentiousness
 def read_contentiousness(force_update=True) -> dict[str, float]:
     global contentiousness
     if not force_update and contentiousness:
@@ -98,6 +95,7 @@ def read_contentiousness(force_update=True) -> dict[str, float]:
             contentiousness[row[0]] = float(row[1])
     return contentiousness
 
+# Returns the added contentiousness data for a given application
 def read_application_contentiousness(name: str) -> dict[int, float]:
     res = {}
     path = f"{config.RESULTS_DIR}/contentiousness/{name.replace('.', '_')}_contentiousness.csv"
@@ -109,48 +107,3 @@ def read_application_contentiousness(name: str) -> dict[int, float]:
             cnt = float(row[1])
             res[dial] = cnt
     return res
-
-def save_contentiousness_chart():
-    cont = read_contentiousness()
-    data = {}
-    for bench, perf in cont.items():
-        data[bench] = perf
-
-    log(str(data))
-
-    # Extract keys and values
-    labels = list(data.keys())
-    values = list(data.values())
-
-    values, labels = zip(*sorted(zip(values, labels)))
-
-    # Create the column chart
-    plt.figure(figsize=(20, 10))
-    bars = plt.bar(labels, values)
-
-    plt.tick_params(axis='x', length=0)
-
-    # Add value labels on bars
-    for bar in bars:
-        height = bar.get_height()
-        plt.text(
-            bar.get_x() + bar.get_width() / 2, 
-            height + 0.2, 
-            f'{height:.1f}', 
-            ha='center', va='bottom'
-        )
-
-    # Labels and title
-    plt.xlabel('SPEC CPU 2017 workload')
-    plt.ylabel('Approximate MemBW benchmark footprint (MB)')
-
-    # Display the chart
-    plt.tight_layout()
-    output_path = f"{config.RESULTS_DIR}/contentiousness.png"
-    plt.savefig(output_path, dpi=300)
-    plt.close()
-
-
-
-if __name__ == "__main__":
-    save_contentiousness_chart()

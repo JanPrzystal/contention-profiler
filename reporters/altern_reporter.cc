@@ -1,68 +1,67 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <unistd.h>
-#include <time.h>
-#include <math.h>
-#include <float.h>
-#include <sched.h>
-#include <set>
-#include <iostream>
 #include <benchmark/benchmark.h>
-#include "../soi/xorshift.h"
+#include <vector>
+#include <numeric>
+#include <algorithm>
+#include <random>
+#include <cstdint>
 
-#define FOOTPRINT_SIZE 8388608 // 64MiB (8MiB*8)
+#define FOOTPRINT_SIZE 8388608 // 64MiB of uint64_t
 #define STREAM_SIZE (FOOTPRINT_SIZE / 2)
 #define RAND_SIZE (FOOTPRINT_SIZE / 2)
-#define PADDING_SIZE 32768 // 256KiB (32KiB*8)
+#define STRIDE 512 // 4096 bytes / sizeof(uint64_t)
 
-#define STRIDE 4096
-
-static volatile uint64_t bw_data [STREAM_SIZE + 2 * PADDING_SIZE];
-static volatile uint64_t data_chunk [RAND_SIZE];
-static volatile uint64_t dump[10];
-
-static uint32_t seed = 0xACE1u;
-#define r (xorshift32(&seed) % RAND_SIZE)
+// Non-volatile static arrays
+static uint64_t bw_data[STREAM_SIZE];
+static uint64_t data_chunk[RAND_SIZE];
 
 void streaming_access(benchmark::State& state) {
     for (auto _ : state) {
-        volatile uint64_t *mid = bw_data + PADDING_SIZE;
-        benchmark::DoNotOptimize(mid);
-
-        for (int offset = 0; offset < STRIDE/sizeof(uint64_t); offset++) {
-            for (int i = offset; i < STREAM_SIZE - PADDING_SIZE; i+= STRIDE/sizeof(uint64_t)) {
-                bw_data[i] = mid[i]++;
-                bw_data[i + 8] = mid[i + 8]++;
-                bw_data[i + 16] = mid[i + 16]++;
-                bw_data[i + 24] = mid[i + 24]++;
-                bw_data[i + 32] = mid[i + 32]++;
-                bw_data[i + 40] = mid[i + 40]++;
-                bw_data[i + 48] = mid[i + 48]++;
-                bw_data[i + 56] = mid[i + 56]++;
-                bw_data[i + 64] = mid[i + 64]++;
+        for (size_t offset = 0; offset < STRIDE; offset++) {
+            // Ensure loop bound safely accounts for the unrolled offset (+64)
+            for (size_t i = offset; i + 64 < STREAM_SIZE; i += STRIDE) {
+                bw_data[i]      += 1;
+                bw_data[i + 8]  += 1;
+                bw_data[i + 16] += 1;
+                bw_data[i + 24] += 1;
+                bw_data[i + 32] += 1;
+                bw_data[i + 40] += 1;
+                bw_data[i + 48] += 1;
+                bw_data[i + 56] += 1;
+                bw_data[i + 64] += 1;
             }
-            benchmark::ClobberMemory();
-        }
-    }
-}
-
-void random_access(benchmark::State& state) {
-    for (auto _ : state) {
-        for (int i = 0; i < RAND_SIZE; i++) {
-            dump[0] += data_chunk[r]++;
-            dump[1] += data_chunk[r]++;
-            dump[2] += data_chunk[r]++;
-            dump[3] += data_chunk[r]++;
-            dump[4] += data_chunk[r]++;
-            dump[5] += data_chunk[r]++;
-            dump[6] += data_chunk[r]++;
-            dump[7] += data_chunk[r]++;
-            dump[8] += data_chunk[r]++;
-            dump[9] += data_chunk[r]++;
         }
         benchmark::ClobberMemory();
     }
+    state.SetBytesProcessed(int64_t(state.iterations()) * STREAM_SIZE * sizeof(uint64_t));
+}
+
+void random_access(benchmark::State& state) {
+    // 1. Pre-generate random indices outside the timed benchmark loop
+    std::vector<uint32_t> indices(RAND_SIZE);
+    std::iota(indices.begin(), indices.end(), 0);
+    
+    std::mt19937 rng(1337);
+    std::shuffle(indices.begin(), indices.end(), rng);
+
+    uint64_t sum = 0;
+
+    for (auto _ : state) {
+        for (size_t i = 0; i < RAND_SIZE; i += 10) {
+            sum += data_chunk[indices[i]];
+            sum += data_chunk[indices[i + 1]];
+            sum += data_chunk[indices[i + 2]];
+            sum += data_chunk[indices[i + 3]];
+            sum += data_chunk[indices[i + 4]];
+            sum += data_chunk[indices[i + 5]];
+            sum += data_chunk[indices[i + 6]];
+            sum += data_chunk[indices[i + 7]];
+            sum += data_chunk[indices[i + 8]];
+            sum += data_chunk[indices[i + 9]];
+        }
+        benchmark::DoNotOptimize(sum);
+        benchmark::ClobberMemory();
+    }
+    state.SetItemsProcessed(int64_t(state.iterations()) * RAND_SIZE);
 }
 
 BENCHMARK(streaming_access);

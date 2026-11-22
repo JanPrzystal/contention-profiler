@@ -2,6 +2,10 @@ import threading
 
 import config
 
+class CoreException(Exception):
+    """Raised when a core-related error occurs."""
+    pass
+
 class CoreManager:
     def __init__(self, cores):
         self.cores = [str(c) for c in cores]
@@ -11,7 +15,7 @@ class CoreManager:
     def acquire(self) -> tuple[int, str]:
         with self.lock:
             if not self.available_indices:
-                raise RuntimeError("No free cores available")
+                raise CoreException("No free cores available")
 
             idx = min(self.available_indices)
             self.available_indices.remove(idx)

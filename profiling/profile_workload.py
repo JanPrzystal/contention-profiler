@@ -10,7 +10,7 @@ import config
 from config import SENSITIVITY_DIR
 from experiment_setup.workload import Workload
 
-import profiling.perf as perf
+from profiling import perf
 import profiling.contentiousness as cnt
 
 from experiment_setup.log import DEBUG, log, WARNING
@@ -31,8 +31,8 @@ def _get_sensitivity_data(workload_name: str) -> dict[int, float]:
 
 
 def _save_sensitivity_data(workload_name: str, sensitivity: dict[int, float]) -> None:
-    benchmark_file = workload_name.replace(".", "_")
-    path = SENSITIVITY_DIR / f"{benchmark_file}_data.csv"
+    workload_file = workload_name.replace(".", "_")
+    path = SENSITIVITY_DIR / f"{workload_file}_data.csv"
     with open(path, "w+") as f:
         f.write("pressure,perf\n")
         f.writelines(f"{k},{v}\n" for k, v in sensitivity.items())
@@ -68,6 +68,20 @@ def _profile_sensitivity_dial(workload: Workload, size_mb: int, nproc: int) -> f
     finally:
         soi.stop()
 
+
+def profile_sensitivity(workloads: list[Workload]) -> None:
+    if not os.path.isdir(SENSITIVITY_DIR):
+        os.mkdir(SENSITIVITY_DIR)
+    for workload in workloads:
+        if config.USE_HPC:
+            profile_sensitivity_hpc(workload)
+        elif config.PROGRESSIVE_PROFILING:
+            _profile_sensitivity_progressive(workload)
+        else:
+            _profile_sensitivity(workload)
+    
+
+
 def _profile_contentiousness(workload: Workload, reporter: Workload, ret_raw_val: bool = False) -> float:
         avg = 0.0
         workload.run_in_background()
@@ -98,18 +112,6 @@ def _save_contentiousness_data(data: dict[str,float]) -> None:
     csv_data = {"application": list(data.keys()), "contentiousness": list(data.values())}
     df = pd.DataFrame(csv_data)
     df.to_csv(f"{config.RESULTS_DIR}/contentiousness.csv", sep=",", index=False, header=True)
-
-def profile_sensitivity(workloads: list[Workload]) -> None:
-    if not os.path.isdir(SENSITIVITY_DIR):
-        os.mkdir(SENSITIVITY_DIR)
-    for workload in workloads:
-        if config.USE_HPC:
-            profile_sensitivity_hpc(workload)
-        elif config.PROGRESSIVE_PROFILING:
-            _profile_sensitivity_progressive(workload)
-        else:
-            _profile_sensitivity(workload)
-    
 
 # Profiles the contentiousness of each workload and saves the results to a file. Returns the maximum contentiousness score across all workloads.
 def _profile_contentiousness_simple(workloads: list[Workload], reporter: Workload) -> float:

@@ -1,13 +1,10 @@
-import os
 import time
-import signal
 
 from experiment_setup import spec
 from experiment_setup.log import log, DEBUG
 from experiment_setup.source_of_interference import SoI, SpecSoI
 import config
 from experiment_setup.workload import Workload
-import profiling.contentiousness as cnt
 
 def profile_reporter_sensitivity(reporter: Workload, size_mb: int, nsoi: int = config.NSOI) -> float:
     if size_mb == 0:
@@ -37,13 +34,12 @@ def _profile_reporter(reporter: Workload) -> None:
             
 
 def _profile_reporter_progressive(reporter: Workload) -> None:
+    max_soi = config.NSOI
+    interval = config.DIAL_RANGE_MB // max_soi
+    nsoi = 0
+
     with open(f"{config.RESULTS_DIR}/reporter_sensitivity.csv", "w+") as f:
         f.write("pressure,perf\n")
-
-        max_soi = config.NSOI
-        interval = config.DIAL_RANGE_MB // max_soi
-
-        nsoi = 0
 
         for size_mb in range(config.DIAL_START_MB, config.DIAL_END_MB + config.DIAL_STEP_MB, config.DIAL_STEP_MB):
             if size_mb > 0:
@@ -60,30 +56,6 @@ def profile_reporter(reporter: Workload) -> None:
     else:
         _profile_reporter(reporter)
 
-
-def profile_reporter_contentiousness(reporter: Workload) -> float:
-    result = 0.0
-
-    with open(f"{config.RESULTS_DIR}/reporter_contentiousness.csv", "a+") as f:
-        f.write("pressure,contentiousness\n")
-
-        reporter.run_in_background()
-        
-        time.sleep(config.WORKLOAD_WARMUP_TIME)
-
-        score = reporter.profile()
-
-        log(f"Reporter score: {score}")
-        
-        contentiousness = cnt.contentiousness_lookup(score)
-
-        reporter.stop()
-
-        f.write(f"{0},{contentiousness}\n")
-
-        result = contentiousness
-
-    return result
 
 if __name__ == "__main__":
     profile_reporter()

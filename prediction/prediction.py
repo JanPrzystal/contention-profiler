@@ -12,7 +12,7 @@ from itertools import combinations
 import csv
 from prediction import prediction
 
-from experiment_setup.log import WARNING, log, setup_logging, DEBUG
+from experiment_setup.log import WARNING, log, DEBUG
 
 # from concurrent.futures import ProcessPoolExecutor
 # from itertools import repeat
@@ -173,7 +173,7 @@ def predict_deployments(deployments: list[Deployment]) -> dict[int, list[Predict
     predictions = defaultdict(list)
     if not config.USE_SIMPLE_CONTENTIOUSNESS:
         # TODO improve this conversion
-        apps = set(item for x in deployments for item in x.competitors)
+        apps = {item for x in deployments for item in x.competitors}
         setup_contentiousness_data(apps)
 
     for deployment in deployments:

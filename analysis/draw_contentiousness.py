@@ -9,6 +9,8 @@ from scipy.interpolate import PchipInterpolator
 import sys
 from pathlib import Path
 
+from profiling.contentiousness import read_contentiousness
+
 parent_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(parent_dir))
 

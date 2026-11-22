@@ -103,7 +103,7 @@ def draw_errors(
 
     plt.tick_params(axis="y", labelsize=FONTSIZE_SMALL)
     plt.tick_params(axis="x", labelsize=FONTSIZE_LARGE)
-    plt.legend(loc='upper left') #bbox_to_anchor=(1.0, 1.0)
+    plt.legend(loc='upper right') #bbox_to_anchor=(1.0, 1.0)
     plt.tight_layout()
 
     image_output_path = f"{config.RESULTS_DIR}/errors.png"

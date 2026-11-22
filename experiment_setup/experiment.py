@@ -167,8 +167,6 @@ def conduct_experiment(reporter: Workload, applications: list[Workload], pairwis
         profile_workload.profile_sensitivity(applications)
         tsensitivity = time() - tstart - treporter - tcontentiousness
 
-    # contentiousness.save_contentiousness_chart()
-    # draw_contentiousness()
 
     ttotal = time() - tstart
     log("Profiling complete")

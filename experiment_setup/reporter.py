@@ -1,4 +1,3 @@
-from abc import ABC, abstractmethod
 import subprocess
 import config
 
@@ -13,29 +12,6 @@ REPORTER_SCRIPT_FILES = {
     "streaming":"build/stream_reporter.out",
     "tinymembench": "membench/membench"
 }
-
-# class Reporter(ABC):
-#     def __init__(self, script_file: str):
-#         self.script_file = REPORTER_SCRIPT_FILES[script_file]
-#         if self.script_file is None:
-#             raise ValueError(f"Invalid script file")
-
-#     @abstractmethod
-#     def run(self, repetitions: int = 25) -> float:
-#         raise NotImplementedError("Run method not implemented for this reporter")
-    
-#     def run_background(self):
-#         raise NotImplementedError("Background profiling not implemented for this reporter")    
-
-#     @abstractmethod
-#     def process_output(self, output: dict[str, float]) -> float:
-#         raise NotImplementedError
-    
-# class SingleValueReporter(Reporter):
-#     def process_output(self, output: dict[str, float]) -> float:
-#         if len(output) != 1:
-#             raise ValueError("Single value reporter returned multiple values")
-#         return float(next(iter(output.values()))) / 1_000_000.0
 
 class AveragingReporter(Workload):
     def __init__(self, script_file: str):

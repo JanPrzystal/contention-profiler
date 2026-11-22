@@ -4,7 +4,7 @@ import logging
 
 import experiment_setup.core_manager as cm
 from experiment_setup.experiment import sample_deployments
-from profiling.profile_reporter import profile_reporter, profile_reporter_contentiousness
+from profiling.profile_reporter import profile_reporter
 from profiling import profile_workload
 import experiment_setup.spec as spec
 import os
@@ -359,6 +359,48 @@ def test_equilibrium_convergence():
 
         log(f"Equilibrium for deployment {deployment}: {equilibrium}", DEBUG)
 
+def combine_cpu_mem():
+
+    config.DIAL_END_MB = 64
+    config.DIAL_RANGE_MB = 64
+
+    config.PROGRESSIVE_PROFILING = True
+    config.NSOI = 4
+
+    reporter = rp.MembenchReporter("tinymembench")
+    benchmarks = [spec.lbm, spec.omnetpp, spec.fotonik3d, spec.perlbench, spec.xz, spec.gcc]
+
+    cm.background_core_dispenser = cm.CoreManager([0,0,0,0])
+
+    # os.rename(f"{config.RESULTS_DIR}/reporter_sensitivity_cpu.csv", f"{config.RESULTS_DIR}/reporter_sensitivity.csv")
+    profile_reporter(reporter)
+    _maxc = profile_workload.profile_contentiousness(spec.ALL_SPEC_WORKLOADS, reporter)
+    profile_workload.profile_sensitivity(benchmarks)
+
+    os.rename(f"{config.RESULTS_DIR}/reporter_sensitivity.csv", f"{config.RESULTS_DIR}/reporter_sensitivity_cpu.csv")
+    os.rename(f"{config.RESULTS_DIR}/contentiousness", f"{config.RESULTS_DIR}/contentiousness_cpu")
+    os.rename(f"{config.RESULTS_DIR}/sensitivity", f"{config.RESULTS_DIR}/sensitivity_cpu")
+
+
+    cm.background_core_dispenser = cm.CoreManager([1,2,3,4])
+
+    # os.rename(f"{config.RESULTS_DIR}/reporter_sensitivity_mem.csv", f"{config.RESULTS_DIR}/reporter_sensitivity.csv")
+    profile_reporter(reporter)
+    _maxc = profile_workload.profile_contentiousness(spec.ALL_SPEC_WORKLOADS, reporter)
+    profile_workload.profile_sensitivity(benchmarks)
+
+    os.rename(f"{config.RESULTS_DIR}/reporter_sensitivity.csv", f"{config.RESULTS_DIR}/reporter_sensitivity_mem.csv")
+    os.rename(f"{config.RESULTS_DIR}/sensitivity", f"{config.RESULTS_DIR}/sensitivity_mem")
+
+
+def test_deployment():
+    test = deployment.Deployment(spec.fotonik3d, [spec.perlbench, spec.xz, spec.gcc, spec.lbm, spec.omnetpp])
+
+    perf = test.profile()
+
+    log(f"Performance of deployment {test}: {perf}", logging.INFO)
+
+
 
 def main():
     config.USE_ROOT_PRIORITY = True
@@ -368,26 +410,31 @@ def main():
 
     compile_soi()
 
-    config.DIAL_END_MB = 160
-    config.DIAL_RANGE_MB = 160
+    config.DIAL_STEP_MB = 16
+    config.DIAL_END_MB = 112
+    config.DIAL_RANGE_MB = 112
 
     config.PROGRESSIVE_PROFILING = True
-    config.NSOI = 5
+    config.NSOI = 7
 
     # reporter = rp.AveragingReporter("streaming")
-    reporter = rp.MembenchReporter("tinymembench")
+    # reporter = rp.MembenchReporter("tinymembench")
     # reporter.profile()
-    profile_reporter(reporter)
+    # profile_reporter(reporter)
+
+    combine_cpu_mem()
+    test_deployment()
 
     CpuFreqPolicy.reset_governor()
 
 if __name__ == "__main__":
-    # main()
     setup_logging(DEBUG)
 
-    deployments = sample_deployments(spec.ALL_SPEC_WORKLOADS, 15, 20)
+    main()
 
-    log(f"len: {len(deployments[0].competitors)}")
+    # deployments = sample_deployments(spec.ALL_SPEC_WORKLOADS, 15, 20)
+
+    # log(f"len: {len(deployments[0].competitors)}")
 
     # apps = set(item for x in deployments for item in x.competitors)
     # for app in apps:

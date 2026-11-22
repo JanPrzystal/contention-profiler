@@ -32,7 +32,6 @@ class SpecWorkload(Workload):
         return cmd
 
     def profile(self) -> float:
-        # return run_benchmark(self, self.name, cores, self.size)
         log(f"Running benchmark {self.name}, size = {self.size}")
         
         core = config.WORKLOAD_UNDER_PROFILING_CORES
@@ -48,7 +47,7 @@ class SpecWorkload(Workload):
             stdin=subprocess.DEVNULL,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            preexec_fn=os.setpgrp
+            start_new_session=True,
         ), core)
 
         log("Started process")
@@ -90,7 +89,7 @@ def _get_output_filename(runcpu_output: str) -> str:
             filename = line.split(" ")[3]
             if filename.endswith(".rsf"):
                 return filename
-    raise Exception("Output file not found")
+    raise IOError("Output file not found")
 
 
 def _get_benchmark_time(output_file: str, benchmark_name: str) -> float:
@@ -100,7 +99,7 @@ def _get_benchmark_time(output_file: str, benchmark_name: str) -> float:
         for line in f:
             if line.strip().startswith(line_format):
                 return float(line.split(" ")[1])
-        raise Exception("Benchmark reported time not found")
+        raise IOError("Benchmark reported time not found")
     
 
 xz = SpecWorkload("657.xz_s", size=config.DATA_SIZE)

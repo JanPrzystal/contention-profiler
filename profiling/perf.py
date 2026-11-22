@@ -95,7 +95,7 @@ def profile(workload: list[str], cores: str | None = None) -> dict:
         stdin=subprocess.DEVNULL,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            preexec_fn=os.setpgrp
+            start_new_session=True,
         )
 
 
