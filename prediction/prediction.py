@@ -1,7 +1,7 @@
 from cmath import isnan
 from collections.abc import Iterable
+from dataclasses import dataclass
 from experiment_setup.workload import Workload
-from collections import namedtuple
 from prediction.deployment import Deployment
 from profiling.contentiousness import read_application_contentiousness, read_contentiousness
 
@@ -18,8 +18,12 @@ from experiment_setup.log import WARNING, log, DEBUG
 # from itertools import repeat
 from collections import defaultdict
 
-
-Prediction = namedtuple("Prediction", ["app", "competitor", "perf", "contentiousness"])
+@dataclass
+class Prediction:
+    app: str
+    competitor: str
+    perf: float
+    contentiousness: float
 
 equilibrium_store: dict[tuple[str, ...], dict[str, float]] = {}
 contentiousness_data: dict[str, PchipInterpolator] = {}
@@ -68,7 +72,7 @@ def _form_equilibrium(applications: Iterable[str], contention_scores: dict[str, 
             equilibrium[app] = float(contention_scores[app](total_contention - equilibrium[app]))
         total_contention = sum(equilibrium.values())
 
-        log(f"Iteration {i}: Equilibrium change: {abs(total_contention - last_total_contention)}", DEBUG)
+        log(f"Iteration {i}: Equilibrium change: {abs(total_contention - last_total_contention)}, from {last_total_contention} to {total_contention}", DEBUG)
         
         if abs(total_contention - last_total_contention) < config.EQUILIBRIUM_THRESHOLD:
             log(f"Equilibrium converged after {i} iterations for {applications} with equilibrium {equilibrium}", DEBUG)
@@ -78,7 +82,7 @@ def _form_equilibrium(applications: Iterable[str], contention_scores: dict[str, 
             log(f"NaN encountered in equilibrium calculation for {applications} with equilibrium {equilibrium}", WARNING)
             break
 
-        # log(f"Iteration {i}: Equilibrium contention scores: {equilibrium}, total contention: {total_contention}", DEBUG)
+        last_total_contention = total_contention
 
     equilibrium_store[key] = equilibrium
 
@@ -226,3 +230,26 @@ def save_predictions(predictions: dict[int, list[Prediction]]) -> None:
 
 def predict_deployment_performance(deployment: Deployment) -> Prediction:
     return prediction.predict_app_performance(deployment.application, deployment.competitors)
+
+
+def predict_performance_cpu_mem(application: Workload, competitors_cpu: list[Workload], competitors_mem: list[Workload]) -> Prediction:
+    setup_contentiousness_data(competitors_mem)
+    
+    # mem_sensitivity = get_mem_sensitivity(application.name)
+    # cpu_sensitivity = get_cpu_sensitivity(application.name)
+
+    # cpu_contetion = ...
+
+    # Assume CPU performance is 1/n
+    cpu_norm_perf = (len(competitors_cpu) + 1)
+
+    mem_prediction = predict_app_performance(application, competitors_mem)
+
+    mem_prediction.competitor = mem_prediction.competitor + " + ".join(comp.name for comp in competitors_cpu)
+
+    mem_prediction.perf = mem_prediction.perf * cpu_norm_perf
+
+    # mem_prediction.contentiousness = 
+
+    # For now return the modified mem prediction
+    return mem_prediction

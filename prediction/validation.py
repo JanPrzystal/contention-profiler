@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import json
 import os
 import csv
@@ -13,9 +14,14 @@ from prediction.prediction import get_sensitivity
 
 from experiment_setup.log import log, INFO, WARNING, DEBUG
 
-ValidatedPrediction = namedtuple(
-    "ValidatedPrediction", Prediction._fields + ("actual_perf",)
-)
+@dataclass
+class ValidatedPrediction:
+    app: str
+    competitor: str
+    perf: float
+    contentiousness: float
+    actual_perf: float
+
 
 def get_key(prediction: Prediction | ValidatedPrediction) -> str:
     return f"{prediction.app} + {prediction.competitor}"
@@ -51,7 +57,7 @@ def validate_prediction(prediction: Prediction, workloads: list[Workload]) -> Va
     time.sleep(config.WORKLOAD_WARMUP_TIME)
     try:
         perf = primary.profile()
-        return ValidatedPrediction(actual_perf=(isolated_perf / perf), *prediction)
+        return ValidatedPrediction(actual_perf=(isolated_perf / perf), **vars(prediction))
     finally:
         for process in background_processes:
             stop_process(process)

@@ -374,7 +374,7 @@ def combine_cpu_mem():
 
     # os.rename(f"{config.RESULTS_DIR}/reporter_sensitivity_cpu.csv", f"{config.RESULTS_DIR}/reporter_sensitivity.csv")
     profile_reporter(reporter)
-    _maxc = profile_workload.profile_contentiousness(spec.ALL_SPEC_WORKLOADS, reporter)
+    _maxc = profile_workload.profile_contentiousness(benchmarks, reporter)
     profile_workload.profile_sensitivity(benchmarks)
 
     os.rename(f"{config.RESULTS_DIR}/reporter_sensitivity.csv", f"{config.RESULTS_DIR}/reporter_sensitivity_cpu.csv")
@@ -386,7 +386,7 @@ def combine_cpu_mem():
 
     # os.rename(f"{config.RESULTS_DIR}/reporter_sensitivity_mem.csv", f"{config.RESULTS_DIR}/reporter_sensitivity.csv")
     profile_reporter(reporter)
-    _maxc = profile_workload.profile_contentiousness(spec.ALL_SPEC_WORKLOADS, reporter)
+    _maxc = profile_workload.profile_contentiousness(benchmarks, reporter)
     profile_workload.profile_sensitivity(benchmarks)
 
     os.rename(f"{config.RESULTS_DIR}/reporter_sensitivity.csv", f"{config.RESULTS_DIR}/reporter_sensitivity_mem.csv")
@@ -401,10 +401,36 @@ def test_deployment():
     log(f"Performance of deployment {test}: {perf}", logging.INFO)
 
 
+def test_cpu_mem():
+    config.DIAL_END_MB = 32
+    config.DIAL_RANGE_MB = 32
+
+    config.PROGRESSIVE_PROFILING = True
+    config.NSOI = 2
+
+    reporter = rp.MembenchReporter("tinymembench")
+    # benchmarks = [spec.lbm, spec.omnetpp, spec.fotonik3d, spec.perlbench, spec.xz, spec.gcc]
+    benchmarks = [spec.omnetpp, spec.perlbench, spec.xz, spec.gcc]
+
+    # cm.background_core_dispenser = cm.CoreManager([1,2,3,4])
+
+    # profile_reporter(reporter)
+    # _maxc = profile_workload.profile_contentiousness(benchmarks, reporter)
+    # profile_workload.profile_sensitivity(benchmarks)
+
+
+    # cm.background_core_dispenser = cm.CoreManager([0,0,1,2,3,4])
+
+    for bench in benchmarks:
+        competitors = [b for b in benchmarks if bench.name != b.name]
+        shuffle(competitors)
+
+        log(f"Predicting performance of {bench.name} with cpu competitors {[c.name for c in competitors[:2]]} and mem competitors {[c.name for c in competitors[2:4]]}", logging.INFO)
+        prediction.predict_performance_cpu_mem(bench, competitors[:2], competitors[2:])
 
 def main():
-    config.USE_ROOT_PRIORITY = True
-    config.DATA_SIZE = "train"
+    config.USE_ROOT_PRIORITY = False
+    config.DATA_SIZE = "test"
 
     CpuFreqPolicy.set_governor(Governor.PERFORMANCE)
 
@@ -422,8 +448,10 @@ def main():
     # reporter.profile()
     # profile_reporter(reporter)
 
-    combine_cpu_mem()
-    test_deployment()
+    # combine_cpu_mem()
+    # test_deployment()
+
+    test_cpu_mem()
 
     CpuFreqPolicy.reset_governor()
 
