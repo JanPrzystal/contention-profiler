@@ -241,11 +241,11 @@ def predict_performance_cpu_mem(application: Workload, competitors_cpu: list[Wor
     # cpu_contetion = ...
 
     # Assume CPU performance is 1/n
-    cpu_norm_perf = (len(competitors_cpu) + 1)
+    cpu_norm_perf = 1 / (len(competitors_cpu) + 1)
 
     mem_prediction = predict_app_performance(application, competitors_mem)
 
-    mem_prediction.competitor = mem_prediction.competitor + " + ".join(comp.name for comp in competitors_cpu)
+    mem_prediction.competitor = mem_prediction.competitor + " + " + " + ".join(comp.name for comp in competitors_cpu)
 
     mem_prediction.perf = mem_prediction.perf * cpu_norm_perf
 

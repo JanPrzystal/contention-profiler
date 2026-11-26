@@ -402,35 +402,39 @@ def test_deployment():
 
 
 def test_cpu_mem():
-    config.DIAL_END_MB = 32
-    config.DIAL_RANGE_MB = 32
+    config.DIAL_END_MB = 64
+    config.DIAL_RANGE_MB = 64
 
     config.PROGRESSIVE_PROFILING = True
-    config.NSOI = 2
+    config.NSOI = 4
 
     reporter = rp.MembenchReporter("tinymembench")
-    # benchmarks = [spec.lbm, spec.omnetpp, spec.fotonik3d, spec.perlbench, spec.xz, spec.gcc]
-    benchmarks = [spec.omnetpp, spec.perlbench, spec.xz, spec.gcc]
+    benchmarks = [spec.lbm, spec.omnetpp, spec.fotonik3d, spec.perlbench, spec.xz, spec.gcc]
+    # benchmarks = [spec.omnetpp, spec.perlbench, spec.xz, spec.gcc]
 
-    # cm.background_core_dispenser = cm.CoreManager([1,2,3,4])
+    cm.background_core_dispenser = cm.CoreManager([1,2,3,4])
 
-    # profile_reporter(reporter)
-    # _maxc = profile_workload.profile_contentiousness(benchmarks, reporter)
-    # profile_workload.profile_sensitivity(benchmarks)
+    profile_reporter(reporter)
+    _maxc = profile_workload.profile_contentiousness(benchmarks, reporter)
+    profile_workload.profile_sensitivity(benchmarks)
 
 
-    # cm.background_core_dispenser = cm.CoreManager([0,0,1,2,3,4])
+    cm.background_core_dispenser = cm.CoreManager([0,0,1,2,3,4])
 
     for bench in benchmarks:
         competitors = [b for b in benchmarks if bench.name != b.name]
         shuffle(competitors)
 
         log(f"Predicting performance of {bench.name} with cpu competitors {[c.name for c in competitors[:2]]} and mem competitors {[c.name for c in competitors[2:4]]}", logging.INFO)
-        prediction.predict_performance_cpu_mem(bench, competitors[:2], competitors[2:])
+        pred = prediction.predict_performance_cpu_mem(bench, competitors[:2], competitors[2:])
+        log(f"Predicted performance of {bench.name}: {pred.perf}", logging.INFO)
+
+        validated = validation.validate_prediction(pred, [bench] + competitors)
+        log(f"Validation result for {bench.name}: {validated}", logging.INFO)
 
 def main():
-    config.USE_ROOT_PRIORITY = False
-    config.DATA_SIZE = "test"
+    config.USE_ROOT_PRIORITY = True
+    config.DATA_SIZE = "train"
 
     CpuFreqPolicy.set_governor(Governor.PERFORMANCE)
 
@@ -443,6 +447,8 @@ def main():
     config.PROGRESSIVE_PROFILING = True
     config.NSOI = 7
 
+    profile_workload.measure_sensitivity_matrix(spec.ALL_SPEC_WORKLOADS)
+
     # reporter = rp.AveragingReporter("streaming")
     # reporter = rp.MembenchReporter("tinymembench")
     # reporter.profile()
@@ -451,7 +457,7 @@ def main():
     # combine_cpu_mem()
     # test_deployment()
 
-    test_cpu_mem()
+    # test_cpu_mem()
 
     CpuFreqPolicy.reset_governor()
 

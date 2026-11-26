@@ -12,8 +12,22 @@ class Process:
         self.proc = proc
         self.core_idx = core_idx
 
-    def stop(self) -> None:
-        os.killpg(os.getpgid(self.proc.pid), signal.SIGKILL)
+    def stop(self, timeout: float = 5.0) -> None:
+        pgid = self.proc.pid  # session leader => pgid == pid
+        try:
+            os.killpg(pgid, signal.SIGTERM)
+        except ProcessLookupError:
+            pass  # group already gone
+        try:
+            self.proc.wait(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            pass
+        try:
+            os.killpg(pgid, signal.SIGKILL)  # sweep up anything left in the group
+        except ProcessLookupError:
+            pass
+        self.proc.wait()
+        
         cm.background_core_dispenser.release(self.core_idx)
 
 class Workload(ABC):

@@ -10,7 +10,7 @@ SENSITIVITY_DIR = Path(RESULTS_DIR) / 'sensitivity'
 RANDOM_SEED: Final[int] = 42
 
 WORKLOAD_UNDER_PROFILING_CORES: Final[str] = "0"
-WORKLOAD_IN_BACKGROUND_CORES: Final[str] = "7,6,5,4,3,2,1"
+WORKLOAD_IN_BACKGROUND_CORES: Final[str] = "1,2,3,4,5,6,7"
 MAX_COMPETITORS: int = 14
 
 WORKLOAD_WARMUP_TIME = 5
@@ -31,7 +31,7 @@ MDS_STARTUP_WAIT_TIME_S: Final[int] = 30
 PROFILING_NODE_NAME: Final[str] = "mc-c6"
 REMOTE_NODE_NAME: Final[str] = "mc-b8"
 
-ROOT_TASK_CMD = ["sudo", "nice", "-n", "-20"]
+ROOT_TASK_CMD = ["nice", "-n", "-10"]
 
 NSOI: int = 4
 BUBBLE_TYPE = "rand"

@@ -14,6 +14,7 @@ from profiling import perf
 import profiling.contentiousness as cnt
 
 from experiment_setup.log import DEBUG, log, WARNING
+import experiment_setup.core_manager as cm
 
 
 def _get_sensitivity_data(workload_name: str) -> dict[int, float]:
@@ -181,16 +182,16 @@ def profile_added_contentiousness(workload: Workload, reporter: Workload) -> Non
     # Save the results to a csv file
     log(f"Saving contentiousness data for {workload.name}")
     # Save the contentiousness data 
-    benchmark_file = workload.name.replace(".", "_")
-    path = f"{config.RESULTS_DIR}/contentiousness/{benchmark_file}_contentiousness.csv"
+    file_name = workload.name.replace(".", "_")
+    path = f"{config.RESULTS_DIR}/contentiousness/{file_name}_contentiousness.csv"
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w+") as f:
         f.write("pressure,contentiousness\n")
         f.writelines(f"{k},{v}\n" for k, v in contentiousness.items())
 
     
-def _profile_sensitivity_progressive(benchmark: Workload):
-    name = benchmark.name.replace(".", "_")
+def _profile_sensitivity_progressive(workload: Workload):
+    name = workload.name.replace(".", "_")
     path = SENSITIVITY_DIR / f"{name}_data.csv"
     with open(path, "w+") as f:
         f.write("pressure,perf\n")
@@ -203,7 +204,7 @@ def _profile_sensitivity_progressive(benchmark: Workload):
         for size_mb in range(config.DIAL_START_MB, config.DIAL_END_MB + config.DIAL_STEP_MB, config.DIAL_STEP_MB):
             if size_mb > 0:
                 nsoi = max(size_mb // interval, 1)
-            perf = _profile_sensitivity_dial(benchmark, size_mb, nsoi)
+            perf = _profile_sensitivity_dial(workload, size_mb, nsoi)
             f.write(f"{size_mb},{perf}\n")
 
 def _write_hpc_result(file, result, label):
@@ -276,3 +277,33 @@ def profile_sensitivity_hpc(workload: Workload, competitor: Workload | None = No
             _write_hpc_result(f, result, 1)
 
 
+def measure_sensitivity_matrix(workloads: list[Workload]) -> None:
+    
+    for workload in workloads:
+        name = workload.name.replace(".", "_")
+        path = SENSITIVITY_DIR / f"{name}_data.csv"
+        with open(path, "w+") as f:
+            f.write("cpu_competitors,mem_competitors,perf\n")
+
+            max_soi = config.NSOI
+            interval = config.DIAL_RANGE_MB // max_soi
+
+            nsoi = 0
+
+            for ncpu in range(max_soi):
+                if ncpu > 0:
+                    cores = [0] * ncpu
+                    cm.background_core_dispenser = cm.CoreManager(cores + config.WORKLOAD_IN_BACKGROUND_CORES.split(","))
+                    soi = SoI(size_mb, ncpu)
+                    soi.run_in_background()
+
+                for size_mb in range(config.DIAL_START_MB, config.DIAL_END_MB + config.DIAL_STEP_MB, config.DIAL_STEP_MB):
+                    if size_mb > 0:
+                        nsoi = max(size_mb // interval, 1)
+                    perf = _profile_sensitivity_dial(workload, size_mb, nsoi)
+                    f.write(f"{ncpu},{nsoi}({size_mb}),{perf}\n")
+
+                if ncpu > 0:
+                    soi.stop()
+
+        
